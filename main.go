@@ -9,7 +9,7 @@ import (
 // https://engineering.desmos.com/articles/pratt-parser/
 func main() {
 	line := 0
-	for tok := range s.Scan("Hello", line) {
+	for tok := range s.Scan("=!02938#*Hello", line) {
 		if tok.Type == ast.EOF {
 			return
 		}

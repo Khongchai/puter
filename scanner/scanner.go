@@ -27,7 +27,7 @@ func Scan(text string, line int) iter.Seq[ast.Token] {
 		if pos+offset >= len(text) {
 			return 0
 		} else {
-			return text[offset]
+			return text[pos+offset]
 		}
 	}
 
@@ -42,8 +42,8 @@ func Scan(text string, line int) iter.Seq[ast.Token] {
 				token = newToken(ast.PIPE, string(ch(0)))
 				pos++
 			case '=':
-				if ch(0) == '=' {
-					token = newToken(ast.EQ, string(ch(0)))
+				if ch(1) == '=' {
+					token = newToken(ast.EQ, "==")
 					pos += 2
 				} else {
 					token = newToken(ast.ASSIGN, string(ch(0)))
@@ -65,18 +65,25 @@ func Scan(text string, line int) iter.Seq[ast.Token] {
 				}
 			case '/':
 				token = newToken(ast.SLASH, string(ch(0)))
+				pos++
 			case '*':
 				token = newToken(ast.ASTERISK, string(ch(0)))
+				pos++
 			case '<':
 				token = newToken(ast.LT, string(ch(0)))
+				pos++
 			case '>':
 				token = newToken(ast.GT, string(ch(0)))
+				pos++
 			case '(':
 				token = newToken(ast.LPAREN, string(ch(0)))
+				pos++
 			case ')':
 				token = newToken(ast.RPAREN, string(ch(0)))
+				pos++
 			case 0:
 				token = newToken(ast.EOF, "")
+				pos++
 			default:
 				if isLetter(ch(0)) {
 					i := 1
