@@ -1,7 +1,18 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"puter/ast"
+	s "puter/scanner"
+)
 
+// https://engineering.desmos.com/articles/pratt-parser/
 func main() {
-	fmt.Println("Hello")
+	line := 0
+	for tok := range s.Scan("Hello", line) {
+		if tok.Type == ast.EOF {
+			return
+		}
+		fmt.Printf("%+v \n", tok.Literal)
+	}
 }
