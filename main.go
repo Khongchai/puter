@@ -2,17 +2,14 @@ package main
 
 import (
 	"fmt"
-	"puter/ast"
-	s "puter/scanner"
+	p "puter/parser"
 )
 
-// https://engineering.desmos.com/articles/pratt-parser/
 func main() {
-	line := 0
-	for tok := range s.Scan("=!02938#*Hello", line) {
-		if tok.Type == ast.EOF {
-			return
-		}
-		fmt.Printf("%+v \n", tok.Literal)
+	parser := &p.Parser{
+		Text: "3 * 2 + 1",
 	}
+	expression := parser.Parse()
+	fmt.Println(expression.String())
+
 }

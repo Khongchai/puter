@@ -27,9 +27,8 @@ const (
 	LPAREN = "("
 	RPAREN = ")"
 
-	FUNCTION = "FUNCTION"
-	TRUE     = "TRUE"
-	FALSE    = "FALSE"
+	TRUE  = "TRUE"
+	FALSE = "FALSE"
 )
 
 // Puter scanner scans expression line by line so no need to store line information here.
