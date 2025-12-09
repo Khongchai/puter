@@ -1,117 +1,114 @@
 package scanner
 
 import (
-	"iter"
 	ast "puter/ast"
 )
 
-func Scan(text string, line int) iter.Seq[ast.Token] {
-	pos := 0
+type Scanner struct {
+	pos  int
+	text string
+	line int
+}
 
-	newToken := func(tokenType ast.TokenType, literal string) *ast.Token {
-		return &ast.Token{
-			Type:     tokenType,
-			Literal:  literal,
-			StartPos: pos,
-		}
+func NewScanner(text string, line int) *Scanner {
+	return &Scanner{
+		pos:  0,
+		text: text,
+		line: line,
 	}
+}
 
-	skipWhitespace := func() {
-		ch := text[pos]
-		for ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r' {
-			pos++
-		}
-	}
+func (s *Scanner) Next() *ast.Token {
+	s.skipWhitespace()
 
-	ch := func(offset int) byte {
-		if pos+offset >= len(text) {
-			return 0
+	var token *ast.Token
+
+	switch s.ch(0) {
+	case '|':
+		token = ast.NewToken(ast.PIPE, string(s.ch(0)), s.pos)
+		s.pos++
+	case '=':
+		if s.ch(1) == '=' {
+			token = ast.NewToken(ast.EQ, "==", s.pos)
+			s.pos += 2
 		} else {
-			return text[pos+offset]
+			token = ast.NewToken(ast.ASSIGN, string(s.ch(0)), s.pos)
+			s.pos++
+		}
+	case '+':
+		token = ast.NewToken(ast.PLUS, string(s.ch(0)), s.pos)
+		s.pos++
+	case '-':
+		token = ast.NewToken(ast.MINUS, string(s.ch(0)), s.pos)
+		s.pos++
+	case '!':
+		if s.ch(0) == '=' {
+			token = ast.NewToken(ast.NOT_EQ, "!=", s.pos)
+			s.pos += 2
+		} else {
+			token = ast.NewToken(ast.BANG, string(s.ch(0)), s.pos)
+			s.pos++
+		}
+	case '/':
+		token = ast.NewToken(ast.SLASH, string(s.ch(0)), s.pos)
+		s.pos++
+	case '*':
+		token = ast.NewToken(ast.ASTERISK, string(s.ch(0)), s.pos)
+		s.pos++
+	case '<':
+		token = ast.NewToken(ast.LT, string(s.ch(0)), s.pos)
+		s.pos++
+	case '>':
+		token = ast.NewToken(ast.GT, string(s.ch(0)), s.pos)
+		s.pos++
+	case '(':
+		token = ast.NewToken(ast.LPAREN, string(s.ch(0)), s.pos)
+		s.pos++
+	case ')':
+		token = ast.NewToken(ast.RPAREN, string(s.ch(0)), s.pos)
+		s.pos++
+	case 0:
+		token = ast.NewToken(ast.EOF, "", s.pos)
+		s.pos++
+	default:
+		if isLetter(s.ch(0)) {
+			i := 1
+			for isLetter(s.ch(i)) {
+				i++
+			}
+			token = ast.NewToken(ast.IDENT, s.text[s.pos:s.pos+i], s.pos)
+			s.pos += i
+		} else if isDigit(s.ch(0)) {
+			i := 1
+			for isDigit(s.ch(i)) {
+				i++
+			}
+			token = ast.NewToken(ast.NUMBER, s.text[s.pos:s.pos+i], s.pos)
+			s.pos += i
+		} else {
+			token = ast.NewToken(ast.ILLEGAL, string(s.ch(0)), s.pos)
+			s.pos++
 		}
 	}
 
-	yielder := func(yield func(ast.Token) bool) {
-		skipWhitespace()
+	return token
+}
 
-		var token *ast.Token
-
-		for {
-			switch ch(0) {
-			case '|':
-				token = newToken(ast.PIPE, string(ch(0)))
-				pos++
-			case '=':
-				if ch(1) == '=' {
-					token = newToken(ast.EQ, "==")
-					pos += 2
-				} else {
-					token = newToken(ast.ASSIGN, string(ch(0)))
-					pos++
-				}
-			case '+':
-				token = newToken(ast.PLUS, string(ch(0)))
-				pos++
-			case '-':
-				token = newToken(ast.MINUS, string(ch(0)))
-				pos++
-			case '!':
-				if ch(0) == '=' {
-					token = newToken(ast.NOT_EQ, "!=")
-					pos += 2
-				} else {
-					token = newToken(ast.BANG, string(ch(0)))
-					pos++
-				}
-			case '/':
-				token = newToken(ast.SLASH, string(ch(0)))
-				pos++
-			case '*':
-				token = newToken(ast.ASTERISK, string(ch(0)))
-				pos++
-			case '<':
-				token = newToken(ast.LT, string(ch(0)))
-				pos++
-			case '>':
-				token = newToken(ast.GT, string(ch(0)))
-				pos++
-			case '(':
-				token = newToken(ast.LPAREN, string(ch(0)))
-				pos++
-			case ')':
-				token = newToken(ast.RPAREN, string(ch(0)))
-				pos++
-			case 0:
-				token = newToken(ast.EOF, "")
-				pos++
-			default:
-				if isLetter(ch(0)) {
-					i := 1
-					for isLetter(ch(i)) {
-						i++
-					}
-					token = newToken(ast.IDENT, text[pos:pos+i])
-					pos += i
-				} else if isDigit(ch(0)) {
-					i := 1
-					for isDigit(ch(i)) {
-						i++
-					}
-					token = newToken(ast.NUMBER, text[pos:pos+i])
-					pos += i
-				} else {
-					token = newToken(ast.ILLEGAL, string(ch(0)))
-					pos++
-				}
-			}
-
-			if !yield(*token) {
-				return
-			}
-		}
+func (s *Scanner) skipWhitespace() {
+	if s.pos >= len(s.text) {
+		return
 	}
+	ch := s.text[s.pos]
+	for ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r' {
+		s.pos++
+	}
+}
 
-	return yielder
+func (s *Scanner) ch(offset int) byte {
+	if s.pos+offset >= len(s.text) {
+		return 0
+	}
+	return s.text[s.pos+offset]
 }
 
 func isLetter(ch byte) bool {
