@@ -7,18 +7,16 @@ import (
 type Scanner struct {
 	pos  int
 	text string
-	line int
 }
 
-func NewScanner(text string, line int) *Scanner {
+func NewScanner(text string) *Scanner {
 	return &Scanner{
 		pos:  0,
 		text: text,
-		line: line,
 	}
 }
 
-func (s *Scanner) Next() *ast.Token {
+func (s *Scanner) Next(line int) *ast.Token {
 	s.skipWhitespace()
 
 	var token *ast.Token

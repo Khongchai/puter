@@ -38,6 +38,14 @@ type Token struct {
 	StartPos int
 }
 
+func NewToken(tokenType TokenType, literal string, pos int) *Token {
+	return &Token{
+		Type:     tokenType,
+		Literal:  literal,
+		StartPos: pos,
+	}
+}
+
 // Inclusive start, exclusive end.
 // "cat" is start = 0 and end = 3
 func (t *Token) EndPos() int {

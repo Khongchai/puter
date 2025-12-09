@@ -5,7 +5,7 @@ import (
 )
 
 func TestScan(t *testing.T) {
-	scanner := NewScanner("=!02938#*Hello", 0)
+	scanner := NewScanner("=!02938#*Hello")
 
 	expectations := []string{
 		"=",
@@ -23,7 +23,7 @@ func TestScan(t *testing.T) {
 	}
 
 	for _, e := range expectations {
-		r := scanner.Next()
+		r := scanner.Next(0)
 		if r.Literal != e {
 			t.Fatalf("Expected =, got %s", r.Literal)
 		}

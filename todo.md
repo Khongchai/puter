@@ -2,11 +2,21 @@ Create a go program first, hook in lsp later.
 
 - [ ] Parser and executor for basic math expression with no additional function. Parser must support auto precedence (PEMDAS) and explict precedence with ().
     - [x] Scanner
-    - [ ] Parser to parse into expressions (wrongly first, without pratt parsing)
-        - [ ] Continue implementing infixparselet
-        - [ ] Then the rest
-    - [ ] Executor
     - [ ] Then apply pratt parsing
+        - [x] Finish binary operator here (need binary expression): func (b *BinaryOperatorParselet) Parse(parser *Parser, left *ast.Expression, token ast.Token) ast.Expression {
+            if left == nil {
+                panic("Left is nil. Can't continue! Infix requires left to be present")
+            }
+
+            p := b.precedence
+            if b.isRight {
+                p -= 1
+            }
+        }
+        - [x] Then assignment operator
+        - [ ] Then map everything in the main parser method. << continue from here
+        - [ ] Once everything is done, try applying iterative pratt parsing
+    - [ ] Executor
 
     Refs:
     - https://github.com/desmosinc/pratt-parser-blog-code/tree/main/src
@@ -17,3 +27,11 @@ Create a go program first, hook in lsp later.
     - https://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/
 - [ ] Implement math function calls. Must alo handle nested function calls.
 - [ ] More decide later
+
+<!-- end section -->
+
+# 09/12/2025
+- [ ] Finish pratt parsing
+
+# 10/12/2025
+- [ ] Iterative pratt parsing
