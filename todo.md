@@ -16,7 +16,7 @@ Create a go program first, hook in lsp later.
         - [x] Then assignment operator
         - [x] Then map everything in the main parser method. 
         - [x] Boolean keywords (true, false)
-        - [ ] Boolean operators (!, ||, &&)
+        - [x] Boolean operators (!, ||, &&)
         - [x] `In` keyword for turning something into particular unit (`in ms in hr`)
         - [ ] Once everything is done, try applying iterative pratt parsing
     - [ ] Executor
@@ -42,7 +42,8 @@ Create a go program first, hook in lsp later.
 <!-- end section -->
 
 # Backlog
-
+- [ ] handle non utf8 char with DecodeRuneInString
+- [ ] Multiline and parsing initialization in executor layer.
 - [ ] Support binary value view
     - `| 2 in binary`
 - [ ] Support hex value view
