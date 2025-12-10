@@ -71,6 +71,37 @@ func TestCallExpressionWithNoArguments(t *testing.T) {
 	}
 }
 
-// func TestAssignExpression(t *testing.T) {
+func TestNumberAssignExpression(t *testing.T) {
+	exp := NewParser("a = 2").Parse()
+	result := exp.String()
+	expected := fmt.Sprintf("a = %f", 2.0)
+	if result != expected {
+		t.Fatalf("Parsing result is not '%s', got '%s'", expected, result)
+	}
+
+	expression, ok := exp.(*ast.AssignExpression)
+	if !ok {
+		t.Fatalf("Expected assign expression, got: %+v", expression)
+	}
+
+	if expression.Name.Token().Type != ast.IDENT {
+		t.Fatalf("Token value not IDENT, got: %+v", expression.Name.Token().Type)
+	}
+
+	rightExp, ok2 := expression.Right.(*ast.NumberExpression)
+	if !ok2 {
+		t.Fatalf("Expect right expression to be Number expression, instead got: %+v", rightExp)
+	}
+}
+
+// func TestFunctionAssignExpression(t *testing.T) {
+// 	exp := NewParser("a = 2").Parse()
+// 	result := exp.String()
+// 	if result != "add()" {
+// 		t.Fatalf("Parsing result is not add(), got %s", result)
+// 	}
+// }
+
+// func TestNameAssignExpression(t *testing.T) {
 
 // }

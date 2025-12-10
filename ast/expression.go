@@ -67,16 +67,16 @@ func (pe *PrefixExpression) Token() *Token {
 }
 
 type AssignExpression struct {
-	TokenValue *Token // the name token
-	Right      Expression
+	Name  Expression
+	Right Expression
 }
 
 func (ae *AssignExpression) String() string {
-	return fmt.Sprintf("%s = %s", ae.TokenValue.Literal, ae.Right.String())
+	return fmt.Sprintf("%s = %s", ae.Name.String(), ae.Right.String())
 }
 
 func (pe *AssignExpression) Token() *Token {
-	return pe.TokenValue
+	return pe.Name.Token()
 }
 
 type CallExpression struct {

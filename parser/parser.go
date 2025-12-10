@@ -7,6 +7,7 @@ import (
 )
 
 var precedences = map[ast.TokenType]int{
+	ast.ASSIGN:   PrecAssignment,
 	ast.EQ:       PrecEquals,
 	ast.NOT_EQ:   PrecEquals,
 	ast.LT:       PrecLessGreater,

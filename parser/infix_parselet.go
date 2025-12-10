@@ -59,8 +59,8 @@ func (p *AssignParselet) Parse(parser *Parser, left ast.Expression, token *ast.T
 	}
 
 	return &ast.AssignExpression{
-		TokenValue: token,
-		Right:      right,
+		Name:  left,
+		Right: right,
 	}
 }
 
