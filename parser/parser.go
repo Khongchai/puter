@@ -58,21 +58,21 @@ func (p *Parser) Parse() ast.Expression {
 func (p *Parser) ParseExpression(precedence int) ast.Expression {
 	token := p.Consume()
 
-	prefixParselet, ok := p.prefixParseFns[token.Type]
+	nud, ok := p.prefixParseFns[token.Type]
 	if !ok {
 		panic(fmt.Sprintf("Could not parse %s", token.Literal))
 	}
 
-	left := prefixParselet.Parse(p, token)
+	left := nud.Parse(p, token)
 
 	for precedence < p.getNextPrecedence() {
 		token = p.Consume()
 
-		infix := p.infixParseFns[token.Type]
-		if infix == nil {
+		led := p.infixParseFns[token.Type]
+		if led == nil {
 			panic(fmt.Sprintf("Missing infix parselet for %s", token.Type))
 		}
-		left = infix.Parse(p, left, token)
+		left = led.Parse(p, left, token)
 	}
 
 	return left
