@@ -80,8 +80,8 @@ func (pe *AssignExpression) Token() *Token {
 }
 
 type CallExpression struct {
-	Function Expression
-	Args     []Expression
+	FunctionNameExpression Expression
+	Args                   []Expression
 }
 
 func (ce *CallExpression) String() string {
@@ -90,9 +90,9 @@ func (ce *CallExpression) String() string {
 		names = append(names, a.String())
 	}
 	joined := strings.Join(names, ", ")
-	s := fmt.Sprintf("%s(%s)", ce.Function.String(), joined)
+	s := fmt.Sprintf("%s(%s)", ce.FunctionNameExpression.String(), joined)
 	return s
 }
 func (ce *CallExpression) Token() *Token {
-	return ce.Function.Token()
+	return ce.FunctionNameExpression.Token()
 }

@@ -81,7 +81,7 @@ func (cp *CallParselet) Parse(parser *Parser, left ast.Expression, token *ast.To
 	// if next token is right parent, consume it and forward
 	if parser.Peek(0).Type == ast.RPAREN {
 		parser.Consume()
-		return &ast.CallExpression{Function: left, Args: args}
+		return &ast.CallExpression{FunctionNameExpression: left, Args: args}
 	}
 
 	// otherwise loop and collect expressions delimited by a comma until right paren is encountered.
@@ -98,7 +98,7 @@ func (cp *CallParselet) Parse(parser *Parser, left ast.Expression, token *ast.To
 		panic("Missing right paren")
 	}
 
-	return &ast.CallExpression{Function: left, Args: args}
+	return &ast.CallExpression{FunctionNameExpression: left, Args: args}
 }
 
 func (cp *CallParselet) Precedence() int {
