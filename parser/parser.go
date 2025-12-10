@@ -18,6 +18,7 @@ var precedences = map[ast.TokenType]int{
 	ast.SLASH:    PrecProduct,
 	ast.ASTERISK: PrecProduct,
 	ast.LPAREN:   PrecCall,
+	ast.IN:       PrecIn,
 }
 
 type Parser struct {
@@ -43,6 +44,7 @@ func NewParser(text string) *Parser {
 	parser.prefixParseFns[ast.FALSE] = NewBooleanParselet()
 	parser.infixParseFns[ast.ASSIGN] = NewAsssignParselet()
 	parser.infixParseFns[ast.LPAREN] = NewCallParselet()
+	parser.infixParseFns[ast.IN] = NewInParselet()
 
 	// Simple parselets
 	parser.prefixParseFns[ast.MINUS] = NewPrefixOperatorParselet(PrecPrefix)

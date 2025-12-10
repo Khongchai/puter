@@ -15,9 +15,9 @@ Create a go program first, hook in lsp later.
         }
         - [x] Then assignment operator
         - [x] Then map everything in the main parser method. 
-        - [ ] Boolean keywords (true, false)
+        - [x] Boolean keywords (true, false)
         - [ ] Boolean operators (!, ||, &&)
-        - [ ] `In` keyword for turning something into particular unit (`in ms in hr`)
+        - [x] `In` keyword for turning something into particular unit (`in ms in hr`)
         - [ ] Once everything is done, try applying iterative pratt parsing
     - [ ] Executor
 

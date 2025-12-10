@@ -1,10 +1,12 @@
 package parser
 
-import ast "puter/ast"
+import (
+	"fmt"
+	ast "puter/ast"
+)
 
 type InfixParselet interface {
 	Parse(parser *Parser, left ast.Expression, token *ast.Token) ast.Expression
-	Precedence() int
 }
 
 type BinaryOperatorParselet struct {
@@ -17,10 +19,6 @@ func NewbinaryOperatorParselet(precedence int, isRight bool) *BinaryOperatorPars
 		precedence,
 		isRight,
 	}
-}
-
-func (b *BinaryOperatorParselet) Precedence() int {
-	return b.precedence
 }
 
 func (b *BinaryOperatorParselet) Parse(parser *Parser, left ast.Expression, token *ast.Token) ast.Expression {
@@ -64,8 +62,26 @@ func (p *AssignParselet) Parse(parser *Parser, left ast.Expression, token *ast.T
 	}
 }
 
-func (p *AssignParselet) Precedence() int {
-	return PrecAssignment
+type InParselet struct {
+}
+
+func NewInParselet() *InParselet {
+	return &InParselet{}
+}
+
+func (cp *InParselet) Parse(parser *Parser, left ast.Expression, token *ast.Token) ast.Expression {
+	// if right is not a static ident, like this: (...) in usd, (...) in binary
+	// then it is not a valid expression
+	right := parser.ParseExpression(PrecLowest)
+	if rightExp, ok := right.(*ast.IdentExpression); !ok {
+		panic(fmt.Sprintf("Expected an identifier, got %s", rightExp.String()))
+	} else {
+		return &ast.InExpression{
+			TokenValue:  token,
+			ActualValue: left,
+			Unit:        rightExp,
+		}
+	}
 }
 
 type CallParselet struct {
@@ -86,7 +102,7 @@ func (cp *CallParselet) Parse(parser *Parser, left ast.Expression, token *ast.To
 
 	// otherwise loop and collect expressions delimited by a comma until right paren is encountered.
 	for {
-		args = append(args, parser.ParseExpression(0))
+		args = append(args, parser.ParseExpression(PrecLowest))
 		peeked := parser.Peek(0)
 		if peeked.Type == ast.COMMA {
 			parser.Consume()
@@ -100,8 +116,4 @@ func (cp *CallParselet) Parse(parser *Parser, left ast.Expression, token *ast.To
 	}
 
 	return &ast.CallExpression{FunctionNameExpression: left, Args: args}
-}
-
-func (cp *CallParselet) Precedence() int {
-	return PrecCall
 }

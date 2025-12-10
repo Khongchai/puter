@@ -3,7 +3,9 @@ package parser
 type Precedence int
 
 const (
-	PrecAssignment = iota + 1
+	PrecLowest = iota
+	PrecIn
+	PrecAssignment
 	PrecEquals
 	PrecLessGreater
 	PrecSum
