@@ -17,7 +17,7 @@ type NumberExpression struct {
 }
 
 func (ne *NumberExpression) String() string {
-	return fmt.Sprintf("%f", ne.ActualValue)
+	return fmt.Sprintf("%g", ne.ActualValue)
 }
 
 func (ne *NumberExpression) Token() *Token {

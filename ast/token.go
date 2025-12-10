@@ -28,10 +28,12 @@ const (
 	LPAREN = "("
 	RPAREN = ")"
 
+	COMMA = ","
+
+	// Keywords
 	TRUE  = "TRUE"
 	FALSE = "FALSE"
-
-	COMMA = ","
+	IN    = "IN"
 )
 
 // Puter scanner scans expression line by line so no need to store line information here.

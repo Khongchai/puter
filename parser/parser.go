@@ -6,6 +6,7 @@ import (
 	s "puter/scanner"
 )
 
+// TODO: let's not have a separate map here...
 var precedences = map[ast.TokenType]int{
 	ast.ASSIGN:   PrecAssignment,
 	ast.EQ:       PrecEquals,
@@ -44,11 +45,15 @@ func NewParser(text string) *Parser {
 	// Simple parselets
 	parser.prefixParseFns[ast.MINUS] = NewPrefixOperatorParselet(PrecPrefix)
 	parser.prefixParseFns[ast.BANG] = NewPrefixOperatorParselet(PrecPrefix)
+	parser.infixParseFns[ast.EQ] = NewbinaryOperatorParselet(PrecEquals, false)
+	parser.infixParseFns[ast.NOT_EQ] = NewbinaryOperatorParselet(PrecEquals, false)
 	parser.infixParseFns[ast.PLUS] = NewbinaryOperatorParselet(PrecSum, false)
 	parser.infixParseFns[ast.MINUS] = NewbinaryOperatorParselet(PrecSum, false)
 	parser.infixParseFns[ast.ASTERISK] = NewbinaryOperatorParselet(PrecProduct, false)
 	parser.infixParseFns[ast.SLASH] = NewbinaryOperatorParselet(PrecProduct, false)
 	parser.infixParseFns[ast.CARET] = NewbinaryOperatorParselet(PrecExponent, true)
+	parser.infixParseFns[ast.GT] = NewbinaryOperatorParselet(PrecLessGreater, false)
+	parser.infixParseFns[ast.LT] = NewbinaryOperatorParselet(PrecLessGreater, false)
 
 	return parser
 }
@@ -73,6 +78,9 @@ func (p *Parser) ParseExpression(precedence int) ast.Expression {
 		token = p.Consume()
 
 		infix := p.infixParseFns[token.Type]
+		if infix == nil {
+			panic(fmt.Sprintf("Missing infix parselet for %s", token.Type))
+		}
 		left = infix.Parse(p, left, token)
 	}
 

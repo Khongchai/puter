@@ -38,3 +38,12 @@ Create a go program first, hook in lsp later.
 
 # 10/12/2025
 - [ ] Iterative pratt parsing
+
+<!-- end section -->
+
+# Backlog
+
+- [ ] Support binary value view
+    - `| 2 in binary`
+- [ ] Support hex value view
+    - `| 2 in hex`

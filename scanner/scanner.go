@@ -40,7 +40,7 @@ func (s *Scanner) Next() *ast.Token {
 		token = ast.NewToken(ast.MINUS, string(s.ch(0)), s.pos)
 		s.pos++
 	case '!':
-		if s.ch(0) == '=' {
+		if s.ch(1) == '=' {
 			token = ast.NewToken(ast.NOT_EQ, "!=", s.pos)
 			s.pos += 2
 		} else {
