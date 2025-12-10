@@ -59,7 +59,7 @@ type PrefixExpression struct {
 }
 
 func (pe *PrefixExpression) String() string {
-	return fmt.Sprintf("%s%s", pe.TokenValue.Literal, (pe.Right).String())
+	return fmt.Sprintf("(%s%s)", pe.TokenValue.Literal, (pe.Right).String())
 }
 
 func (pe *PrefixExpression) Token() *Token {

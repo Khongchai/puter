@@ -32,10 +32,10 @@ func TestScan(t *testing.T) {
 }
 
 func TestAssignmentScan(t *testing.T) {
-	scanner := NewScanner("a = 2")
+	scanner := NewScanner("foo = 2")
 
 	expectations := []string{
-		"a",
+		"foo",
 		"=",
 		"2",
 		"",
