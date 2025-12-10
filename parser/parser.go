@@ -8,17 +8,19 @@ import (
 
 // TODO: let's not have a separate map here...
 var precedences = map[ast.TokenType]int{
-	ast.ASSIGN:   PrecAssignment,
-	ast.EQ:       PrecEquals,
-	ast.NOT_EQ:   PrecEquals,
-	ast.LT:       PrecLessGreater,
-	ast.GT:       PrecLessGreater,
-	ast.PLUS:     PrecSum,
-	ast.MINUS:    PrecSum,
-	ast.SLASH:    PrecProduct,
-	ast.ASTERISK: PrecProduct,
-	ast.LPAREN:   PrecCall,
-	ast.IN:       PrecIn,
+	ast.ASSIGN:      PrecAssignment,
+	ast.EQ:          PrecEquals,
+	ast.NOT_EQ:      PrecEquals,
+	ast.LT:          PrecLessGreater,
+	ast.GT:          PrecLessGreater,
+	ast.PLUS:        PrecSum,
+	ast.MINUS:       PrecSum,
+	ast.SLASH:       PrecProduct,
+	ast.ASTERISK:    PrecProduct,
+	ast.LPAREN:      PrecCall,
+	ast.IN:          PrecIn,
+	ast.LOGICAL_AND: PrecLogical,
+	ast.LOGICAL_OR:  PrecLogical,
 }
 
 type Parser struct {
@@ -58,6 +60,8 @@ func NewParser(text string) *Parser {
 	parser.infixParseFns[ast.CARET] = NewbinaryOperatorParselet(PrecExponent, true)
 	parser.infixParseFns[ast.GT] = NewbinaryOperatorParselet(PrecLessGreater, false)
 	parser.infixParseFns[ast.LT] = NewbinaryOperatorParselet(PrecLessGreater, false)
+	parser.infixParseFns[ast.LOGICAL_AND] = NewbinaryOperatorParselet(PrecLogical, false)
+	parser.infixParseFns[ast.LOGICAL_OR] = NewbinaryOperatorParselet(PrecLogical, false)
 
 	return parser
 }

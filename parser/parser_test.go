@@ -235,6 +235,14 @@ func TestPrecedence(t *testing.T) {
 			"add(a + b + c * d / f + g)",
 			"add((((a + b) + ((c * d) / f)) + g))",
 		},
+		{
+			"a && b",
+			"(a && b)",
+		},
+		{
+			"a && b || c",
+			"((a && b) || c)",
+		},
 	}
 
 	for _, tt := range tests {
