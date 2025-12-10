@@ -33,16 +33,20 @@ func NewParser(text string) *Parser {
 		line:           0,
 	}
 
+	// Special parselets
 	parser.prefixParseFns[ast.IDENT] = NewIdentParselet()
 	parser.prefixParseFns[ast.LPAREN] = NewGroupParselet()
-
 	parser.infixParseFns[ast.ASSIGN] = NewAsssignParselet()
+	parser.infixParseFns[ast.LPAREN] = NewCallParselet()
 
-	for _, token := range []ast.Token{
-		ast.PLUS,
-		ast.MINUS,
-	} {
-	}
+	// Simple parselets
+	parser.prefixParseFns[ast.MINUS] = NewPrefixOperatorParselet(PrecPrefix)
+	parser.prefixParseFns[ast.BANG] = NewPrefixOperatorParselet(PrecPrefix)
+	parser.infixParseFns[ast.PLUS] = NewbinaryOperatorParselet(PrecSum, false)
+	parser.infixParseFns[ast.MINUS] = NewbinaryOperatorParselet(PrecSum, false)
+	parser.infixParseFns[ast.ASTERISK] = NewbinaryOperatorParselet(PrecProduct, false)
+	parser.infixParseFns[ast.SLASH] = NewbinaryOperatorParselet(PrecProduct, false)
+	parser.infixParseFns[ast.CARET] = NewbinaryOperatorParselet(PrecExponent, true)
 
 	return parser
 }
@@ -74,8 +78,13 @@ func (p *Parser) ParseExpression(precedence int) ast.Expression {
 }
 
 func (p *Parser) Consume() *ast.Token {
-	next := p.scanner.Next(p.line)
+	next := p.scanner.Next()
 	return next
+}
+
+func (p *Parser) Peek(offset int) *ast.Token {
+	peeked := p.scanner.Peek(offset)
+	return peeked
 }
 
 func getPrecedence(tokenType ast.TokenType) int {

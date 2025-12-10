@@ -54,8 +54,15 @@ func (p *IdentParselet) Parse(parser *Parser, token *ast.Token) ast.Expression {
 
 }
 
+// Generic prefix operator parselets for stuff like +, -, /, *
 type PrefixOperatorParselet struct {
 	precedence int
+}
+
+func NewPrefixOperatorParselet(precedence int) *PrefixOperatorParselet {
+	return &PrefixOperatorParselet{
+		precedence,
+	}
 }
 
 func (p *PrefixOperatorParselet) Parse(parser *Parser, token *ast.Token) ast.Expression {

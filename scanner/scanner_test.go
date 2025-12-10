@@ -23,7 +23,7 @@ func TestScan(t *testing.T) {
 	}
 
 	for _, e := range expectations {
-		r := scanner.Next(0)
+		r := scanner.Next()
 		if r.Literal != e {
 			t.Fatalf("Expected =, got %s", r.Literal)
 		}

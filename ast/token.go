@@ -17,6 +17,7 @@ const (
 	BANG     = "!"
 	ASTERISK = "*"
 	SLASH    = "/"
+	CARET    = "^"
 
 	LT = "<"
 	GT = ">"
@@ -29,6 +30,8 @@ const (
 
 	TRUE  = "TRUE"
 	FALSE = "FALSE"
+
+	COMMA = ","
 )
 
 // Puter scanner scans expression line by line so no need to store line information here.

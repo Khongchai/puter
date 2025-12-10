@@ -67,3 +67,40 @@ func (p *AssignParselet) Parse(parser *Parser, left ast.Expression, token *ast.T
 func (p *AssignParselet) Precedence() int {
 	return PrecAssignment
 }
+
+type CallParselet struct {
+}
+
+func NewCallParselet() *CallParselet {
+	return &CallParselet{}
+}
+
+func (cp *CallParselet) Parse(parser *Parser, left ast.Expression, token *ast.Token) ast.Expression {
+	var args []ast.Expression
+
+	// if next token is right parent, consume it and forward
+	if parser.Peek(0).Type == ast.RPAREN {
+		parser.Consume()
+		return &ast.CallExpression{Function: left, Args: args}
+	}
+
+	// otherwise loop and collect expressions delimited by a comma until right paren is encountered.
+	for {
+		args = append(args, parser.ParseExpression(0))
+		peeked := parser.Peek(0)
+		if peeked.Type == ast.COMMA {
+			continue
+		}
+		consumed := parser.Consume()
+		if consumed.Type == ast.RPAREN {
+			break
+		}
+		panic("Missing right paren")
+	}
+
+	return &ast.CallExpression{Function: left, Args: args}
+}
+
+func (cp *CallParselet) Precedence() int {
+	return PrecCall
+}

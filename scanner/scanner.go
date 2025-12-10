@@ -16,7 +16,7 @@ func NewScanner(text string) *Scanner {
 	}
 }
 
-func (s *Scanner) Next(line int) *ast.Token {
+func (s *Scanner) Next() *ast.Token {
 	s.skipWhitespace()
 
 	var token *ast.Token
@@ -90,6 +90,20 @@ func (s *Scanner) Next(line int) *ast.Token {
 	}
 
 	return token
+}
+
+func (s *Scanner) Peek(offset int) *ast.Token {
+	prevPos := s.pos
+
+	var tok *ast.Token
+	for range offset - 1 { // avoid unnecessary assignment
+		s.Next()
+	}
+	tok = s.Next()
+
+	s.pos = prevPos
+
+	return tok
 }
 
 func (s *Scanner) skipWhitespace() {

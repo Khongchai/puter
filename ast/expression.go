@@ -1,6 +1,9 @@
 package ast
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type Expression interface {
 	String() string
@@ -74,4 +77,22 @@ func (ae *AssignExpression) String() string {
 
 func (pe *AssignExpression) Token() *Token {
 	return pe.TokenValue
+}
+
+type CallExpression struct {
+	Function Expression
+	Args     []Expression
+}
+
+func (ce *CallExpression) String() string {
+	var names []string
+	for _, a := range ce.Args {
+		names = append(names, a.String())
+	}
+	joined := strings.Join(names, ", ")
+	s := fmt.Sprintf("%s(%s)", ce.Function.String(), joined)
+	return s
+}
+func (ce *CallExpression) Token() *Token {
+	return ce.Function.Token()
 }
