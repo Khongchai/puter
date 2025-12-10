@@ -189,7 +189,7 @@ func TestPrecedence(t *testing.T) {
 		},
 		{
 			"x in usd",
-			"x in usd",
+			"(x in usd)",
 		},
 		{
 			"3 > 5 == false",

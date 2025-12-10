@@ -79,19 +79,6 @@ func (pe *AssignExpression) Token() *Token {
 	return pe.Name.Token()
 }
 
-type InExpression struct {
-	TokenValue  *Token
-	ActualValue Expression
-	Unit        *IdentExpression
-}
-
-func (ie *InExpression) String() string {
-	return fmt.Sprintf("%s in %s", ie.ActualValue.String(), ie.Unit.String())
-}
-func (ie *InExpression) Token() *Token {
-	return ie.TokenValue
-}
-
 type CallExpression struct {
 	FunctionNameExpression Expression
 	Args                   []Expression

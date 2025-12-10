@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	ast "puter/ast"
 )
 
@@ -59,28 +58,6 @@ func (p *AssignParselet) Parse(parser *Parser, left ast.Expression, token *ast.T
 	return &ast.AssignExpression{
 		Name:  left,
 		Right: right,
-	}
-}
-
-type InParselet struct {
-}
-
-func NewInParselet() *InParselet {
-	return &InParselet{}
-}
-
-func (cp *InParselet) Parse(parser *Parser, left ast.Expression, token *ast.Token) ast.Expression {
-	// if right is not a static ident, like this: (...) in usd, (...) in binary
-	// then it is not a valid expression
-	right := parser.ParseExpression(PrecLowest)
-	if rightExp, ok := right.(*ast.IdentExpression); !ok {
-		panic(fmt.Sprintf("Expected an identifier, got %s", rightExp.String()))
-	} else {
-		return &ast.InExpression{
-			TokenValue:  token,
-			ActualValue: left,
-			Unit:        rightExp,
-		}
 	}
 }
 

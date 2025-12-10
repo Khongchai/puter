@@ -44,7 +44,6 @@ func NewParser(text string) *Parser {
 	parser.prefixParseFns[ast.FALSE] = NewBooleanParselet()
 	parser.infixParseFns[ast.ASSIGN] = NewAsssignParselet()
 	parser.infixParseFns[ast.LPAREN] = NewCallParselet()
-	parser.infixParseFns[ast.IN] = NewInParselet()
 
 	// Simple parselets
 	parser.prefixParseFns[ast.MINUS] = NewPrefixOperatorParselet(PrecPrefix)
@@ -52,6 +51,7 @@ func NewParser(text string) *Parser {
 	parser.infixParseFns[ast.EQ] = NewbinaryOperatorParselet(PrecEquals, false)
 	parser.infixParseFns[ast.NOT_EQ] = NewbinaryOperatorParselet(PrecEquals, false)
 	parser.infixParseFns[ast.PLUS] = NewbinaryOperatorParselet(PrecSum, false)
+	parser.infixParseFns[ast.IN] = NewbinaryOperatorParselet(PrecIn, false)
 	parser.infixParseFns[ast.MINUS] = NewbinaryOperatorParselet(PrecSum, false)
 	parser.infixParseFns[ast.ASTERISK] = NewbinaryOperatorParselet(PrecProduct, false)
 	parser.infixParseFns[ast.SLASH] = NewbinaryOperatorParselet(PrecProduct, false)
