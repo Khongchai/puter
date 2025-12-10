@@ -76,3 +76,21 @@ func TestKeywords(t *testing.T) {
 		}
 	}
 }
+
+func TestLogicalOperators(t *testing.T) {
+	scanner := NewScanner("&& &! ||")
+	expectations := []ast.TokenType{
+		ast.LOGICAL_AND,
+		ast.ILLEGAL,
+		ast.BANG,
+		ast.LOGICAL_OR,
+		ast.EOF,
+	}
+
+	for _, e := range expectations {
+		r := scanner.Next()
+		if r.Type != e {
+			t.Fatalf("Expected %s, got %s", e, r.Type)
+		}
+	}
+}

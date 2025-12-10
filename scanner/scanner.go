@@ -23,8 +23,21 @@ func (s *Scanner) Next() *ast.Token {
 
 	switch s.ch(0) {
 	case '|':
-		token = ast.NewToken(ast.PIPE, string(s.ch(0)), s.pos)
-		s.pos++
+		if s.ch(1) == '|' {
+			token = ast.NewToken(ast.LOGICAL_OR, "||", s.pos)
+			s.pos += 2
+		} else {
+			token = ast.NewToken(ast.PIPE, string(s.ch(0)), s.pos)
+			s.pos++
+		}
+	case '&':
+		if s.ch(1) == '&' {
+			token = ast.NewToken(ast.LOGICAL_AND, "&&", s.pos)
+			s.pos += 2
+		} else {
+			token = ast.NewToken(ast.ILLEGAL, string(s.ch(0)), s.pos)
+			s.pos++
+		}
 	case '=':
 		if s.ch(1) == '=' {
 			token = ast.NewToken(ast.EQ, "==", s.pos)

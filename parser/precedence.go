@@ -6,6 +6,7 @@ const (
 	PrecLowest = iota
 	PrecIn
 	PrecAssignment
+	PrecLogical
 	PrecEquals
 	PrecLessGreater
 	PrecSum
