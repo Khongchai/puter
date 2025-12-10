@@ -19,7 +19,7 @@ Create a go program first, hook in lsp later.
         - [x] Boolean operators (!, ||, &&)
         - [x] `In` keyword for turning something into particular unit (`in ms in hr`)
         - [ ] Once everything is done, try applying iterative pratt parsing
-    - [ ] Executor
+
 
     Refs:
     - https://github.com/desmosinc/pratt-parser-blog-code/tree/main/src
@@ -38,6 +38,9 @@ Create a go program first, hook in lsp later.
 
 # 10/12/2025
 - [ ] Iterative pratt parsing
+
+# 12/12/2025
+- [ ] Executor
 
 <!-- end section -->
 
