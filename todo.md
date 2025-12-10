@@ -18,7 +18,6 @@ Create a go program first, hook in lsp later.
         - [x] Boolean keywords (true, false)
         - [x] Boolean operators (!, ||, &&)
         - [x] `In` keyword for turning something into particular unit (`in ms in hr`)
-        - [ ] Once everything is done, try applying iterative pratt parsing
 
 
     Refs:
@@ -35,9 +34,6 @@ Create a go program first, hook in lsp later.
 
 # 09/12/2025
 - [x] Finish pratt parsing
-
-# 10/12/2025
-- [ ] Iterative pratt parsing
 
 # 12/12/2025
 - [ ] Executor
