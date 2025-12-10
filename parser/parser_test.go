@@ -94,14 +94,26 @@ func TestNumberAssignExpression(t *testing.T) {
 	}
 }
 
-// func TestFunctionAssignExpression(t *testing.T) {
-// 	exp := NewParser("a = 2").Parse()
-// 	result := exp.String()
-// 	if result != "add()" {
-// 		t.Fatalf("Parsing result is not add(), got %s", result)
-// 	}
-// }
+func TestNameAssignExpression(t *testing.T) {
+	exp := NewParser("a = b").Parse()
+	result := exp.String()
+	expected := "a = b"
+	if result != expected {
+		t.Fatalf("Parsing result is not '%s', got '%s'", expected, result)
+	}
 
-// func TestNameAssignExpression(t *testing.T) {
+	expression, ok := exp.(*ast.AssignExpression)
+	if !ok {
+		t.Fatalf("Expected assign expression, got: %+v", expression)
+	}
 
-// }
+	nameExp, ok2 := expression.Name.(*ast.IdentExpression)
+	if !ok2 {
+		t.Fatalf("Expect name expression to be ident expression, instead got: %+v", nameExp)
+	}
+
+	rightExp, ok3 := expression.Right.(*ast.IdentExpression)
+	if !ok3 {
+		t.Fatalf("Expect right expression to be Number expression, instead got: %+v", rightExp)
+	}
+}
