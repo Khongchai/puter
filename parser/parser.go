@@ -6,23 +6,6 @@ import (
 	s "puter/scanner"
 )
 
-// TODO: let's not have a separate map here...
-var precedences = map[ast.TokenType]int{
-	ast.ASSIGN:      PrecAssignment,
-	ast.EQ:          PrecEquals,
-	ast.NOT_EQ:      PrecEquals,
-	ast.LT:          PrecLessGreater,
-	ast.GT:          PrecLessGreater,
-	ast.PLUS:        PrecSum,
-	ast.MINUS:       PrecSum,
-	ast.SLASH:       PrecProduct,
-	ast.ASTERISK:    PrecProduct,
-	ast.LPAREN:      PrecCall,
-	ast.IN:          PrecIn,
-	ast.LOGICAL_AND: PrecLogical,
-	ast.LOGICAL_OR:  PrecLogical,
-}
-
 type Parser struct {
 	prefixParseFns map[ast.TokenType]PrefixParselet
 	infixParseFns  map[ast.TokenType]InfixParselet
@@ -107,8 +90,8 @@ func (p *Parser) Peek(offset int) *ast.Token {
 
 func (p *Parser) getNextPrecedence() int {
 	peeked := p.Peek(0)
-	if res, ok := precedences[peeked.Type]; ok {
-		return res
+	if res, ok := p.infixParseFns[peeked.Type]; ok {
+		return res.Precedence()
 	}
 	return 0
 }

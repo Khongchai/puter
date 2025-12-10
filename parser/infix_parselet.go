@@ -6,11 +6,16 @@ import (
 
 type InfixParselet interface {
 	Parse(parser *Parser, left ast.Expression, token *ast.Token) ast.Expression
+	Precedence() int
 }
 
 type BinaryOperatorParselet struct {
 	precedence int
 	isRight    bool
+}
+
+func (b *BinaryOperatorParselet) Precedence() int {
+	return b.precedence
 }
 
 func NewbinaryOperatorParselet(precedence int, isRight bool) *BinaryOperatorParselet {
@@ -48,7 +53,7 @@ func NewAsssignParselet() *AssignParselet {
 	return &AssignParselet{}
 }
 
-func (p *AssignParselet) Parse(parser *Parser, left ast.Expression, token *ast.Token) ast.Expression {
+func (a *AssignParselet) Parse(parser *Parser, left ast.Expression, token *ast.Token) ast.Expression {
 	right := parser.ParseExpression(PrecAssignment - 1)
 
 	if _, ok := left.(*ast.IdentExpression); !ok {
@@ -59,6 +64,10 @@ func (p *AssignParselet) Parse(parser *Parser, left ast.Expression, token *ast.T
 		Name:  left,
 		Right: right,
 	}
+}
+
+func (a *AssignParselet) Precedence() int {
+	return PrecAssignment
 }
 
 type CallParselet struct {
@@ -93,4 +102,8 @@ func (cp *CallParselet) Parse(parser *Parser, left ast.Expression, token *ast.To
 	}
 
 	return &ast.CallExpression{FunctionNameExpression: left, Args: args}
+}
+
+func (c *CallParselet) Precedence() int {
+	return PrecCall
 }
