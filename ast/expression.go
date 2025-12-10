@@ -96,3 +96,16 @@ func (ce *CallExpression) String() string {
 func (ce *CallExpression) Token() *Token {
 	return ce.FunctionNameExpression.Token()
 }
+
+type BooleanExpression struct {
+	TokenValue  *Token
+	ActualValue bool
+}
+
+func (be *BooleanExpression) String() string {
+	return fmt.Sprintf("%t", be.ActualValue)
+}
+
+func (be *BooleanExpression) Token() *Token {
+	return be.TokenValue
+}

@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	ast "puter/ast"
 	"strconv"
 )
@@ -23,6 +24,24 @@ func (p *GroupParselet) Parse(parser *Parser, token *ast.Token) ast.Expression {
 		panic("Closing is not right paren. Can't continue!")
 	}
 	return expression
+}
+
+type BooleanParselet struct {
+}
+
+func NewBooleanParselet() *BooleanParselet {
+	return &BooleanParselet{}
+}
+
+func (p *BooleanParselet) Parse(parser *Parser, token *ast.Token) ast.Expression {
+	if token.Literal != "true" && token.Literal != "false" {
+		panic(fmt.Sprintf("Invalid boolean value. Expect true or false, got: %s", token.Literal))
+	}
+
+	return &ast.BooleanExpression{
+		ActualValue: token.Literal == "true",
+		TokenValue:  token,
+	}
 }
 
 type NumberParselet struct {

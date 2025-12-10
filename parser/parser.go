@@ -39,6 +39,8 @@ func NewParser(text string) *Parser {
 	parser.prefixParseFns[ast.IDENT] = NewIdentParselet()
 	parser.prefixParseFns[ast.LPAREN] = NewGroupParselet()
 	parser.prefixParseFns[ast.NUMBER] = NewNumberParselet()
+	parser.prefixParseFns[ast.TRUE] = NewBooleanParselet()
+	parser.prefixParseFns[ast.FALSE] = NewBooleanParselet()
 	parser.infixParseFns[ast.ASSIGN] = NewAsssignParselet()
 	parser.infixParseFns[ast.LPAREN] = NewCallParselet()
 
