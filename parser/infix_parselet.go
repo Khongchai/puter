@@ -78,7 +78,7 @@ func NewCallParselet() *CallParselet {
 func (cp *CallParselet) Parse(parser *Parser, left ast.Expression, token *ast.Token) ast.Expression {
 	var args []ast.Expression
 
-	// if next token is right parent, consume it and forward
+	// if next token is right paren, consume it and forward
 	if parser.Peek(0).Type == ast.RPAREN {
 		parser.Consume()
 		return &ast.CallExpression{FunctionNameExpression: left, Args: args}
@@ -89,6 +89,7 @@ func (cp *CallParselet) Parse(parser *Parser, left ast.Expression, token *ast.To
 		args = append(args, parser.ParseExpression(0))
 		peeked := parser.Peek(0)
 		if peeked.Type == ast.COMMA {
+			parser.Consume()
 			continue
 		}
 		consumed := parser.Consume()

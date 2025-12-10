@@ -47,6 +47,9 @@ func (s *Scanner) Next() *ast.Token {
 			token = ast.NewToken(ast.BANG, string(s.ch(0)), s.pos)
 			s.pos++
 		}
+	case ',':
+		token = ast.NewToken(ast.COMMA, string(s.ch(0)), s.pos)
+		s.pos++
 	case '/':
 		token = ast.NewToken(ast.SLASH, string(s.ch(0)), s.pos)
 		s.pos++

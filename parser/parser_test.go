@@ -29,9 +29,9 @@ func TestOperatorExpression(t *testing.T) {
 }
 
 func TestCallExpressionWithArguments(t *testing.T) {
-	exp := NewParser("add(1)").Parse()
+	exp := NewParser("add(1, 2, 3)").Parse()
 	result := exp.String()
-	if result != fmt.Sprintf("add(%f)", 1.0) {
+	if result != fmt.Sprintf("add(%f, %f, %f)", 1.0, 2.0, 3.0) {
 		t.Fatalf("Parsing result is not add(1), got %s", result)
 	}
 	expression, ok := exp.(*ast.CallExpression)
@@ -39,8 +39,8 @@ func TestCallExpressionWithArguments(t *testing.T) {
 		t.Fatalf("Operator not call expression, got: %+v", expression)
 	}
 
-	if len(expression.Args) != 1 {
-		t.Fatalf("Expression arguments not 1, got %d", len(expression.Args))
+	if len(expression.Args) != 3 {
+		t.Fatalf("Expression arguments not 3, got %d", len(expression.Args))
 	}
 
 	identExpression, ok2 := expression.FunctionNameExpression.(*ast.IdentExpression)
@@ -69,5 +69,8 @@ func TestCallExpressionWithNoArguments(t *testing.T) {
 	if !ok2 {
 		t.Fatalf("Expected function name expression to be IdentExpression, instead got: %+v", identExpression)
 	}
-
 }
+
+// func TestAssignExpression(t *testing.T) {
+
+// }
