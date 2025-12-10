@@ -77,7 +77,20 @@ func (s *Scanner) Next() *ast.Token {
 			for isLetter(s.ch(i)) {
 				i++
 			}
-			token = ast.NewToken(ast.IDENT, s.text[s.pos:s.pos+i], s.pos)
+			text := s.text[s.pos : s.pos+i]
+			tokenType := func() ast.TokenType {
+				switch text {
+				case "true":
+					return ast.TRUE
+				case "false":
+					return ast.FALSE
+				case "in":
+					return ast.IN
+				default:
+					return ast.IDENT
+				}
+			}()
+			token = ast.NewToken(tokenType, text, s.pos)
 			s.pos += i
 		} else if isDigit(s.ch(0)) {
 			i := 1

@@ -56,3 +56,23 @@ func TestNumberScan(t *testing.T) {
 		t.Fatalf("Expected 1, got %s", result.Literal)
 	}
 }
+
+func TestKeywords(t *testing.T) {
+	scanner := NewScanner("oops in true lol false 4")
+	expectations := []ast.TokenType{
+		ast.IDENT,
+		ast.IN,
+		ast.TRUE,
+		ast.IDENT,
+		ast.FALSE,
+		ast.NUMBER,
+		ast.EOF,
+	}
+
+	for _, e := range expectations {
+		r := scanner.Next()
+		if r.Type != e {
+			t.Fatalf("Expected %s, got %s", e, r.Type)
+		}
+	}
+}
