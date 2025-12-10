@@ -36,6 +36,7 @@ func NewParser(text string) *Parser {
 	// Special parselets
 	parser.prefixParseFns[ast.IDENT] = NewIdentParselet()
 	parser.prefixParseFns[ast.LPAREN] = NewGroupParselet()
+	parser.prefixParseFns[ast.NUMBER] = NewNumberParselet()
 	parser.infixParseFns[ast.ASSIGN] = NewAsssignParselet()
 	parser.infixParseFns[ast.LPAREN] = NewCallParselet()
 
@@ -88,9 +89,8 @@ func (p *Parser) Peek(offset int) *ast.Token {
 }
 
 func getPrecedence(tokenType ast.TokenType) int {
-	res, ok := precedences[tokenType]
-	if !ok {
-		panic(fmt.Sprintf("Precedence does not support token type %s", tokenType))
+	if res, ok := precedences[tokenType]; ok {
+		return res
 	}
-	return res
+	return 0
 }

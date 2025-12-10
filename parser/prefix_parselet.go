@@ -28,6 +28,10 @@ func (p *GroupParselet) Parse(parser *Parser, token *ast.Token) ast.Expression {
 type NumberParselet struct {
 }
 
+func NewNumberParselet() *NumberParselet {
+	return &NumberParselet{}
+}
+
 func (p *NumberParselet) Parse(parser *Parser, token *ast.Token) ast.Expression {
 	parsed, ok := strconv.ParseFloat(token.Literal, 64)
 	if ok != nil {
