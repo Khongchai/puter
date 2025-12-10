@@ -1,6 +1,7 @@
 package scanner
 
 import (
+	"puter/ast"
 	"testing"
 )
 
@@ -28,4 +29,13 @@ func TestScan(t *testing.T) {
 			t.Fatalf("Expected =, got %s", r.Literal)
 		}
 	}
+}
+
+func TestNumberScan(t *testing.T) {
+	scanner := NewScanner("1")
+	result := scanner.Next()
+	if result.Type != ast.NUMBER && result.Literal != "1" {
+		t.Fatalf("Expected 1, got %s", result.Literal)
+	}
+
 }
