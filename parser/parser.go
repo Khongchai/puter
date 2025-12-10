@@ -68,7 +68,7 @@ func (p *Parser) ParseExpression(precedence int) ast.Expression {
 
 	left := prefixParselet.Parse(p, token)
 
-	for precedence < getPrecedence(token.Type) {
+	for precedence < p.getNextPrecedence() {
 		token = p.Consume()
 
 		infix := p.infixParseFns[token.Type]
@@ -88,8 +88,9 @@ func (p *Parser) Peek(offset int) *ast.Token {
 	return peeked
 }
 
-func getPrecedence(tokenType ast.TokenType) int {
-	if res, ok := precedences[tokenType]; ok {
+func (p *Parser) getNextPrecedence() int {
+	peeked := p.Peek(0)
+	if res, ok := precedences[peeked.Type]; ok {
 		return res
 	}
 	return 0

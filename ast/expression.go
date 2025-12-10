@@ -31,7 +31,7 @@ type OperatorExpression struct {
 }
 
 func (oe *OperatorExpression) String() string {
-	printed := fmt.Sprintf("(%s%s%s)", (oe.Left).String(), oe.Operator.Literal, (oe.Right).String())
+	printed := fmt.Sprintf("(%s %s %s)", (oe.Left).String(), oe.Operator.Literal, (oe.Right).String())
 	return printed
 }
 

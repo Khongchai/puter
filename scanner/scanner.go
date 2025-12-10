@@ -96,7 +96,7 @@ func (s *Scanner) Peek(offset int) *ast.Token {
 	prevPos := s.pos
 
 	var tok *ast.Token
-	for range offset - 1 { // avoid unnecessary assignment
+	for range max(0, offset-1) { // avoid unnecessary assignment
 		s.Next()
 	}
 	tok = s.Next()
@@ -107,12 +107,16 @@ func (s *Scanner) Peek(offset int) *ast.Token {
 }
 
 func (s *Scanner) skipWhitespace() {
-	if s.pos >= len(s.text) {
+	for {
+		if s.pos >= len(s.text) {
+			return
+		}
+		ch := s.text[s.pos]
+		if ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r' {
+			s.pos++
+			continue
+		}
 		return
-	}
-	ch := s.text[s.pos]
-	for ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r' {
-		s.pos++
 	}
 }
 
