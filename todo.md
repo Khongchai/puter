@@ -34,7 +34,7 @@ Create a go program first, hook in lsp later.
 <!-- end section -->
 
 # 09/12/2025
-- [ ] Finish pratt parsing
+- [x] Finish pratt parsing
 
 # 10/12/2025
 - [ ] Iterative pratt parsing
