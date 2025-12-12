@@ -35,8 +35,39 @@ Create a go program first, hook in lsp later.
 # 09/12/2025
 - [x] Finish pratt parsing
 
-# 12/12/2025
+# 13/12/2025
+- [ ] Evaluator
+    - [ ] Takes a text, modify the state of the program.
+    - [ ] Evaluator's eval produces a string, ready-to-be-display value. To achieve this with a lot of API call, we need to wrap all computation result with a monad-like struct:
+      - During compilation phase, evaluator may encounter an operation that requires an async fetch 
+        "x = 2 usd in thb"  // adds this to object pool ({value: 2, unit: "thb", type: "x", line: 0})
+        "a = x + 5 in thb"  // A is a computation result (a Promise) 
+        Here, line 0 blocks line 2 from displaying any value. These two lines can be parsed and eval by two different go routines. So it's best if they somehow "sync" their values whenever they are ready to display.
+        Solution:
+            - whenever an api value is needed, the evaluator must submit a request to a `fetcher` instance and wait for returned result.
+            Otherwise that lines' value is a Monad that resolves immediately to the line's value.
+
+
+    - [ ] Error propagation.
 - [ ] Executor
+    Tree-walking interpreter, goes 
+    ```
+    executor := NewExecutor() // global scope
+    func main() {
+        // executor loop
+        changes := breakIntoLines(change)
+        for _, change range (changes) {
+            if (!change.text.startsWith(allAllowedCommentsThenPipe)) {
+                continue
+            }
+            result, errors := executor.exec(change.text) // breaks down change into lines and pass that into the evaluator.
+            emitErrorIfAny(errors, change.line) // errors include position within line and such
+            if result != nil {
+                emitResult(result) // print to lsp, whatever
+            }
+        }
+    }
+    ```
 
 <!-- end section -->
 
