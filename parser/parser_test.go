@@ -243,6 +243,10 @@ func TestPrecedence(t *testing.T) {
 			"a && b || c",
 			"((a && b) || c)",
 		},
+		{
+			"add(a, sub(-b))",
+			"add(a, sub((-b)))",
+		},
 	}
 
 	for _, tt := range tests {
