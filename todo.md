@@ -78,3 +78,4 @@ Create a go program first, hook in lsp later.
     - `| 2 in binary`
 - [ ] Support hex value view
     - `| 2 in hex`
+- [ ] Should also allow this `// | x = 2, y = 3` (multiple declaration in one line)
