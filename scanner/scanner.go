@@ -16,6 +16,11 @@ func NewScanner(text string) *Scanner {
 	}
 }
 
+func (s *Scanner) SetState(pos int, text string) {
+	s.pos = 0
+	s.text = text
+}
+
 func (s *Scanner) Next() *ast.Token {
 	s.skipWhitespace()
 

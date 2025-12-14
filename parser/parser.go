@@ -10,15 +10,13 @@ type Parser struct {
 	prefixParseFns map[ast.TokenType]PrefixParselet
 	infixParseFns  map[ast.TokenType]InfixParselet
 	scanner        *s.Scanner
-	line           int
 }
 
-func NewParser(text string) *Parser {
+func NewParser() *Parser {
 	parser := &Parser{
 		prefixParseFns: make(map[ast.TokenType]PrefixParselet),
 		infixParseFns:  make(map[ast.TokenType]InfixParselet),
-		scanner:        s.NewScanner(text),
-		line:           0,
+		scanner:        s.NewScanner(""),
 	}
 
 	// Special parselets
@@ -49,13 +47,12 @@ func NewParser(text string) *Parser {
 	return parser
 }
 
-// Only parses math expression for now.
-func (p *Parser) Parse() ast.Expression {
-	return p.ParseExpression(0)
+func (p *Parser) Parse(text string) ast.Expression {
+	p.scanner.SetState(0, text)
+	return p.parseExpression(0)
 }
 
-// new line not handled yet.
-func (p *Parser) ParseExpression(precedence int) ast.Expression {
+func (p *Parser) parseExpression(precedence int) ast.Expression {
 	token := p.Consume()
 
 	nud, ok := p.prefixParseFns[token.Type]

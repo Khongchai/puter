@@ -8,7 +8,7 @@ import (
 )
 
 func TestNumberParsing(t *testing.T) {
-	exp := NewParser("1").Parse()
+	exp := NewParser().Parse("1")
 	conv, _ := strconv.ParseFloat(exp.String(), 64)
 	if conv != 1 {
 		t.Fatalf("Parsing result is not 1, got %f", conv)
@@ -16,7 +16,7 @@ func TestNumberParsing(t *testing.T) {
 }
 
 func TestOperatorExpression(t *testing.T) {
-	exp := NewParser("1 + 2").Parse()
+	exp := NewParser().Parse("1 + 2")
 	result := exp.String()
 	expected := fmt.Sprintf("(%f + %f)", 1.0, 2.0)
 	if result != expected {
@@ -29,7 +29,7 @@ func TestOperatorExpression(t *testing.T) {
 }
 
 func TestCallExpressionWithArguments(t *testing.T) {
-	exp := NewParser("add(1, 2, 3)").Parse()
+	exp := NewParser().Parse("add(1, 2, 3)")
 	result := exp.String()
 	if result != fmt.Sprintf("add(%f, %f, %f)", 1.0, 2.0, 3.0) {
 		t.Fatalf("Parsing result is not add(1), got %s", result)
@@ -50,7 +50,7 @@ func TestCallExpressionWithArguments(t *testing.T) {
 }
 
 func TestCallExpressionWithNoArguments(t *testing.T) {
-	exp := NewParser("add()").Parse()
+	exp := NewParser().Parse("add()")
 	result := exp.String()
 	if result != "add()" {
 		t.Fatalf("Parsing result is not add(), got %s", result)
@@ -72,7 +72,7 @@ func TestCallExpressionWithNoArguments(t *testing.T) {
 }
 
 func TestNumberAssignExpression(t *testing.T) {
-	exp := NewParser("a = 2").Parse()
+	exp := NewParser().Parse("a = 2")
 	result := exp.String()
 	expected := fmt.Sprintf("a = %f", 2.0)
 	if result != expected {
@@ -95,7 +95,7 @@ func TestNumberAssignExpression(t *testing.T) {
 }
 
 func TestNameAssignExpression(t *testing.T) {
-	exp := NewParser("a = b").Parse()
+	exp := NewParser().Parse("a = b")
 	result := exp.String()
 	expected := "a = b"
 	if result != expected {
@@ -250,8 +250,8 @@ func TestPrecedence(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		p := NewParser(tt.input)
-		expression := p.Parse()
+		p := NewParser()
+		expression := p.Parse(tt.input)
 
 		actual := expression.String()
 		if actual != tt.expected {

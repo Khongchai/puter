@@ -18,7 +18,7 @@ func NewGroupParselet() *GroupParselet {
 }
 
 func (p *GroupParselet) Parse(parser *Parser, token *ast.Token) ast.Expression {
-	expression := parser.ParseExpression(0)
+	expression := parser.parseExpression(0)
 	consumed := parser.Consume()
 	if consumed.Type != ast.RPAREN {
 		panic("Closing is not right paren. Can't continue!")
@@ -89,7 +89,7 @@ func NewPrefixOperatorParselet(precedence int) *PrefixOperatorParselet {
 }
 
 func (p *PrefixOperatorParselet) Parse(parser *Parser, token *ast.Token) ast.Expression {
-	right := parser.ParseExpression(p.precedence)
+	right := parser.parseExpression(p.precedence)
 	return &ast.PrefixExpression{
 		Right:      right,
 		TokenValue: token,

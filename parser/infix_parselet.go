@@ -37,7 +37,7 @@ func (b *BinaryOperatorParselet) Parse(parser *Parser, left ast.Expression, toke
 	if b.isRight {
 		p -= 1
 	}
-	right := parser.ParseExpression(p)
+	right := parser.parseExpression(p)
 
 	return &ast.OperatorExpression{
 		Left:     left,
@@ -54,7 +54,7 @@ func NewAsssignParselet() *AssignParselet {
 }
 
 func (a *AssignParselet) Parse(parser *Parser, left ast.Expression, token *ast.Token) ast.Expression {
-	right := parser.ParseExpression(PrecAssignment - 1)
+	right := parser.parseExpression(PrecAssignment - 1)
 
 	if _, ok := left.(*ast.IdentExpression); !ok {
 		panic("Left side of assign parselet not an ident expression.")
@@ -88,7 +88,7 @@ func (cp *CallParselet) Parse(parser *Parser, left ast.Expression, token *ast.To
 
 	// otherwise loop and collect expressions delimited by a comma until right paren is encountered.
 	for {
-		args = append(args, parser.ParseExpression(PrecLowest))
+		args = append(args, parser.parseExpression(PrecLowest))
 		peeked := parser.Peek(0)
 		if peeked.Type == ast.COMMA {
 			parser.Consume()
