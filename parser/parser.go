@@ -43,6 +43,11 @@ func NewParser() *Parser {
 	parser.infixParseFns[ast.LT] = NewbinaryOperatorParselet(PrecLessGreater, false)
 	parser.infixParseFns[ast.LOGICAL_AND] = NewbinaryOperatorParselet(PrecLogical, false)
 	parser.infixParseFns[ast.LOGICAL_OR] = NewbinaryOperatorParselet(PrecLogical, false)
+	// Any identifier after an expression is included here.
+	// x usd
+	// x percent
+	// etc
+	parser.infixParseFns[ast.IDENT] = NewPostfixOperatorParselet(PrecIn)
 
 	return parser
 }

@@ -53,6 +53,19 @@ func (ne *IdentExpression) Token() *Token {
 	return ne.TokenValue
 }
 
+type PostfixExpression struct {
+	Left       Expression
+	TokenValue *Token // the operator token
+}
+
+func (pe *PostfixExpression) String() string {
+	return fmt.Sprintf("(%s %s)", (pe.Left).String(), pe.TokenValue.Literal)
+}
+
+func (pe *PostfixExpression) Token() *Token {
+	return pe.TokenValue
+}
+
 type PrefixExpression struct {
 	Right      Expression
 	TokenValue *Token // the operator token

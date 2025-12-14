@@ -9,6 +9,32 @@ type InfixParselet interface {
 	Precedence() int
 }
 
+type PostfixOperatorParselet struct {
+	precedence int
+}
+
+func NewPostfixOperatorParselet(precedence int) *PostfixOperatorParselet {
+	return &PostfixOperatorParselet{precedence: precedence}
+}
+
+func (p *PostfixOperatorParselet) Precedence() int {
+	return p.precedence
+}
+
+func (b *PostfixOperatorParselet) Parse(parser *Parser, left ast.Expression, token *ast.Token) ast.Expression {
+	if parser == nil {
+		panic("Parser nil, can't continue")
+	}
+	if left == nil {
+		panic("Left is nil. Can't continue! Postfix requires left to be present")
+	}
+
+	return &ast.PostfixExpression{
+		Left:       left,
+		TokenValue: token,
+	}
+}
+
 type BinaryOperatorParselet struct {
 	precedence int
 	isRight    bool
