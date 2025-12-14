@@ -1,13 +1,17 @@
 package box
 
-import "fmt"
+import (
+	"fmt"
+	"puter/lib"
+)
 
 type BooleanBox struct {
-	Value bool
+	Value lib.Promise[bool]
 }
 
-func (bb *BooleanBox) Inspect() string {
-	return fmt.Sprintf("%t", bb.Value)
+func (bb *BooleanBox) Inspect() *lib.Promise[string] {
+	value := bb.Value.Await()
+	return lib.NewResolvedPromise(fmt.Sprintf("%t", value))
 }
 
 func (bb *BooleanBox) Type() BoxType {

@@ -1,9 +1,15 @@
 package box
 
+import (
+	"puter/ast"
+	"puter/lib"
+)
+
 // Represent all objects within puter
 type Box interface {
 	Type() BoxType
-	Inspect() string
+	Inspect() *lib.Promise[string]
+	TokenValue() *ast.Token
 }
 
 type BoxType string

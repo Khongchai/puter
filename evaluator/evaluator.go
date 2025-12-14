@@ -4,10 +4,11 @@ import (
 	"fmt"
 	ast "puter/ast"
 	b "puter/box"
+	"puter/lib"
 	p "puter/parser"
 )
 
-type ValueConverter = func(fromValue float64, toValue float64, fromUnit string, toUnit string) (float64, bool)
+type ValueConverter = func(fromValue float64, toValue float64, fromUnit string, toUnit string) (*lib.Promise[float64], bool)
 
 type Evaluator struct {
 	parser p.Parser
@@ -37,10 +38,36 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 	case *ast.AssignExpression:
 		identifier := e.evalExp(exp.Name)
 		value := e.evalExp(exp.Right)
-		e.heap[identifier.Inspect()] = value
+		e.heap[identifier.TokenValue().Literal] = value
 		return value
+	case *ast.OperatorExpression:
+		switch exp.Operator.Type {
+		case ast.PLUS:
+			return nil
+		case ast.MINUS:
+			return nil
+		case ast.IN:
+			return nil
+		case ast.ASTERISK:
+			return nil
+		case ast.IDENT:
+			return nil
+		case ast.LOGICAL_AND:
+			return nil
+		case ast.LOGICAL_OR:
+			return nil
+		case ast.LT:
+			return nil
+		case ast.GT:
+			return nil
+		case ast.CARET:
+			return nil
+		default:
+			panic("Invalid operator token")
+		}
+	// todo do we need to promisify these guys below?
 	case *ast.BooleanExpression:
-		return &b.BooleanBox{Value: exp.ActualValue}
+		return &b.BooleanBox{Value: lib.NewResolvedPromise(exp.ActualValue)}
 	case *ast.IdentExpression:
 		return &b.IdentBox{Value: exp.ActualValue}
 	case *ast.NumberExpression:
