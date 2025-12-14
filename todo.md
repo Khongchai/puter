@@ -72,6 +72,7 @@ Create a go program first, hook in lsp later.
 <!-- end section -->
 
 # Backlog
+- [ ] Apply go worker and channels to optimize wait time when network fetching is required
 - [ ] handle non utf8 char with DecodeRuneInString
 - [ ] Multiline and parsing initialization in executor layer.
 - [ ] Support binary value view
