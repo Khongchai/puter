@@ -42,7 +42,7 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 	case *ast.OperatorExpression:
 		switch exp.Operator.Type {
 		case ast.PLUS:
-			return nil
+			return e.evalPlusExpression(exp.Left, exp.Right)
 		case ast.MINUS:
 			return nil
 		case ast.IN:
@@ -82,7 +82,19 @@ func (e *Evaluator) evalInExpression(leftExpr ast.Expression, rightExpr ast.Expr
 		panic("Right side of an in expression must be a unit identifier")
 	}
 
-	leftBox := e.evalExp(leftExpr)
+	leftBox := func() b.Box {
+		evaluated := e.evalExp(leftExpr)
+
+		_, leftBoxIsIdent := evaluated.(*b.IdentBox)
+		if !leftBoxIsIdent {
+			return evaluated
+		}
+		got, ok := e.heap[evaluated.Inspect()]
+		if !ok {
+			panic(fmt.Sprintf("Identifier %s not set"))
+		}
+		return got
+	}()
 
 	// if left already a number box, no need for conversion. Just use the unit on the right
 	// otherwise try to convert by converting whatever unit left is to the right unit.
@@ -107,5 +119,12 @@ func (e *Evaluator) evalInExpression(leftExpr ast.Expression, rightExpr ast.Expr
 	default:
 		panic("Invalid left hand side of an in expresison.")
 	}
+
+}
+
+func (e *Evaluator) evalPlusExpression(left ast.Expression, right ast.Expression) {
+	// if left and right is number, just add them, otherwise
+	// if they are of different unit, convert right to left unit if possible then add them.
+	// otherwise if either one has unit but the other one is just a number, then use that unit
 
 }

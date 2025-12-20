@@ -30,7 +30,7 @@ Create a go program first, hook in lsp later.
 - [x] Implement math function calls. Must alo handle nested function calls.
 - [x] Finish pratt parsing
 - [x] Executor
-- [ ] Working on evaluator loop and trying to integrate promise into the loop
+- [ ] Working on evaluator loop
 
 <!-- end section -->
 
