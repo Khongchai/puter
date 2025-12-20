@@ -47,10 +47,8 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 		case ast.MINUS:
 			return nil
 		case ast.IN:
-			return nil
+			return e.evalInExpression(exp.Left, exp.Right)
 		case ast.ASTERISK:
-			return nil
-		case ast.IDENT:
 			return nil
 		case ast.LOGICAL_AND:
 			return nil
@@ -77,4 +75,28 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 		panic(fmt.Sprintf("Unhandled case %s", x))
 	}
 
+}
+
+func (e *Evaluator) evalInExpression(left ast.Expression, right ast.Expression) b.Box {
+	leftBox := e.evalExp(left)
+	rightBox := e.evalExp(right)
+	leftBoxCasted, leftIsNumberBox := leftBox.(*b.NumberBox)
+	if !leftIsNumberBox {
+		panic("Left side of an in expression must be a number")
+	}
+	if rightBox.Type() != b.IDENTIFIER_BOX {
+		panic("Right side of an in expression must be a unit identifier")
+	}
+
+	unitIdentifier := rightBox.Inspect().Await()
+
+	// TODO check against other possible units. For now just currency.
+	if _, unitIsCurrency := b.ValidCurrencies[unitIdentifier]; !unitIsCurrency {
+		panic(fmt.Sprintf("%s is not a valid ISO 4217 currency code.", unitIdentifier))
+	}
+
+	return &b.CurrencyBox{
+		Number: leftBoxCasted,
+		Unit:   unitIdentifier,
+	}
 }

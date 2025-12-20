@@ -6,7 +6,7 @@ import (
 )
 
 type BooleanBox struct {
-	Value lib.Promise[bool]
+	Value bool
 }
 
 func (bb *BooleanBox) Inspect() *lib.Promise[string] {

@@ -1,7 +1,6 @@
 package box
 
 import (
-	"puter/ast"
 	"puter/lib"
 )
 
@@ -9,7 +8,6 @@ import (
 type Box interface {
 	Type() BoxType
 	Inspect() *lib.Promise[string]
-	TokenValue() *ast.Token
 }
 
 type BoxType string
@@ -21,4 +19,5 @@ const (
 	FUNCTION_BOX     = "FUNCTION"
 	BUILTIN_BOX      = "BUILTIN"
 	IDENTIFIER_BOX   = "BUILTIN"
+	CURRENCY_BOX     = "CURRENCY"
 )
