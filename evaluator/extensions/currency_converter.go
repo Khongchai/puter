@@ -74,7 +74,7 @@ func fetchCurrencyConversionRate(fromValue float64, fromUnit string, toUnit stri
 
 	rate, ok := data.Rates[toUnit]
 	if !ok {
-		return 0.0, errors.New(fmt.Sprintf("Conversion rate not found between %s and %s", fromUnit, toUnit))
+		return 0.0, fmt.Errorf("Conversion rate not found between %s and %s", fromUnit, toUnit)
 	}
 
 	return fromValue * rate, nil
