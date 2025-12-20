@@ -2,16 +2,15 @@ package box
 
 import (
 	"fmt"
-	"puter/lib"
 )
 
 type BooleanBox struct {
 	Value bool
 }
 
-func (bb *BooleanBox) Inspect() *lib.Promise[string] {
-	value := bb.Value.Await()
-	return lib.NewResolvedPromise(fmt.Sprintf("%t", value))
+func (bb *BooleanBox) Inspect() string {
+	text := fmt.Sprintf("%t", bb.Value)
+	return text
 }
 
 func (bb *BooleanBox) Type() BoxType {

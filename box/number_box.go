@@ -3,7 +3,6 @@ package box
 import (
 	"fmt"
 	"puter/ast"
-	"puter/lib"
 )
 
 type NumberBox struct {
@@ -11,9 +10,9 @@ type NumberBox struct {
 	Tok   *ast.Token
 }
 
-func (nb *NumberBox) Inspect() *lib.Promise[string] {
+func (nb *NumberBox) Inspect() string {
 	formatted := fmt.Sprintf("%g", nb.Value)
-	return lib.NewResolvedPromise(formatted)
+	return formatted
 }
 
 func (nb *NumberBox) Type() BoxType {

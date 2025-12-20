@@ -77,26 +77,43 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 
 }
 
+// If left is not a number box, but another unit-based expression, convert it first before returning a new value.
 func (e *Evaluator) evalInExpression(left ast.Expression, right ast.Expression) b.Box {
-	leftBox := e.evalExp(left)
 	rightBox := e.evalExp(right)
-	leftBoxCasted, leftIsNumberBox := leftBox.(*b.NumberBox)
-	if !leftIsNumberBox {
-		panic("Left side of an in expression must be a number")
-	}
 	if rightBox.Type() != b.IDENTIFIER_BOX {
 		panic("Right side of an in expression must be a unit identifier")
 	}
 
-	unitIdentifier := rightBox.Inspect().Await()
-
-	// TODO check against other possible units. For now just currency.
-	if _, unitIsCurrency := b.ValidCurrencies[unitIdentifier]; !unitIsCurrency {
+	unitIdentifier := rightBox.Inspect()
+	_, unitIsCurrency := b.ValidCurrencies[unitIdentifier]
+	if !unitIsCurrency {
 		panic(fmt.Sprintf("%s is not a valid ISO 4217 currency code.", unitIdentifier))
 	}
 
-	return &b.CurrencyBox{
-		Number: leftBoxCasted,
-		Unit:   unitIdentifier,
+	leftBox := e.evalExp(left)
+
+	switch box := leftBox.(type) {
+	case *b.NumberBox:
+		return &b.CurrencyBox{
+			Number: box,
+			Unit:   unitIdentifier,
+		}
+	case *b.CurrencyBox:
+		rightUnit := rightBox.Inspect()
+		if rightUnit == box.Unit {
+			return &b.CurrencyBox{Number: box.Number, Unit: rightUnit}
+		}
+		ok := isCurrencyConversionSupported(box.Unit, rightUnit)
+		if !ok {
+			panic(fmt.Sprintf("Conversion between %s and %s not supported", box.Unit, rightUnit))
+		}
+		conversionRate := fetchCurrencyConversionRate(box.Number, box.Unit, rightUnit)
+		return &b.CurrencyBox{Number: conversionRate * box.Number, Unit: rightUnit}
+
+		// TODO check against other possible units. For now just currency.
+
+	default:
+		panic("Invalid left hand side of an in expresison.")
 	}
+
 }

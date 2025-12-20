@@ -16,7 +16,7 @@ func TestNumberAssignment(t *testing.T) {
 
 	obj := eval.EvalLine("x = 2")
 
-	if obj.Inspect().Await() != "2" {
+	if obj.Inspect() != "2" {
 		t.Fatalf("Expected inspect result to be %s, got %s", "2", obj.Inspect())
 	}
 	if obj.Type() != b.NUMBER_BOX {
@@ -30,7 +30,7 @@ func TestCurrencyConversion(t *testing.T) {
 	eval.EvalLine("x = 2 in usd")
 	obj2 := eval.EvalLine("a = x in thb")
 
-	if obj2.Inspect().Await() != "200" {
+	if obj2.Inspect() != "200" {
 		t.Fatalf("Expected inspect result to be %s, got %s", "200", obj2.Inspect())
 	}
 	if obj2.Type() != b.NUMBER_BOX {

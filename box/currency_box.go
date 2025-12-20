@@ -2,7 +2,6 @@ package box
 
 import (
 	"fmt"
-	"puter/lib"
 )
 
 type Currency = string
@@ -12,9 +11,9 @@ type CurrencyBox struct {
 	Unit   Currency
 }
 
-func (bb *CurrencyBox) Inspect() *lib.Promise[string] {
+func (bb *CurrencyBox) Inspect() string {
 	text := fmt.Sprintf("%g %s", bb.Number.Value, bb.Unit)
-	return lib.NewResolvedPromise(text)
+	return text
 }
 
 func (bb *CurrencyBox) Type() BoxType {

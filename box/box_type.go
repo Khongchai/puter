@@ -1,13 +1,9 @@
 package box
 
-import (
-	"puter/lib"
-)
-
 // Represent all objects within puter
 type Box interface {
 	Type() BoxType
-	Inspect() *lib.Promise[string]
+	Inspect() string
 }
 
 type BoxType string
