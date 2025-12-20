@@ -4,11 +4,10 @@ import (
 	"fmt"
 	ast "puter/ast"
 	b "puter/box"
-	"puter/lib"
 	p "puter/parser"
 )
 
-type ValueConverter = func(fromValue float64, toValue float64, fromUnit string, toUnit string) (*lib.Promise[float64], bool)
+type ValueConverter = func(fromValue float64, fromUnit string, toUnit string) (float64, error)
 
 type Evaluator struct {
 	parser p.Parser
@@ -38,7 +37,7 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 	case *ast.AssignExpression:
 		identifier := e.evalExp(exp.Name)
 		value := e.evalExp(exp.Right)
-		e.heap[identifier.TokenValue().Literal] = value
+		e.heap[identifier.Inspect()] = value
 		return value
 	case *ast.OperatorExpression:
 		switch exp.Operator.Type {
@@ -63,13 +62,12 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 		default:
 			panic("Invalid operator token")
 		}
-	// todo do we need to promisify these guys below?
 	case *ast.BooleanExpression:
-		return &b.BooleanBox{Value: lib.NewResolvedPromise(exp.ActualValue)}
+		return &b.BooleanBox{Value: exp.ActualValue}
 	case *ast.IdentExpression:
 		return &b.IdentBox{Value: exp.ActualValue}
 	case *ast.NumberExpression:
-		return &b.NumberBox{Value: exp.ActualValue}
+		return &b.NumberBox{Value: exp.ActualValue, Tok: exp.Token()}
 	default:
 		x := exp.String()
 		panic(fmt.Sprintf("Unhandled case %s", x))
@@ -78,39 +76,33 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 }
 
 // If left is not a number box, but another unit-based expression, convert it first before returning a new value.
-func (e *Evaluator) evalInExpression(left ast.Expression, right ast.Expression) b.Box {
-	rightBox := e.evalExp(right)
+func (e *Evaluator) evalInExpression(leftExpr ast.Expression, rightExpr ast.Expression) b.Box {
+	rightBox := e.evalExp(rightExpr)
 	if rightBox.Type() != b.IDENTIFIER_BOX {
 		panic("Right side of an in expression must be a unit identifier")
 	}
 
-	unitIdentifier := rightBox.Inspect()
-	_, unitIsCurrency := b.ValidCurrencies[unitIdentifier]
-	if !unitIsCurrency {
-		panic(fmt.Sprintf("%s is not a valid ISO 4217 currency code.", unitIdentifier))
-	}
+	leftBox := e.evalExp(leftExpr)
 
-	leftBox := e.evalExp(left)
-
+	// if left already a number box, no need for conversion. Just use the unit on the right
+	// otherwise try to convert by converting whatever unit left is to the right unit.
 	switch box := leftBox.(type) {
 	case *b.NumberBox:
 		return &b.CurrencyBox{
 			Number: box,
-			Unit:   unitIdentifier,
+			Unit:   rightBox.Inspect(),
 		}
 	case *b.CurrencyBox:
 		rightUnit := rightBox.Inspect()
 		if rightUnit == box.Unit {
 			return &b.CurrencyBox{Number: box.Number, Unit: rightUnit}
 		}
-		ok := isCurrencyConversionSupported(box.Unit, rightUnit)
-		if !ok {
-			panic(fmt.Sprintf("Conversion between %s and %s not supported", box.Unit, rightUnit))
-		}
-		conversionRate := fetchCurrencyConversionRate(box.Number, box.Unit, rightUnit)
-		return &b.CurrencyBox{Number: conversionRate * box.Number, Unit: rightUnit}
 
-		// TODO check against other possible units. For now just currency.
+		converted, err := e.currencyConverter(box.Number.Value, box.Unit, rightUnit)
+		if err != nil {
+			panic(err)
+		}
+		return &b.CurrencyBox{Number: &b.NumberBox{Value: converted, Tok: box.Number.Tok}, Unit: rightUnit}
 
 	default:
 		panic("Invalid left hand side of an in expresison.")

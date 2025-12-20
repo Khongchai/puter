@@ -2,17 +2,17 @@ package evaluator
 
 import (
 	b "puter/box"
-	"puter/lib"
 	"testing"
 )
 
-func defaultCurrencyConverter(fromValue float64, toValue float64, fromUnit string, toUnit string) (*lib.Promise[float64], bool) {
-	p := lib.NewResolvedPromise(200.0)
-	return p, true
+func getDefaultCurrencyConverter() ValueConverter {
+	return func(fromValue float64, fromUnit string, toUnit string) (float64, error) {
+		return 200.0, nil
+	}
 }
 
 func TestNumberAssignment(t *testing.T) {
-	eval := NewEvaluator(defaultCurrencyConverter)
+	eval := NewEvaluator(getDefaultCurrencyConverter())
 
 	obj := eval.EvalLine("x = 2")
 
@@ -25,7 +25,7 @@ func TestNumberAssignment(t *testing.T) {
 }
 
 func TestCurrencyConversion(t *testing.T) {
-	eval := NewEvaluator(defaultCurrencyConverter)
+	eval := NewEvaluator(getDefaultCurrencyConverter())
 
 	eval.EvalLine("x = 2 in usd")
 	obj2 := eval.EvalLine("a = x in thb")
