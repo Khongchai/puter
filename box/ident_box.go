@@ -1,7 +1,8 @@
 package box
 
 type IdentBox struct {
-	Value string
+	Identifier string
+	Value      string
 }
 
 func (ib *IdentBox) Inspect() string {

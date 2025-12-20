@@ -37,7 +37,11 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 	case *ast.AssignExpression:
 		identifier := e.evalExp(exp.Name)
 		value := e.evalExp(exp.Right)
-		e.heap[identifier.Inspect()] = value
+		ident, ok := identifier.(*b.IdentBox)
+		if !ok {
+			panic("Invalid identifier")
+		}
+		e.heap[ident.Value] = value
 		return value
 	case *ast.OperatorExpression:
 		switch exp.Operator.Type {
@@ -65,7 +69,10 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 	case *ast.BooleanExpression:
 		return &b.BooleanBox{Value: exp.ActualValue}
 	case *ast.IdentExpression:
-		return &b.IdentBox{Value: exp.ActualValue}
+		return &b.IdentBox{
+			Identifier: exp.Token().Literal,
+			Value:      exp.ActualValue,
+		}
 	case *ast.NumberExpression:
 		return &b.NumberBox{Value: exp.ActualValue, Tok: exp.Token()}
 	default:
