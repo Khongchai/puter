@@ -89,15 +89,10 @@ func (e *Evaluator) evalInExpression(leftExpr ast.Expression, rightExpr ast.Expr
 		panic("Right side of an in expression must be a unit identifier")
 	}
 
-	leftBox := func() b.Box {
-		evaluated := e.evalExp(leftExpr)
-
-		got, ok := e.heap[evaluated.Inspect()]
-		if !ok {
-			panic(fmt.Sprintf("Identifier %s not set", evaluated.Inspect()))
-		}
-		return got
-	}()
+	leftBox := e.evalExp(leftExpr)
+	if leftBox.Type() != b.NUMBER_BOX {
+		panic("Left hand side of an in expression must be a number")
+	}
 
 	// if left already a number box, no need for conversion. Just use the unit on the right
 	// otherwise try to convert by converting whatever unit left is to the right unit.

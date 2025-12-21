@@ -35,6 +35,17 @@ func TestPlusExpression(t *testing.T) {
 	}
 }
 
+func TestCurrencyExpression(t *testing.T) {
+	result := NewEvaluator(getDefaultCurrencyConverter()).EvalLine("2 in usd")
+
+	if result.Inspect() != "2 usd" {
+		t.Fatalf("Expected inspect result to be %s, got %s", "2 usd", result.Inspect())
+	}
+	if result.Type() != b.CURRENCY_BOX {
+		t.Fatalf("Expected identifier object, got %s", result.Type())
+	}
+}
+
 // func TestCurrencyConversion(t *testing.T) {
 // 	eval := NewEvaluator(getDefaultCurrencyConverter())
 
@@ -49,6 +60,7 @@ func TestPlusExpression(t *testing.T) {
 // 	}
 // }
 
+// try this case too
 // func TestEvalWithValueConversion(t *testing.T) {
 // 	eval := &Evaluator{}
 // 	// The text at this point is expected to have been
