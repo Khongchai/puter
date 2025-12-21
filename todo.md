@@ -31,6 +31,8 @@ Create a go program first, hook in lsp later.
 - [x] Finish pratt parsing
 - [x] Executor
 - [ ] Working on evaluator loop
+    - [x] Can now evaluate simple add expression
+    - [ ] rest of tests
 
 <!-- end section -->
 

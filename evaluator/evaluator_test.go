@@ -11,18 +11,18 @@ func getDefaultCurrencyConverter() ValueConverter {
 	}
 }
 
-// func TestNumberAssignment(t *testing.T) {
-// 	eval := NewEvaluator(getDefaultCurrencyConverter())
+func TestNumberAssignment(t *testing.T) {
+	eval := NewEvaluator(getDefaultCurrencyConverter())
 
-// 	obj := eval.EvalLine("x = 2")
+	obj := eval.EvalLine("x = 2")
 
-// 	if obj.Inspect() != "2" {
-// 		t.Fatalf("Expected inspect result to be %s, got %s", "2", obj.Inspect())
-// 	}
-// 	if obj.Type() != b.NUMBER_BOX {
-// 		t.Fatalf("Expected identifier object, got %s", obj.Type())
-// 	}
-// }
+	if obj.Inspect() != "2" {
+		t.Fatalf("Expected inspect result to be %s, got %s", "2", obj.Inspect())
+	}
+	if obj.Type() != b.NUMBER_BOX {
+		t.Fatalf("Expected identifier object, got %s", obj.Type())
+	}
+}
 
 func TestPlusExpression(t *testing.T) {
 	result := NewEvaluator(getDefaultCurrencyConverter()).EvalLine("2 + 4")
