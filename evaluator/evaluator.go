@@ -94,7 +94,7 @@ func (e *Evaluator) evalInExpression(leftExpr ast.Expression, rightExpr ast.Expr
 
 		got, ok := e.heap[evaluated.Inspect()]
 		if !ok {
-			panic(fmt.Sprintf("Identifier %s not set"))
+			panic(fmt.Sprintf("Identifier %s not set", evaluated.Inspect()))
 		}
 		return got
 	}()
