@@ -11,54 +11,43 @@ func getDefaultCurrencyConverter() ValueConverter {
 	}
 }
 
-func TestNumberAssignment(t *testing.T) {
-	eval := NewEvaluator(getDefaultCurrencyConverter())
-
-	obj := eval.EvalLine("x = 2")
-
-	if obj.Inspect() != "2" {
-		t.Fatalf("Expected inspect result to be %s, got %s", "2", obj.Inspect())
-	}
-	if obj.Type() != b.NUMBER_BOX {
-		t.Fatalf("Expected identifier object, got %s", obj.Type())
-	}
+type EvaluationCase struct {
+	Line        string
+	ExpectPrint string
+	ExpectType  b.BoxType
 }
 
-func TestPlusExpression(t *testing.T) {
-	result := NewEvaluator(getDefaultCurrencyConverter()).EvalLine("2 + 4")
-
-	if result.Inspect() != "6" {
-		t.Fatalf("Expected inspect result to be %s, got %s", "6", result.Inspect())
+func TestEvaluation(t *testing.T) {
+	cases := []*EvaluationCase{
+		{
+			"x = 2",
+			"2",
+			b.NUMBER_BOX,
+		},
+		{
+			"2 + 4",
+			"6",
+			b.NUMBER_BOX,
+		},
+		{
+			"2 in usd",
+			"2 usd",
+			b.CURRENCY_BOX,
+		},
 	}
-	if result.Type() != b.NUMBER_BOX {
-		t.Fatalf("Expected identifier object, got %s", result.Type())
+	for _, c := range cases {
+		eval := NewEvaluator(getDefaultCurrencyConverter())
+
+		obj := eval.EvalLine(c.Line)
+
+		if obj.Inspect() != c.ExpectPrint {
+			t.Fatalf("Expected inspect result to be %s, got %s", "2", obj.Inspect())
+		}
+		if obj.Type() != c.ExpectType {
+			t.Fatalf("Expected identifier object, got %s", obj.Type())
+		}
 	}
 }
-
-func TestCurrencyExpression(t *testing.T) {
-	result := NewEvaluator(getDefaultCurrencyConverter()).EvalLine("2 in usd")
-
-	if result.Inspect() != "2 usd" {
-		t.Fatalf("Expected inspect result to be %s, got %s", "2 usd", result.Inspect())
-	}
-	if result.Type() != b.CURRENCY_BOX {
-		t.Fatalf("Expected identifier object, got %s", result.Type())
-	}
-}
-
-// func TestCurrencyConversion(t *testing.T) {
-// 	eval := NewEvaluator(getDefaultCurrencyConverter())
-
-// 	eval.EvalLine("x = 2 in usd")
-// 	obj2 := eval.EvalLine("a = x in thb")
-
-// 	if obj2.Inspect() != "200" {
-// 		t.Fatalf("Expected inspect result to be %s, got %s", "200", obj2.Inspect())
-// 	}
-// 	if obj2.Type() != b.NUMBER_BOX {
-// 		t.Fatalf("Expected identifier object, got %s", obj2.Type())
-// 	}
-// }
 
 // try this case too
 // func TestEvalWithValueConversion(t *testing.T) {
