@@ -2,12 +2,10 @@ package box
 
 import (
 	"fmt"
-	"puter/ast"
 )
 
 type NumberBox struct {
 	Value float64
-	Tok   *ast.Token
 }
 
 func (nb *NumberBox) Inspect() string {

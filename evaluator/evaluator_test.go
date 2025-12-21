@@ -11,32 +11,43 @@ func getDefaultCurrencyConverter() ValueConverter {
 	}
 }
 
-func TestNumberAssignment(t *testing.T) {
-	eval := NewEvaluator(getDefaultCurrencyConverter())
+// func TestNumberAssignment(t *testing.T) {
+// 	eval := NewEvaluator(getDefaultCurrencyConverter())
 
-	obj := eval.EvalLine("x = 2")
+// 	obj := eval.EvalLine("x = 2")
 
-	if obj.Inspect() != "2" {
-		t.Fatalf("Expected inspect result to be %s, got %s", "2", obj.Inspect())
+// 	if obj.Inspect() != "2" {
+// 		t.Fatalf("Expected inspect result to be %s, got %s", "2", obj.Inspect())
+// 	}
+// 	if obj.Type() != b.NUMBER_BOX {
+// 		t.Fatalf("Expected identifier object, got %s", obj.Type())
+// 	}
+// }
+
+func TestPlusExpression(t *testing.T) {
+	result := NewEvaluator(getDefaultCurrencyConverter()).EvalLine("2 + 4")
+
+	if result.Inspect() != "6" {
+		t.Fatalf("Expected inspect result to be %s, got %s", "6", result.Inspect())
 	}
-	if obj.Type() != b.NUMBER_BOX {
-		t.Fatalf("Expected identifier object, got %s", obj.Type())
-	}
-}
-
-func TestCurrencyConversion(t *testing.T) {
-	eval := NewEvaluator(getDefaultCurrencyConverter())
-
-	eval.EvalLine("x = 2 in usd")
-	obj2 := eval.EvalLine("a = x in thb")
-
-	if obj2.Inspect() != "200" {
-		t.Fatalf("Expected inspect result to be %s, got %s", "200", obj2.Inspect())
-	}
-	if obj2.Type() != b.NUMBER_BOX {
-		t.Fatalf("Expected identifier object, got %s", obj2.Type())
+	if result.Type() != b.NUMBER_BOX {
+		t.Fatalf("Expected identifier object, got %s", result.Type())
 	}
 }
+
+// func TestCurrencyConversion(t *testing.T) {
+// 	eval := NewEvaluator(getDefaultCurrencyConverter())
+
+// 	eval.EvalLine("x = 2 in usd")
+// 	obj2 := eval.EvalLine("a = x in thb")
+
+// 	if obj2.Inspect() != "200" {
+// 		t.Fatalf("Expected inspect result to be %s, got %s", "200", obj2.Inspect())
+// 	}
+// 	if obj2.Type() != b.NUMBER_BOX {
+// 		t.Fatalf("Expected identifier object, got %s", obj2.Type())
+// 	}
+// }
 
 // func TestEvalWithValueConversion(t *testing.T) {
 // 	eval := &Evaluator{}

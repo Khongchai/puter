@@ -2,7 +2,7 @@ package evaluator
 
 import (
 	"fmt"
-	ast "puter/ast"
+	"puter/ast"
 	b "puter/box"
 	p "puter/parser"
 )
@@ -35,13 +35,12 @@ func (e *Evaluator) EvalLine(text string) b.Box {
 func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 	switch exp := expression.(type) {
 	case *ast.AssignExpression:
-		identifier := e.evalExp(exp.Name)
 		value := e.evalExp(exp.Right)
-		ident, ok := identifier.(*b.IdentBox)
+		ident, ok := exp.Name.(*ast.IdentExpression)
 		if !ok {
 			panic("Invalid identifier")
 		}
-		e.heap[ident.Value] = value
+		e.heap[ident.ActualValue] = value
 		return value
 	case *ast.OperatorExpression:
 		switch exp.Operator.Type {
@@ -69,12 +68,13 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 	case *ast.BooleanExpression:
 		return &b.BooleanBox{Value: exp.ActualValue}
 	case *ast.IdentExpression:
-		return &b.IdentBox{
-			Identifier: exp.Token().Literal,
-			Value:      exp.ActualValue,
+		found, ok := e.heap[exp.ActualValue]
+		if !ok {
+			panic("Identifier not found")
 		}
+		return found
 	case *ast.NumberExpression:
-		return &b.NumberBox{Value: exp.ActualValue, Tok: exp.Token()}
+		return &b.NumberBox{Value: exp.ActualValue}
 	default:
 		x := exp.String()
 		panic(fmt.Sprintf("Unhandled case %s", x))
@@ -84,18 +84,14 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 
 // If left is not a number box, but another unit-based expression, convert it first before returning a new value.
 func (e *Evaluator) evalInExpression(leftExpr ast.Expression, rightExpr ast.Expression) b.Box {
-	rightBox := e.evalExp(rightExpr)
-	if rightBox.Type() != b.IDENTIFIER_BOX {
+	right, rightIsIdentifier := rightExpr.(*ast.IdentExpression)
+	if !rightIsIdentifier {
 		panic("Right side of an in expression must be a unit identifier")
 	}
 
 	leftBox := func() b.Box {
 		evaluated := e.evalExp(leftExpr)
 
-		_, leftBoxIsIdent := evaluated.(*b.IdentBox)
-		if !leftBoxIsIdent {
-			return evaluated
-		}
 		got, ok := e.heap[evaluated.Inspect()]
 		if !ok {
 			panic(fmt.Sprintf("Identifier %s not set"))
@@ -109,10 +105,10 @@ func (e *Evaluator) evalInExpression(leftExpr ast.Expression, rightExpr ast.Expr
 	case *b.NumberBox:
 		return &b.CurrencyBox{
 			Number: box,
-			Unit:   rightBox.Inspect(),
+			Unit:   right.ActualValue,
 		}
 	case *b.CurrencyBox:
-		rightUnit := rightBox.Inspect()
+		rightUnit := right.ActualValue
 		if rightUnit == box.Unit {
 			return &b.CurrencyBox{Number: box.Number, Unit: rightUnit}
 		}
@@ -121,7 +117,7 @@ func (e *Evaluator) evalInExpression(leftExpr ast.Expression, rightExpr ast.Expr
 		if err != nil {
 			panic(err)
 		}
-		return &b.CurrencyBox{Number: &b.NumberBox{Value: converted, Tok: box.Number.Tok}, Unit: rightUnit}
+		return &b.CurrencyBox{Number: &b.NumberBox{Value: converted}, Unit: rightUnit}
 
 	default:
 		panic("Invalid left hand side of an in expresison.")
@@ -129,9 +125,35 @@ func (e *Evaluator) evalInExpression(leftExpr ast.Expression, rightExpr ast.Expr
 
 }
 
-func (e *Evaluator) evalPlusExpression(left ast.Expression, right ast.Expression) {
+func (e *Evaluator) evalPlusExpression(left ast.Expression, right ast.Expression) b.Box {
 	// if left and right is number, just add them, otherwise
-	// if they are of different unit, convert right to left unit if possible then add them.
-	// otherwise if either one has unit but the other one is just a number, then use that unit
+	evalLeft := e.evalExp(left)
+	evalRight := e.evalExp(right)
+	switch l := evalLeft.(type) {
+	case *b.NumberBox:
+		switch r := evalRight.(type) {
+		case *b.NumberBox:
+			return &b.NumberBox{Value: l.Value + r.Value}
+		case *b.CurrencyBox:
+			return &b.CurrencyBox{Number: &b.NumberBox{Value: l.Value + r.Number.Value}, Unit: r.Unit}
+		default:
+			panic("Type not supported. Cannot add.")
+		}
+	case *b.CurrencyBox:
+		switch r := evalRight.(type) {
+		case *b.NumberBox:
+			return &b.CurrencyBox{Number: &b.NumberBox{Value: l.Number.Value + r.Value}, Unit: l.Unit}
+		case *b.CurrencyBox:
+			if r.Unit == l.Unit {
+				return &b.CurrencyBox{Number: &b.NumberBox{Value: l.Number.Value + r.Number.Value}, Unit: l.Unit}
+			}
 
+			panic("Can't add numbers of different unit")
+		default:
+			panic("Type not supported. Cannot add.")
+		}
+
+	default:
+		panic("Type not supported. Cannot add.")
+	}
 }
