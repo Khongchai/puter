@@ -34,6 +34,11 @@ func TestEvaluation(t *testing.T) {
 			"2 usd",
 			b.CURRENCY_BOX,
 		},
+		{
+			"2 in usd in thb",
+			"200 thb",
+			b.CURRENCY_BOX,
+		},
 	}
 	for _, c := range cases {
 		eval := NewEvaluator(getDefaultCurrencyConverter())

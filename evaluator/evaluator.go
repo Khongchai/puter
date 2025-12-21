@@ -89,13 +89,9 @@ func (e *Evaluator) evalInExpression(leftExpr ast.Expression, rightExpr ast.Expr
 		panic("Right side of an in expression must be a unit identifier")
 	}
 
-	leftBox := e.evalExp(leftExpr)
-	if leftBox.Type() != b.NUMBER_BOX {
-		panic("Left hand side of an in expression must be a number")
-	}
-
 	// if left already a number box, no need for conversion. Just use the unit on the right
 	// otherwise try to convert by converting whatever unit left is to the right unit.
+	leftBox := e.evalExp(leftExpr)
 	switch box := leftBox.(type) {
 	case *b.NumberBox:
 		return &b.CurrencyBox{
