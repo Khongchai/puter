@@ -22,8 +22,10 @@ const (
 	LOGICAL_AND = "&&"
 	LOGICAL_OR  = "||"
 
-	LT = "<"
-	GT = ">"
+	LT  = "<"
+	LTE = "<="
+	GT  = ">"
+	GTE = ">="
 
 	EQ     = "=="
 	NOT_EQ = "!="
