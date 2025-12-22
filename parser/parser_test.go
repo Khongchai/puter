@@ -253,7 +253,7 @@ func TestPrecedence(t *testing.T) {
 		},
 		{
 			"x = 2 usd in thb",
-			"((x = 2 usd) in thb)",
+			"x = ((2 usd) in thb)",
 		},
 		{
 			"3 in usd in thb in btc in xx",

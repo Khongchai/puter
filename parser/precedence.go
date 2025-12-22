@@ -4,8 +4,8 @@ type Precedence int
 
 const (
 	PrecLowest = iota
-	PrecIn
 	PrecAssignment
+	PrecIn
 	PrecLogical
 	PrecEquals
 	PrecLessGreater
