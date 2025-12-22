@@ -39,6 +39,11 @@ func TestEvaluation(t *testing.T) {
 			"200 thb",
 			b.CURRENCY_BOX,
 		},
+		{
+			"x = 2 in usd in thb",
+			"200 thb",
+			b.CURRENCY_BOX,
+		},
 	}
 	for _, c := range cases {
 		eval := NewEvaluator(getDefaultCurrencyConverter())
@@ -54,12 +59,8 @@ func TestEvaluation(t *testing.T) {
 	}
 }
 
-// try this case too
-// func TestEvalWithValueConversion(t *testing.T) {
-// 	eval := &Evaluator{}
-// 	// The text at this point is expected to have been
-// 	// sanitized already. eg. it matches a comment pattern // |, # |, <!-- | -->
-// 	result := eval.EvalLine(0, "a = 1 + 2 in usd")
-// 	result2 := eval.EvalLine(1, "k = a in thb")
-// 	result3 := eval.EvalLine(1, "x = k + 2")
-// }
+func TestCurrencyConversionMultiline(t *testing.T) {
+	// 	result := eval.EvalLine(0, "a = 1 + 2 in usd")
+	// 	result2 := eval.EvalLine(1, "k = a in thb")
+	// 	result3 := eval.EvalLine(1, "x = k + 2")
+}
