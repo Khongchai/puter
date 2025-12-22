@@ -32,11 +32,18 @@ Create a go program first, hook in lsp later.
 - [x] Executor
 - [ ] Working on evaluator loop
     - [x] Can now evaluate simple add expression
-    - [ ] rest of tests
+    - [x] rest of tests
+    - [ ] Remaining operators 
+    - [ ] Add builtins support
+    - [ ] Add error propagation and handling
+    - [ ] Wrap with lsp
+    - [ ] Publish poc
+    - [ ] Optimize with non blocking goroutines.
 
 <!-- end section -->
 
 # Backlog
+- [ ] Add more unit supports (metrics, gbs)
 - [ ] Apply go worker and channels to optimize wait time when network fetching is required
 - [ ] handle non utf8 char with DecodeRuneInString
 - [ ] Multiline and parsing initialization in executor layer.
