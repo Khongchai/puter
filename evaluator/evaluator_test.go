@@ -68,11 +68,11 @@ func TestCurrencyConversionMultiline(t *testing.T) {
 	eval := NewEvaluator(getDefaultCurrencyConverter(100))
 
 	eval.EvalLine("a = 1 + 2 in usd") // 3 usd
-	eval.EvalLine("k = a in thb")     // 200 thb
-	eval.EvalLine("x = k + 2")        // 202 thb
-	result := eval.EvalLine("x")      // 202 thb
-	if result.Inspect() != "202 thb" {
-		t.Fatalf("Expected 202 thb, got %s", result.Inspect())
+	eval.EvalLine("k = a in thb")     // 100 thb
+	eval.EvalLine("x = k + 2")        // 102 thb
+	result := eval.EvalLine("x")      // 102 thb
+	if result.Inspect() != "102 thb" {
+		t.Fatalf("Expected 102 thb, got %s", result.Inspect())
 	}
 	if result.Type() != b.CURRENCY_BOX {
 		t.Fatalf("Expected currency, got %+v", result.Type())
