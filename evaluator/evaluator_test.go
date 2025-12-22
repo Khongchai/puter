@@ -5,9 +5,9 @@ import (
 	"testing"
 )
 
-func getDefaultCurrencyConverter() ValueConverter {
+func getDefaultCurrencyConverter(defaultValue float64) ValueConverter {
 	return func(fromValue float64, fromUnit string, toUnit string) (float64, error) {
-		return 200.0, nil
+		return defaultValue, nil
 	}
 }
 
@@ -44,9 +44,14 @@ func TestEvaluation(t *testing.T) {
 			"200 thb",
 			b.CURRENCY_BOX,
 		},
+		{
+			"x = 1 + 2 in usd",
+			"3 usd",
+			b.CURRENCY_BOX,
+		},
 	}
 	for _, c := range cases {
-		eval := NewEvaluator(getDefaultCurrencyConverter())
+		eval := NewEvaluator(getDefaultCurrencyConverter(200))
 
 		obj := eval.EvalLine(c.Line)
 
@@ -54,13 +59,22 @@ func TestEvaluation(t *testing.T) {
 			t.Fatalf("Expected inspect result to be %s, got %s", "2", obj.Inspect())
 		}
 		if obj.Type() != c.ExpectType {
-			t.Fatalf("Expected identifier object, got %s", obj.Type())
+			t.Fatalf("Expected identifier object, got %+v", obj.Type())
 		}
 	}
 }
 
 func TestCurrencyConversionMultiline(t *testing.T) {
-	// 	result := eval.EvalLine(0, "a = 1 + 2 in usd")
-	// 	result2 := eval.EvalLine(1, "k = a in thb")
-	// 	result3 := eval.EvalLine(1, "x = k + 2")
+	eval := NewEvaluator(getDefaultCurrencyConverter(100))
+
+	eval.EvalLine("a = 1 + 2 in usd") // 3 usd
+	eval.EvalLine("k = a in thb")     // 200 thb
+	eval.EvalLine("x = k + 2")        // 202 thb
+	result := eval.EvalLine("x")      // 202 thb
+	if result.Inspect() != "202 thb" {
+		t.Fatalf("Expected 202 thb, got %s", result.Inspect())
+	}
+	if result.Type() != b.CURRENCY_BOX {
+		t.Fatalf("Expected currency, got %+v", result.Type())
+	}
 }
