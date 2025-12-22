@@ -45,13 +45,23 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 	case *ast.OperatorExpression:
 		switch exp.Operator.Type {
 		case ast.PLUS:
-			return e.evalPlusExpression(exp.Left, exp.Right)
+			return e.evalBinaryNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
+				return a + b
+			})
 		case ast.MINUS:
-			return nil
+			return e.evalBinaryNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
+				return a - b
+			})
+		case ast.SLASH:
+			return e.evalBinaryNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
+				return a / b
+			})
 		case ast.IN:
 			return e.evalInExpression(exp.Left, exp.Right)
 		case ast.ASTERISK:
-			return nil
+			return e.evalBinaryNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
+				return a * b
+			})
 		case ast.LOGICAL_AND:
 			return nil
 		case ast.LOGICAL_OR:
@@ -113,30 +123,28 @@ func (e *Evaluator) evalInExpression(leftExpr ast.Expression, rightExpr ast.Expr
 	default:
 		panic("Invalid left hand side of an in expresison.")
 	}
-
 }
 
-func (e *Evaluator) evalPlusExpression(left ast.Expression, right ast.Expression) b.Box {
-	// if left and right is number, just add them, otherwise
+func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Expression, callable func(a, b float64) float64) b.Box {
 	evalLeft := e.evalExp(left)
 	evalRight := e.evalExp(right)
 	switch l := evalLeft.(type) {
 	case *b.NumberBox:
 		switch r := evalRight.(type) {
 		case *b.NumberBox:
-			return &b.NumberBox{Value: l.Value + r.Value}
+			return &b.NumberBox{Value: callable(l.Value, r.Value)}
 		case *b.CurrencyBox:
-			return &b.CurrencyBox{Number: &b.NumberBox{Value: l.Value + r.Number.Value}, Unit: r.Unit}
+			return &b.CurrencyBox{Number: &b.NumberBox{Value: callable(l.Value, r.Number.Value)}, Unit: r.Unit}
 		default:
 			panic("Type not supported. Cannot add.")
 		}
 	case *b.CurrencyBox:
 		switch r := evalRight.(type) {
 		case *b.NumberBox:
-			return &b.CurrencyBox{Number: &b.NumberBox{Value: l.Number.Value + r.Value}, Unit: l.Unit}
+			return &b.CurrencyBox{Number: &b.NumberBox{Value: callable(l.Number.Value, r.Value)}, Unit: l.Unit}
 		case *b.CurrencyBox:
 			if r.Unit == l.Unit {
-				return &b.CurrencyBox{Number: &b.NumberBox{Value: l.Number.Value + r.Number.Value}, Unit: l.Unit}
+				return &b.CurrencyBox{Number: &b.NumberBox{Value: callable(l.Number.Value, r.Number.Value)}, Unit: l.Unit}
 			}
 
 			panic("Can't add numbers of different unit")
@@ -147,4 +155,5 @@ func (e *Evaluator) evalPlusExpression(left ast.Expression, right ast.Expression
 	default:
 		panic("Type not supported. Cannot add.")
 	}
+
 }

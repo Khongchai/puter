@@ -17,16 +17,73 @@ type EvaluationCase struct {
 	ExpectType  b.BoxType
 }
 
-func TestEvaluation(t *testing.T) {
+func TestBinaryOperatorEvaluations(t *testing.T) {
+	cases := []*EvaluationCase{
+		{
+			"2 + 4",
+			"6",
+			b.NUMBER_BOX,
+		},
+		{
+			"10 - 4",
+			"6",
+			b.NUMBER_BOX,
+		},
+		{
+			"3 * 5",
+			"15",
+			b.NUMBER_BOX,
+		},
+		{
+			"10 / 2",
+			"5",
+			b.NUMBER_BOX,
+		},
+		{
+			"5 / 2",
+			"2.5",
+			b.NUMBER_BOX,
+		},
+		{
+			"2 + 3 * 4",
+			"14",
+			b.NUMBER_BOX,
+		},
+		{
+			"(2 + 3) * 4",
+			"20",
+			b.NUMBER_BOX,
+		},
+		{
+			"100 - 50 + 25",
+			"75",
+			b.NUMBER_BOX,
+		},
+		{
+			"1.5 + 2.25",
+			"3.75",
+			b.NUMBER_BOX,
+		},
+	}
+	for _, c := range cases {
+		eval := NewEvaluator(getDefaultCurrencyConverter(200))
+
+		obj := eval.EvalLine(c.Line)
+
+		if obj.Inspect() != c.ExpectPrint {
+			t.Fatalf("Expected inspect result to be %s, got %s", c.ExpectPrint, obj.Inspect())
+		}
+		if obj.Type() != c.ExpectType {
+			t.Fatalf("Expected identifier object, got %+v", obj.Type())
+		}
+	}
+}
+
+func TestCurrencyEvaluation(t *testing.T) {
 	cases := []*EvaluationCase{
 		{
 			"x = 2",
 			"2",
-			b.NUMBER_BOX,
-		},
-		{
-			"2 + 4",
-			"6",
 			b.NUMBER_BOX,
 		},
 		{
@@ -78,3 +135,6 @@ func TestCurrencyConversionMultiline(t *testing.T) {
 		t.Fatalf("Expected currency, got %+v", result.Type())
 	}
 }
+
+// TODO test prefix
+// TODO test postfix
