@@ -17,7 +17,7 @@ type EvaluationCase struct {
 	ExpectType  b.BoxType
 }
 
-func TestBinaryOperatorEvaluations(t *testing.T) {
+func TestNumberBinaryOperatorEvaluations(t *testing.T) {
 	cases := []*EvaluationCase{
 		{
 			"2 + 4",
@@ -64,6 +64,11 @@ func TestBinaryOperatorEvaluations(t *testing.T) {
 			"3.75",
 			b.NUMBER_BOX,
 		},
+		{
+			"2 ^ 4",
+			"16",
+			b.NUMBER_BOX,
+		},
 	}
 	for _, c := range cases {
 		eval := NewEvaluator(getDefaultCurrencyConverter(200))
@@ -77,6 +82,28 @@ func TestBinaryOperatorEvaluations(t *testing.T) {
 			t.Fatalf("Expected identifier object, got %+v", obj.Type())
 		}
 	}
+}
+
+func TestBinaryBooleanOperatorEvaluations(t *testing.T) {
+	// cases := []*EvaluationCase{
+	// 	{
+	// 		"true",
+	// 		"true",
+	// 		b.BOOLEAN_BOX,
+	// 	},
+	// }
+	// for _, c := range cases {
+	// 	eval := NewEvaluator(getDefaultCurrencyConverter(200))
+
+	// 	obj := eval.EvalLine(c.Line)
+
+	// 	if obj.Inspect() != c.ExpectPrint {
+	// 		t.Fatalf("Expected inspect result to be %s, got %s", c.ExpectPrint, obj.Inspect())
+	// 	}
+	// 	if obj.Type() != c.ExpectType {
+	// 		t.Fatalf("Expected identifier object, got %+v", obj.Type())
+	// 	}
+	// }
 }
 
 func TestCurrencyEvaluation(t *testing.T) {

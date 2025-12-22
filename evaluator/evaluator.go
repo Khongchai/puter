@@ -2,6 +2,7 @@ package evaluator
 
 import (
 	"fmt"
+	"math"
 	"puter/ast"
 	b "puter/box"
 	p "puter/parser"
@@ -45,33 +46,39 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 	case *ast.OperatorExpression:
 		switch exp.Operator.Type {
 		case ast.PLUS:
-			return e.evalBinaryNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
+			return e.evalBinaryArithmeticNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
 				return a + b
 			})
 		case ast.MINUS:
-			return e.evalBinaryNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
+			return e.evalBinaryArithmeticNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
 				return a - b
 			})
 		case ast.SLASH:
-			return e.evalBinaryNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
+			return e.evalBinaryArithmeticNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
 				return a / b
 			})
 		case ast.IN:
 			return e.evalInExpression(exp.Left, exp.Right)
 		case ast.ASTERISK:
-			return e.evalBinaryNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
+			return e.evalBinaryArithmeticNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
 				return a * b
 			})
-		case ast.LOGICAL_AND:
-			return nil
-		case ast.LOGICAL_OR:
-			return nil
-		case ast.LT:
-			return nil
 		case ast.GT:
 			return nil
 		case ast.CARET:
+			return e.evalBinaryArithmeticNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
+				return math.Pow(a, b)
+			})
+		case ast.LT:
 			return nil
+		case ast.LOGICAL_AND:
+			return e.evalBinaryBooleanExpression(exp.Left, exp.Right, func(a, b bool) bool {
+				return a && b
+			})
+		case ast.LOGICAL_OR:
+			return e.evalBinaryBooleanExpression(exp.Left, exp.Right, func(a, b bool) bool {
+				return a || b
+			})
 		default:
 			panic("Invalid operator token")
 		}
@@ -125,7 +132,16 @@ func (e *Evaluator) evalInExpression(leftExpr ast.Expression, rightExpr ast.Expr
 	}
 }
 
-func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Expression, callable func(a, b float64) float64) b.Box {
+func (e *Evaluator) evalBinaryBooleanExpression(left ast.Expression, right ast.Expression, callable func(a, b bool) bool) b.Box {
+	evalLeft, leftIsBool := e.evalExp(left).(*b.BooleanBox)
+	evalRight, rightIsBool := e.evalExp(right).(*b.BooleanBox)
+	if !leftIsBool || !rightIsBool {
+		panic("Both left and right side of a boolean binary operation must be boolean")
+	}
+	return &b.BooleanBox{Value: callable(evalLeft.Value, evalRight.Value)}
+}
+
+func (e *Evaluator) evalBinaryArithmeticNumberExpression(left ast.Expression, right ast.Expression, callable func(a, b float64) float64) b.Box {
 	evalLeft := e.evalExp(left)
 	evalRight := e.evalExp(right)
 	switch l := evalLeft.(type) {
