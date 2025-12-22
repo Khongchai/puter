@@ -112,8 +112,12 @@ func (s *Scanner) Next() *ast.Token {
 			s.pos += i
 		} else if isDigit(s.ch(0)) {
 			i := 1
-			for isDigit(s.ch(i)) {
-				i++
+			for {
+				if isDigit(s.ch(i)) || (s.ch(i) == '.' && isDigit(s.ch(i+1))) {
+					i++
+					continue
+				}
+				break
 			}
 			token = ast.NewToken(ast.NUMBER, s.text[s.pos:s.pos+i], s.pos)
 			s.pos += i

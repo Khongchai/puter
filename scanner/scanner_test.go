@@ -50,11 +50,19 @@ func TestAssignmentScan(t *testing.T) {
 }
 
 func TestNumberScan(t *testing.T) {
-	scanner := NewScanner("1")
-	result := scanner.Next()
-	if result.Type != ast.NUMBER && result.Literal != "1" {
-		t.Fatalf("Expected 1, got %s", result.Literal)
+	cases := []string{
+		"1",
+		"100.111",
 	}
+
+	for _, c := range cases {
+		scanner := NewScanner(c)
+		result := scanner.Next()
+		if result.Type != ast.NUMBER || result.Literal != c {
+			t.Fatalf("Expected %s, got %s", c, result.Literal)
+		}
+	}
+
 }
 
 func TestKeywords(t *testing.T) {
