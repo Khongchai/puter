@@ -66,22 +66,20 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 			return e.evalBinaryArithmeticNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
 				return a * b
 			})
-		case ast.GT:
-			return nil
 		case ast.CARET:
 			return e.evalBinaryArithmeticNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
 				return math.Pow(a, b)
 			})
-		case ast.LT:
-			return nil
 		case ast.LOGICAL_AND:
-			return e.evalBinaryBooleanExpression(exp.Left, exp.Right, func(a, b bool) bool {
+			return e.evalBinaryBooleanLogicalExpression(exp.Left, exp.Right, func(a, b bool) bool {
 				return a && b
 			})
 		case ast.LOGICAL_OR:
-			return e.evalBinaryBooleanExpression(exp.Left, exp.Right, func(a, b bool) bool {
+			return e.evalBinaryBooleanLogicalExpression(exp.Left, exp.Right, func(a, b bool) bool {
 				return a || b
 			})
+		case ast.GT, ast.LT, ast.GTE, ast.COMMA:
+			return e.evalBinaryBooleanExpression(exp.Left, exp.Right, exp.Operator.Type)
 		default:
 			panic("Invalid operator token")
 		}
@@ -135,7 +133,26 @@ func (e *Evaluator) evalInExpression(leftExpr ast.Expression, rightExpr ast.Expr
 	}
 }
 
-func (e *Evaluator) evalBinaryBooleanExpression(left ast.Expression, right ast.Expression, callable func(a, b bool) bool) b.Box {
+func (e *Evaluator) evalBinaryBooleanLogicalExpression(left ast.Expression, right ast.Expression, callable func(a, b bool) bool) b.Box {
+	evalLeft, leftIsBool := e.evalExp(left).(*b.BooleanBox)
+	evalRight, rightIsBool := e.evalExp(right).(*b.BooleanBox)
+	if !leftIsBool || !rightIsBool {
+		panic("Both left and right side of a boolean binary operation must be boolean")
+	}
+
+	return &b.BooleanBox{Value: callable(evalLeft.Value, evalRight.Value)}
+}
+
+func (e *Evaluator) evalBinaryBooleanComparisonExpression(left ast.Expression, right ast.Expression, operatorType ast.TokenType) b.Box {
+	switch operatorType {
+	case ast.LT:
+	case ast.GT:
+	case ast.EQ:
+	case ast.NOT_EQ:
+	case ast.LTE:
+	case ast.GTE:
+
+	}
 	evalLeft, leftIsBool := e.evalExp(left).(*b.BooleanBox)
 	evalRight, rightIsBool := e.evalExp(right).(*b.BooleanBox)
 	if !leftIsBool || !rightIsBool {

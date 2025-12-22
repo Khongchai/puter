@@ -34,6 +34,7 @@ Create a go program first, hook in lsp later.
     - [x] Can now evaluate simple add expression
     - [x] rest of tests
     - [ ] Remaining operators 
+        - [ ] continue implementing comparision and equality operators in eval
     - [ ] Add builtins support
     - [ ] Add error propagation and handling
     - [ ] Wrap with lsp
