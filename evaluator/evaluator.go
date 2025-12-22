@@ -1,6 +1,7 @@
 package evaluator
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"puter/ast"
@@ -15,10 +16,12 @@ type Evaluator struct {
 	// A map of identifier to puter object
 	heap              map[string]b.Box
 	currencyConverter ValueConverter
+	ctx               context.Context
 }
 
-func NewEvaluator(currencyConverter ValueConverter) *Evaluator {
+func NewEvaluator(ctx context.Context, currencyConverter ValueConverter) *Evaluator {
 	return &Evaluator{
+		ctx:               ctx,
 		parser:            *p.NewParser(),
 		heap:              make(map[string]b.Box),
 		currencyConverter: currencyConverter,

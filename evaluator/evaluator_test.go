@@ -71,7 +71,7 @@ func TestNumberBinaryOperatorEvaluations(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		eval := NewEvaluator(getDefaultCurrencyConverter(200))
+		eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(200))
 
 		obj := eval.EvalLine(c.Line)
 
@@ -143,7 +143,7 @@ func TestBinaryBooleanOperatorEvaluations(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		eval := NewEvaluator(getDefaultCurrencyConverter(200))
+		eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(200))
 
 		obj := eval.EvalLine(c.Line)
 
@@ -185,7 +185,7 @@ func TestCurrencyEvaluation(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		eval := NewEvaluator(getDefaultCurrencyConverter(200))
+		eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(200))
 
 		obj := eval.EvalLine(c.Line)
 
@@ -199,7 +199,7 @@ func TestCurrencyEvaluation(t *testing.T) {
 }
 
 func TestCurrencyConversionMultiline(t *testing.T) {
-	eval := NewEvaluator(getDefaultCurrencyConverter(100))
+	eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(100))
 
 	eval.EvalLine("a = 1 + 2 in usd") // 3 usd
 	eval.EvalLine("k = a in thb")     // 100 thb
