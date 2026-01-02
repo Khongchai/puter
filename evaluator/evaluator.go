@@ -49,25 +49,25 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 	case *ast.OperatorExpression:
 		switch exp.Operator.Type {
 		case ast.PLUS:
-			return e.evalBinaryArithmeticNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
+			return e.evalBinaryNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
 				return a + b
 			})
 		case ast.MINUS:
-			return e.evalBinaryArithmeticNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
+			return e.evalBinaryNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
 				return a - b
 			})
 		case ast.SLASH:
-			return e.evalBinaryArithmeticNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
+			return e.evalBinaryNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
 				return a / b
 			})
 		case ast.IN:
 			return e.evalInExpression(exp.Left, exp.Right)
 		case ast.ASTERISK:
-			return e.evalBinaryArithmeticNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
+			return e.evalBinaryNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
 				return a * b
 			})
 		case ast.CARET:
-			return e.evalBinaryArithmeticNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
+			return e.evalBinaryNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
 				return math.Pow(a, b)
 			})
 		case ast.LOGICAL_AND:
@@ -78,8 +78,13 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 			return e.evalBinaryBooleanLogicalExpression(exp.Left, exp.Right, func(a, b bool) bool {
 				return a || b
 			})
-		case ast.GT, ast.LT, ast.GTE, ast.COMMA:
-			return e.evalBinaryBooleanExpression(exp.Left, exp.Right, exp.Operator.Type)
+		case ast.EQ:
+		case ast.NOT_EQ:
+		case ast.LT:
+		case ast.GT:
+		case ast.LTE:
+		case ast.GTE:
+			return e.evalBinaryBooleanComparisonExpression(exp.Left, exp.Right, exp.Operator.Type)
 		default:
 			panic("Invalid operator token")
 		}
@@ -98,6 +103,7 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 		panic(fmt.Sprintf("Unhandled case %s", x))
 	}
 
+	return nil
 }
 
 // If left is not a number box, but another unit-based expression, convert it first before returning a new value.
@@ -144,24 +150,54 @@ func (e *Evaluator) evalBinaryBooleanLogicalExpression(left ast.Expression, righ
 }
 
 func (e *Evaluator) evalBinaryBooleanComparisonExpression(left ast.Expression, right ast.Expression, operatorType ast.TokenType) b.Box {
-	switch operatorType {
-	case ast.LT:
-	case ast.GT:
-	case ast.EQ:
-	case ast.NOT_EQ:
-	case ast.LTE:
-	case ast.GTE:
+	evaluatedRight := e.evalExp(right)
+	evaluatedLeft := e.evalExp(left)
+	if operatorType == ast.EQ {
+		return &b.BooleanBox{Value: evaluatedRight.Inspect() == evaluatedLeft.Inspect()}
+	}
+	if operatorType == ast.NOT_EQ {
+		return &b.BooleanBox{Value: evaluatedRight.Inspect() != evaluatedLeft.Inspect()}
+	}
 
+	// TODO let's support this later, for example 3 usd > 2 thb. But for now 3 usd > (2 thb in usd) is fine.
+	if evaluatedRight.Type() != evaluatedLeft.Type() {
+		panic("Comparsion of different type or unit")
 	}
-	evalLeft, leftIsBool := e.evalExp(left).(*b.BooleanBox)
-	evalRight, rightIsBool := e.evalExp(right).(*b.BooleanBox)
-	if !leftIsBool || !rightIsBool {
-		panic("Both left and right side of a boolean binary operation must be boolean")
+
+	comp := func(func(a, b float64) bool) *b.BooleanBox {
+		switch l := (evaluatedLeft).(type) {
+		case *b.NumberBox:
+			r, _ := (evaluatedRight).(*b.NumberBox)
+			return &b.BooleanBox{Value: l.Value > r.Value}
+		case *b.CurrencyBox:
+			r, _ := (evaluatedRight).(*b.CurrencyBox)
+			return &b.BooleanBox{Value: l.Number.Value > r.Number.Value}
+		}
+		return nil
 	}
-	return &b.BooleanBox{Value: callable(evalLeft.Value, evalRight.Value)}
+
+	result := func() *b.BooleanBox {
+		switch operatorType {
+		case ast.GT:
+			return comp(func(a, b float64) bool { return a > b })
+		case ast.LT:
+			return comp(func(a, b float64) bool { return a < b })
+		case ast.GTE:
+			return comp(func(a, b float64) bool { return a >= b })
+		case ast.LTE:
+			return comp(func(a, b float64) bool { return a <= b })
+		}
+		return nil
+	}()
+
+	if result != nil {
+		return result
+	}
+
+	panic("Unsupported boolean comparsion expression")
 }
 
-func (e *Evaluator) evalBinaryArithmeticNumberExpression(left ast.Expression, right ast.Expression, callable func(a, b float64) float64) b.Box {
+func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Expression, callable func(a, b float64) float64) b.Box {
 	evalLeft := e.evalExp(left)
 	evalRight := e.evalExp(right)
 	switch l := evalLeft.(type) {
@@ -185,11 +221,11 @@ func (e *Evaluator) evalBinaryArithmeticNumberExpression(left ast.Expression, ri
 
 			panic("Can't add numbers of different unit")
 		default:
-			panic("Type not supported. Cannot add.")
+			panic("Type not supported. Cannot perform binary expression.")
 		}
 
 	default:
-		panic("Type not supported. Cannot add.")
+		panic("Type not supported. Cannot perform binary expression.")
 	}
 
 }
