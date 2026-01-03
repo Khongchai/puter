@@ -78,12 +78,7 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 			return e.evalBinaryBooleanLogicalExpression(exp.Left, exp.Right, func(a, b bool) bool {
 				return a || b
 			})
-		case ast.EQ:
-		case ast.NOT_EQ:
-		case ast.LT:
-		case ast.GT:
-		case ast.LTE:
-		case ast.GTE:
+		case ast.EQ, ast.NOT_EQ, ast.LT, ast.GT, ast.LTE, ast.GTE:
 			return e.evalBinaryBooleanComparisonExpression(exp.Left, exp.Right, exp.Operator.Type)
 		default:
 			panic("Invalid operator token")
@@ -102,8 +97,6 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 		x := exp.String()
 		panic(fmt.Sprintf("Unhandled case %s", x))
 	}
-
-	return nil
 }
 
 // If left is not a number box, but another unit-based expression, convert it first before returning a new value.
@@ -164,14 +157,14 @@ func (e *Evaluator) evalBinaryBooleanComparisonExpression(left ast.Expression, r
 		panic("Comparsion of different type or unit")
 	}
 
-	comp := func(func(a, b float64) bool) *b.BooleanBox {
+	comp := func(comp func(a, b float64) bool) *b.BooleanBox {
 		switch l := (evaluatedLeft).(type) {
 		case *b.NumberBox:
 			r, _ := (evaluatedRight).(*b.NumberBox)
-			return &b.BooleanBox{Value: l.Value > r.Value}
+			return &b.BooleanBox{Value: comp(l.Value, r.Value)}
 		case *b.CurrencyBox:
 			r, _ := (evaluatedRight).(*b.CurrencyBox)
-			return &b.BooleanBox{Value: l.Number.Value > r.Number.Value}
+			return &b.BooleanBox{Value: comp(l.Number.Value, r.Number.Value)}
 		}
 		return nil
 	}
