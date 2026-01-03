@@ -213,10 +213,67 @@ func TestCurrencyConversionMultiline(t *testing.T) {
 	}
 }
 
+func TestPrefixEvaluation(t *testing.T) {
+	cases := []*EvaluationCase{
+		{
+			"!true",
+			"false",
+			b.BOOLEAN_BOX,
+		},
+		{
+			"!false",
+			"true",
+			b.BOOLEAN_BOX,
+		},
+		{
+			"-1",
+			"-1",
+			b.NUMBER_BOX,
+		},
+	}
+	for _, c := range cases {
+		eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(200))
+
+		obj := eval.EvalLine(c.Line)
+
+		if obj.Inspect() != c.ExpectPrint {
+			t.Fatalf("Expected inspect result to be %s, got %s", c.ExpectPrint, obj.Inspect())
+		}
+		if obj.Type() != c.ExpectType {
+			t.Fatalf("Expected identifier object, got %+v", obj.Type())
+		}
+	}
+}
+
 func TestComparsionEvaluation(t *testing.T) {
 	cases := []*EvaluationCase{
 		{
 			"1 < 2",
+			"true",
+			b.BOOLEAN_BOX,
+		},
+		{
+			"100 == 1000",
+			"false",
+			b.BOOLEAN_BOX,
+		},
+		{
+			"1 == 1",
+			"true",
+			b.BOOLEAN_BOX,
+		},
+		{
+			"1 != 1.0",
+			"false",
+			b.BOOLEAN_BOX,
+		},
+		{
+			"1 <= 1",
+			"true",
+			b.BOOLEAN_BOX,
+		},
+		{
+			"-1 <= 1",
 			"true",
 			b.BOOLEAN_BOX,
 		},

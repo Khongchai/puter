@@ -77,7 +77,7 @@ func (s *Scanner) Next() *ast.Token {
 	case '<':
 		if s.ch(1) == '=' {
 			token = ast.NewToken(ast.LTE, "<=", s.pos)
-			s.pos++
+			s.pos += 2
 		} else {
 			token = ast.NewToken(ast.LT, string(s.ch(0)), s.pos)
 			s.pos++
@@ -85,7 +85,7 @@ func (s *Scanner) Next() *ast.Token {
 	case '>':
 		if s.ch(1) == '=' {
 			token = ast.NewToken(ast.GTE, ">=", s.pos)
-			s.pos++
+			s.pos += 2
 		} else {
 			token = ast.NewToken(ast.GT, string(s.ch(0)), s.pos)
 			s.pos++

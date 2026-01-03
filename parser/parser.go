@@ -41,6 +41,8 @@ func NewParser() *Parser {
 	parser.infixParseFns[ast.CARET] = NewbinaryOperatorParselet(PrecExponent, true)
 	parser.infixParseFns[ast.GT] = NewbinaryOperatorParselet(PrecLessGreater, false)
 	parser.infixParseFns[ast.LT] = NewbinaryOperatorParselet(PrecLessGreater, false)
+	parser.infixParseFns[ast.LTE] = NewbinaryOperatorParselet(PrecLessGreater, false)
+	parser.infixParseFns[ast.GTE] = NewbinaryOperatorParselet(PrecLessGreater, false)
 	parser.infixParseFns[ast.LOGICAL_AND] = NewbinaryOperatorParselet(PrecLogical, false)
 	parser.infixParseFns[ast.LOGICAL_OR] = NewbinaryOperatorParselet(PrecLogical, false)
 	// Any identifier after an expression is included here.

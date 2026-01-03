@@ -85,6 +85,33 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 		}
 	case *ast.BooleanExpression:
 		return &b.BooleanBox{Value: exp.ActualValue}
+	case *ast.PrefixExpression:
+		operator := exp.TokenValue.Type
+		switch right := e.evalExp(exp.Right).(type) {
+		case *b.NumberBox:
+			if operator == ast.MINUS {
+				return &b.NumberBox{Value: -right.Value}
+			}
+			if operator == ast.PLUS {
+				return &b.NumberBox{Value: right.Value}
+			}
+			panic("Unsupported prefix operation on a number")
+		case *b.CurrencyBox:
+			if operator == ast.MINUS {
+				return &b.CurrencyBox{Number: &b.NumberBox{Value: -right.Number.Value}, Unit: right.Unit}
+			}
+			if operator == ast.PLUS {
+				return &b.CurrencyBox{Number: &b.NumberBox{Value: right.Number.Value}, Unit: right.Unit}
+			}
+			panic("Unsupported prefix operation on a number")
+		case *b.BooleanBox:
+			if operator == ast.BANG {
+				return &b.BooleanBox{Value: !right.Value}
+			}
+			panic("Unsupported prefix operation on a boolean")
+		default:
+			panic("The right-hand side of this prefix expression is invalid")
+		}
 	case *ast.IdentExpression:
 		found, ok := e.heap[exp.ActualValue]
 		if !ok {
