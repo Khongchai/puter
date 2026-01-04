@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"puter/ast"
 	"strconv"
 	"testing"
@@ -18,7 +17,7 @@ func TestNumberParsing(t *testing.T) {
 func TestOperatorExpression(t *testing.T) {
 	exp := NewParser().Parse("1 + 2")
 	result := exp.String()
-	expected := fmt.Sprintf("(%f + %f)", 1.0, 2.0)
+	expected := "(1 + 2)"
 	if result != expected {
 		t.Fatalf("Parsing result is not %s, got %s", expected, result)
 	}
@@ -31,8 +30,8 @@ func TestOperatorExpression(t *testing.T) {
 func TestCallExpressionWithArguments(t *testing.T) {
 	exp := NewParser().Parse("add(1, 2, 3)")
 	result := exp.String()
-	if result != fmt.Sprintf("add(%f, %f, %f)", 1.0, 2.0, 3.0) {
-		t.Fatalf("Parsing result is not add(1), got %s", result)
+	if result != "add(1, 2, 3)" {
+		t.Fatalf("Parsing result is not add(1, 2, 3), got %s", result)
 	}
 	expression, ok := exp.(*ast.CallExpression)
 	if !ok {
@@ -74,7 +73,7 @@ func TestCallExpressionWithNoArguments(t *testing.T) {
 func TestNumberAssignExpression(t *testing.T) {
 	exp := NewParser().Parse("a = 2")
 	result := exp.String()
-	expected := fmt.Sprintf("a = %f", 2.0)
+	expected := "a = 2"
 	if result != expected {
 		t.Fatalf("Parsing result is not '%s', got '%s'", expected, result)
 	}
