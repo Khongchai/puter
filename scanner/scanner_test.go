@@ -85,6 +85,17 @@ func TestKeywords(t *testing.T) {
 	}
 }
 
+func TestNameFollowedByNumber(t *testing.T) {
+	scanner := NewScanner("log10")
+	result := scanner.Next()
+	if result.Type != ast.IDENT {
+		t.Fatalf("Expected %s, got %s", ast.IDENT, result.Type)
+	}
+	if result.Literal != "log10" {
+		t.Fatalf("Expected log10, got %s", result.Literal)
+	}
+}
+
 func TestLogicalOperators(t *testing.T) {
 	scanner := NewScanner("&& &! ||")
 	expectations := []ast.TokenType{

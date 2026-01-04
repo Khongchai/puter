@@ -105,7 +105,7 @@ func (s *Scanner) Next() *ast.Token {
 	default:
 		if isLetter(s.ch(0)) {
 			i := 1
-			for isLetter(s.ch(i)) {
+			for isLetter(s.ch(i)) || isDigit(s.ch(i)) {
 				i++
 			}
 			text := s.text[s.pos : s.pos+i]
