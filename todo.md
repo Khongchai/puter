@@ -34,7 +34,7 @@ Create a go program first, hook in lsp later.
     - [x] Can now evaluate simple add expression
     - [x] rest of tests
     - [ ] percent unit
-    - [ ] Remaining operators 
+    - [x] Remaining operators 
         - [x] continue implementing comparision and equality operators in eval
         - [x] write tests for boolean comparsion expression
     - [ ] Add builtins support (continue from here (e *Evaluator) evalCallExpression(functionName ast.Expression)

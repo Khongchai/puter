@@ -1,6 +1,7 @@
 package evaluator
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	b "puter/box"
@@ -44,6 +45,11 @@ func TestNumberBinaryOperatorEvaluations(t *testing.T) {
 		{
 			"5 / 2",
 			"2.5",
+			b.NUMBER_BOX,
+		},
+		{
+			"(2 + 3) * 4",
+			"20",
 			b.NUMBER_BOX,
 		},
 		{
@@ -282,6 +288,48 @@ func TestComparsionEvaluation(t *testing.T) {
 	}
 	for _, c := range cases {
 		eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(200))
+
+		obj := eval.EvalLine(c.Line)
+
+		if obj.Inspect() != c.ExpectPrint {
+			t.Fatalf("Expected inspect result to be %s, got %s", c.ExpectPrint, obj.Inspect())
+		}
+		if obj.Type() != c.ExpectType {
+			t.Fatalf("Expected identifier object, got %+v", obj.Type())
+		}
+	}
+}
+
+func TestPercent(t *testing.T) {
+	cases := []*EvaluationCase{
+		{
+			"2%",
+			"2%",
+			b.NUMBER_BOX,
+		},
+		{
+			"2 + 5%",
+			"7%",
+			b.NUMBER_BOX,
+		},
+		{
+			"2 in usd + 10% + 5 in usd",
+			"7.1%",
+			b.NUMBER_BOX,
+		},
+		{
+			"2 in usd + 10% + 5 in thb",
+			"7.1%",
+			b.NUMBER_BOX,
+		},
+	}
+	for _, c := range cases {
+		eval := NewEvaluator(t.Context(), func(fromValue float64, fromUnit string, toUnit string) (float64, error) {
+			if fromUnit == "usd" && toUnit == "thb" {
+				return (fromValue * 34.4), nil
+			}
+			return -1, errors.New("Currency conversion not supported in this test suite")
+		})
 
 		obj := eval.EvalLine(c.Line)
 
