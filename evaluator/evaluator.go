@@ -46,6 +46,8 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 		}
 		e.heap[ident.ActualValue] = value
 		return value
+	case *ast.CallExpression:
+		return e.evalCallExpression(exp.FunctionNameExpression, exp.Args)
 	case *ast.OperatorExpression:
 		switch exp.Operator.Type {
 		case ast.PLUS:
@@ -115,7 +117,7 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 	case *ast.IdentExpression:
 		found, ok := e.heap[exp.ActualValue]
 		if !ok {
-			panic("Identifier not found")
+			panic(fmt.Sprintf("Identifier %s not found", found.Inspect()))
 		}
 		return found
 	case *ast.NumberExpression:
@@ -215,6 +217,77 @@ func (e *Evaluator) evalBinaryBooleanComparisonExpression(left ast.Expression, r
 	}
 
 	panic("Unsupported boolean comparsion expression")
+}
+
+// For now we only support builtin functions and all builtin functions are simple math functions.
+func (e *Evaluator) evalCallExpression(functionName ast.Expression, arguments []ast.Expression) b.Box {
+	readArgs := func(expectedCount int, unlimited bool) []float64 {
+		if !unlimited && len(arguments) != expectedCount {
+			panic(fmt.Sprintf("Expected %d arguments, got %d len(arguments)", expectedCount, len(arguments)))
+		}
+
+		var results []float64
+		for _, arg := range arguments {
+			evaluated, ok := e.evalExp(arg).(*b.NumberBox)
+			if !ok {
+				panic(fmt.Sprintf("Method expect number, but got %s instead", evaluated.Type()))
+			}
+			results = append(results, evaluated.Value)
+		}
+
+		return results
+	}
+
+	result := func() float64 {
+		switch functionName.String() {
+		case "log10":
+			return math.Log10(readArgs(1, false)[0])
+		case "logE":
+			return math.Log(readArgs(1, false)[0])
+		case "log2":
+			return math.Log2(readArgs(1, false)[0])
+		case "round":
+			return math.Round(readArgs(1, false)[0])
+		case "floor":
+			return math.Floor(readArgs(1, false)[0])
+		case "ceil":
+			return math.Ceil(readArgs(1, false)[0])
+		case "abs":
+			return math.Abs(readArgs(1, false)[0])
+		case "sin":
+			return math.Sin(readArgs(1, false)[0])
+		case "cos":
+			return math.Cos(readArgs(1, false)[0])
+		case "tan":
+			return math.Tan(readArgs(1, false)[0])
+		case "sqrt":
+			return math.Sqrt(readArgs(1, false)[0])
+		case "lerp":
+			read := readArgs(3, false)
+			return (1-read[2])*read[0] + read[2]*read[1]
+		case "invLerp":
+			read := readArgs(3, false)
+			return (read[2] - read[0]) / (read[1] - read[0])
+		case "sum":
+			read := readArgs(-1, true)
+			s := 0.0
+			for _, n := range read {
+				s += n
+			}
+			return s
+		case "product":
+			read := readArgs(-1, true)
+			s := 0.0
+			for _, n := range read {
+				s *= n
+			}
+			return s
+		default:
+			panic("Unrecognized function name")
+		}
+	}()
+
+	return &b.NumberBox{Value: result}
 }
 
 func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Expression, callable func(a, b float64) float64) b.Box {

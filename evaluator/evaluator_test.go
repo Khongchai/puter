@@ -1,6 +1,8 @@
 package evaluator
 
 import (
+	"fmt"
+	"math"
 	b "puter/box"
 	"testing"
 )
@@ -276,6 +278,58 @@ func TestComparsionEvaluation(t *testing.T) {
 			"-1 <= 1",
 			"true",
 			b.BOOLEAN_BOX,
+		},
+	}
+	for _, c := range cases {
+		eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(200))
+
+		obj := eval.EvalLine(c.Line)
+
+		if obj.Inspect() != c.ExpectPrint {
+			t.Fatalf("Expected inspect result to be %s, got %s", c.ExpectPrint, obj.Inspect())
+		}
+		if obj.Type() != c.ExpectType {
+			t.Fatalf("Expected identifier object, got %+v", obj.Type())
+		}
+	}
+}
+
+func TestBuiltinFunctionEvaluations(t *testing.T) {
+	cases := []*EvaluationCase{
+		{
+			"logE(2)",
+			fmt.Sprintf("%g", math.Log(2)),
+			b.NUMBER_BOX,
+		},
+		{
+			"log10(2)",
+			fmt.Sprintf("%g", math.Log10(2)),
+			b.NUMBER_BOX,
+		},
+		{
+			"log10(2 + 5)",
+			fmt.Sprintf("%g", math.Log10(2+5)),
+			b.NUMBER_BOX,
+		},
+		{
+			"log2(2)",
+			fmt.Sprintf("%g", math.Log2(2)),
+			b.NUMBER_BOX,
+		},
+		{
+			"sqrt(10)",
+			fmt.Sprintf("%g", math.Sqrt(10)),
+			b.NUMBER_BOX,
+		},
+		{
+			"lerp(0, 10, 0.5)",
+			"5",
+			b.NUMBER_BOX,
+		},
+		{
+			"invLerp(10, 20, 15)",
+			"0.5",
+			b.NUMBER_BOX,
 		},
 	}
 	for _, c := range cases {

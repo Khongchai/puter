@@ -33,12 +33,15 @@ Create a go program first, hook in lsp later.
 - [ ] Working on evaluator loop
     - [x] Can now evaluate simple add expression
     - [x] rest of tests
+    - [ ] percent unit
     - [ ] Remaining operators 
         - [x] continue implementing comparision and equality operators in eval
-        - [ ] write tests for boolean comparsion expression
-    - [ ] Add builtins support
+        - [x] write tests for boolean comparsion expression
+    - [ ] Add builtins support (continue from here (e *Evaluator) evalCallExpression(functionName ast.Expression)
+        - [ ] mod keyword
         - [ ] implement
         - [ ] tests
+    - [ ] pi and e constant (allow overriding)
     - [ ] Add error propagation and handling
     - [ ] Wrap with lsp
     - [ ] Publish poc
@@ -47,6 +50,7 @@ Create a go program first, hook in lsp later.
 <!-- end section -->
 
 # Backlog
+- [ ] Summing everything above current line (can be done in a later stage that detects special keyword)
 - [ ] Add more unit supports (metrics, gbs)
 - [ ] Apply go worker and channels to optimize wait time when network fetching is required
 - [ ] handle non utf8 char with DecodeRuneInString
