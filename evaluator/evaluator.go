@@ -312,7 +312,13 @@ func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Ex
 				return &b.CurrencyBox{Value: callable(l.Value, r.Value), Unit: l.Unit}
 			}
 
-			panic("Can't add numbers of different unit")
+			// convert left to right
+			leftConverted, err := e.currencyConverter(l.Value, l.Unit, r.Unit)
+			if err != nil {
+				panic(err)
+			}
+
+			return &b.CurrencyBox{Value: callable(leftConverted, r.Value), Unit: r.Unit}
 		default:
 			panic("Type not supported. Cannot perform binary expression.")
 		}

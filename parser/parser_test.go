@@ -258,6 +258,10 @@ func TestPrecedence(t *testing.T) {
 			"3 in usd in thb in btc in xx",
 			"((((3 in usd) in thb) in btc) in xx)",
 		},
+		{
+			"1 in usd + 2 in thb",
+			"((1 in usd) + (2 in thb))",
+		},
 	}
 
 	for _, tt := range tests {

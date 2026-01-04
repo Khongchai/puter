@@ -191,6 +191,11 @@ func TestCurrencyEvaluation(t *testing.T) {
 			"3 usd",
 			b.CURRENCY_BOX,
 		},
+		{
+			"1 in usd + 2 in thb",
+			"202 thb",
+			b.CURRENCY_BOX,
+		},
 	}
 	for _, c := range cases {
 		eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(200))
@@ -198,7 +203,7 @@ func TestCurrencyEvaluation(t *testing.T) {
 		obj := eval.EvalLine(c.Line)
 
 		if obj.Inspect() != c.ExpectPrint {
-			t.Fatalf("Expected inspect result to be %s, got %s", "2", obj.Inspect())
+			t.Fatalf("Expected inspect result to be %s, got %s", c.ExpectPrint, obj.Inspect())
 		}
 		if obj.Type() != c.ExpectType {
 			t.Fatalf("Expected identifier object, got %+v", obj.Type())

@@ -5,7 +5,6 @@ type Precedence int
 const (
 	PrecLowest = iota
 	PrecAssignment
-	PrecIn
 	PrecLogical
 	PrecEquals
 	PrecLessGreater
@@ -13,5 +12,6 @@ const (
 	PrecProduct
 	PrecExponent
 	PrecPrefix
+	PrecIn
 	PrecCall
 )
