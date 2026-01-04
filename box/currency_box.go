@@ -5,12 +5,12 @@ import (
 )
 
 type CurrencyBox struct {
-	Number *NumberBox
-	Unit   Currency
+	Value float64
+	Unit  Currency
 }
 
 func (bb *CurrencyBox) Inspect() string {
-	text := fmt.Sprintf("%g %s", bb.Number.Value, bb.Unit)
+	text := fmt.Sprintf("%g %s", bb.Value, bb.Unit)
 	return text
 }
 

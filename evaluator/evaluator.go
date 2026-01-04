@@ -100,10 +100,10 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 			panic("Unsupported prefix operation on a number")
 		case *b.CurrencyBox:
 			if operator == ast.MINUS {
-				return &b.CurrencyBox{Number: &b.NumberBox{Value: -right.Number.Value}, Unit: right.Unit}
+				return &b.CurrencyBox{Value: -right.Value, Unit: right.Unit}
 			}
 			if operator == ast.PLUS {
-				return &b.CurrencyBox{Number: &b.NumberBox{Value: right.Number.Value}, Unit: right.Unit}
+				return &b.CurrencyBox{Value: right.Value, Unit: right.Unit}
 			}
 			panic("Unsupported prefix operation on a number")
 		case *b.BooleanBox:
@@ -141,20 +141,20 @@ func (e *Evaluator) evalInExpression(leftExpr ast.Expression, rightExpr ast.Expr
 	switch box := leftBox.(type) {
 	case *b.NumberBox:
 		return &b.CurrencyBox{
-			Number: box,
-			Unit:   right.ActualValue,
+			Value: box.Value,
+			Unit:  right.ActualValue,
 		}
 	case *b.CurrencyBox:
 		rightUnit := right.ActualValue
 		if rightUnit == box.Unit {
-			return &b.CurrencyBox{Number: box.Number, Unit: rightUnit}
+			return &b.CurrencyBox{Value: box.Value, Unit: rightUnit}
 		}
 
-		converted, err := e.currencyConverter(box.Number.Value, box.Unit, rightUnit)
+		converted, err := e.currencyConverter(box.Value, box.Unit, rightUnit)
 		if err != nil {
 			panic(err)
 		}
-		return &b.CurrencyBox{Number: &b.NumberBox{Value: converted}, Unit: rightUnit}
+		return &b.CurrencyBox{Value: converted, Unit: rightUnit}
 
 	default:
 		panic("Invalid left hand side of an in expresison.")
@@ -193,7 +193,7 @@ func (e *Evaluator) evalBinaryBooleanComparisonExpression(left ast.Expression, r
 			return &b.BooleanBox{Value: comp(l.Value, r.Value)}
 		case *b.CurrencyBox:
 			r, _ := (evaluatedRight).(*b.CurrencyBox)
-			return &b.BooleanBox{Value: comp(l.Number.Value, r.Number.Value)}
+			return &b.BooleanBox{Value: comp(l.Value, r.Value)}
 		}
 		return nil
 	}
@@ -299,17 +299,17 @@ func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Ex
 		case *b.NumberBox:
 			return &b.NumberBox{Value: callable(l.Value, r.Value)}
 		case *b.CurrencyBox:
-			return &b.CurrencyBox{Number: &b.NumberBox{Value: callable(l.Value, r.Number.Value)}, Unit: r.Unit}
+			return &b.CurrencyBox{Value: callable(l.Value, r.Value), Unit: r.Unit}
 		default:
 			panic("Type not supported. Cannot add.")
 		}
 	case *b.CurrencyBox:
 		switch r := evalRight.(type) {
 		case *b.NumberBox:
-			return &b.CurrencyBox{Number: &b.NumberBox{Value: callable(l.Number.Value, r.Value)}, Unit: l.Unit}
+			return &b.CurrencyBox{Value: callable(l.Value, r.Value), Unit: l.Unit}
 		case *b.CurrencyBox:
 			if r.Unit == l.Unit {
-				return &b.CurrencyBox{Number: &b.NumberBox{Value: callable(l.Number.Value, r.Number.Value)}, Unit: l.Unit}
+				return &b.CurrencyBox{Value: callable(l.Value, r.Value), Unit: l.Unit}
 			}
 
 			panic("Can't add numbers of different unit")
