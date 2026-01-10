@@ -17,6 +17,15 @@ type Evaluator struct {
 	heap              map[string]b.Box
 	currencyConverter ValueConverter
 	ctx               context.Context
+	// Eval stage holds multiple diagnostics error.
+	// For simplicity, parser and tokenizer always return one errors but this stage returns
+	// multiple since it's the most complex.
+	//
+	// For example, it might be useful to let the user know that x and y in sum(1) + sum(x, y, z) are not numbers. Instead
+	// of just x or y.
+	//
+	// With the parser stage, if the syntax is broken -- it's broken. Just emit whatever error first encountered and return.
+	diagnostics []*ast.Diagnostic
 }
 
 func NewEvaluator(ctx context.Context, currencyConverter ValueConverter) *Evaluator {
