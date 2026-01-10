@@ -25,6 +25,8 @@ type Evaluator struct {
 	// of just x or y.
 	//
 	// With the parser stage, if the syntax is broken -- it's broken. Just emit whatever error first encountered and return.
+	//
+	// There is also the fact that evaluations are line-by-line here so error here does not mean the entire program halts.
 	diagnostics []*ast.Diagnostic
 }
 
