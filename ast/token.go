@@ -8,6 +8,8 @@ const (
 	ILLEGAL = "ILLEGAL"
 	EOF     = "EOF"
 
+	PERCENT = "%"
+
 	IDENT  = "IDENT"
 	NUMBER = "NUMBER"
 
