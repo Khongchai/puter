@@ -87,6 +87,24 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 		}
 	case *ast.BooleanExpression:
 		return &b.BooleanBox{Value: exp.ActualValue}
+	case *ast.PostfixExpression:
+		operator := exp.TokenValue.Type
+		switch operator {
+		case ast.IDENT:
+			evaluated := e.evalInExpression(exp.Left, &ast.IdentExpression{
+				ActualValue: exp.TokenValue.Literal,
+				TokenValue:  exp.TokenValue,
+			})
+			return evaluated
+		case ast.PERCENT:
+			left := e.evalExp(exp.Left)
+			l, isLeftNumber := left.(*b.NumberBox)
+			if !isLeftNumber {
+				panic("The left side of percent must be a number")
+			}
+			return &b.PercentBox{Value: l.Value}
+		}
+		panic("Postfix not supported")
 	case *ast.PrefixExpression:
 		operator := exp.TokenValue.Type
 		switch right := e.evalExp(exp.Right).(type) {
