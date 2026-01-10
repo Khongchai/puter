@@ -10,6 +10,7 @@ type Parser struct {
 	prefixParseFns map[ast.TokenType]PrefixParselet
 	infixParseFns  map[ast.TokenType]InfixParselet
 	scanner        *s.Scanner
+	diagnostics    []*ast.Diagnostic
 }
 
 func NewParser() *Parser {
@@ -57,32 +58,48 @@ func NewParser() *Parser {
 	return parser
 }
 
-func (p *Parser) Parse(text string) ast.Expression {
+func (p *Parser) Parse(text string) (ast.Expression, *ast.Diagnostic) {
 	p.scanner.SetState(0, text)
 	return p.parseExpression(0)
 }
 
-func (p *Parser) parseExpression(precedence int) ast.Expression {
+func (p *Parser) parseExpression(precedence int) (ast.Expression, *ast.Diagnostic) {
 	token := p.Consume()
 
 	nud, ok := p.prefixParseFns[token.Type]
 	if !ok {
-		panic(fmt.Sprintf("Could not parse %s", token.Literal))
+		diag := ast.NewDiagnostic(
+			fmt.Sprintf("Unrecognized prefix token %s", token.Type),
+			token.StartPos(),
+			token.EndPos(),
+		)
+		return nil, diag
 	}
 
-	left := nud.Parse(p, token)
+	left, err := nud.Parse(p, token)
+	if err != nil {
+		return nil, err
+	}
 
 	for precedence < p.getNextPrecedence() {
 		token = p.Consume()
 
 		led := p.infixParseFns[token.Type]
 		if led == nil {
-			panic(fmt.Sprintf("Missing infix parselet for %s", token.Type))
+			diag := ast.NewDiagnostic(
+				fmt.Sprintf("Unrecognized infix token %s", token.Type),
+				token.StartPos(),
+				token.EndPos(),
+			)
+			return nil, diag
 		}
-		left = led.Parse(p, left, token)
+		left, err = led.Parse(p, left, token)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return left
+	return left, nil
 }
 
 func (p *Parser) Consume() *ast.Token {
@@ -101,4 +118,8 @@ func (p *Parser) getNextPrecedence() int {
 		return res.Precedence()
 	}
 	return 0
+}
+
+func (p *Parser) GetDiagnostics() {
+
 }

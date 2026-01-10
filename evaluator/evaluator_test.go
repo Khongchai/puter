@@ -81,7 +81,10 @@ func TestNumberBinaryOperatorEvaluations(t *testing.T) {
 	for _, c := range cases {
 		eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(200))
 
-		obj := eval.EvalLine(c.Line)
+		obj, err := eval.EvalLine(c.Line)
+		if err != nil {
+			t.Fatalf("Unexpected error: %s", err.Message)
+		}
 
 		if obj.Inspect() != c.ExpectPrint {
 			t.Fatalf("Expected inspect result to be %s, got %s", c.ExpectPrint, obj.Inspect())
@@ -153,7 +156,10 @@ func TestBinaryBooleanOperatorEvaluations(t *testing.T) {
 	for _, c := range cases {
 		eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(200))
 
-		obj := eval.EvalLine(c.Line)
+		obj, err := eval.EvalLine(c.Line)
+		if err != nil {
+			t.Fatalf("Unexpected error: %s", err.Message)
+		}
 
 		if obj.Inspect() != c.ExpectPrint {
 			t.Fatalf("Expected inspect result to be %s, got %s", c.ExpectPrint, obj.Inspect())
@@ -215,7 +221,10 @@ func TestCurrencyEvaluation(t *testing.T) {
 	for _, c := range cases {
 		eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(200))
 
-		obj := eval.EvalLine(c.Line)
+		obj, err := eval.EvalLine(c.Line)
+		if err != nil {
+			t.Fatalf("Unexpected error: %s", err.Message)
+		}
 
 		if obj.Inspect() != c.ExpectPrint {
 			t.Fatalf("Expected inspect result to be %s, got %s", c.ExpectPrint, obj.Inspect())
@@ -232,7 +241,10 @@ func TestCurrencyConversionMultiline(t *testing.T) {
 	eval.EvalLine("a = 1 + 2 in usd") // 3 usd
 	eval.EvalLine("k = a in thb")     // 100 thb
 	eval.EvalLine("x = k + 2")        // 102 thb
-	result := eval.EvalLine("x")      // 102 thb
+	result, err := eval.EvalLine("x") // 102 thb
+	if err != nil {
+		t.Fatalf("Unexpected error %s", err.Message)
+	}
 	if result.Inspect() != "102 thb" {
 		t.Fatalf("Expected 102 thb, got %s", result.Inspect())
 	}
@@ -262,7 +274,10 @@ func TestPrefixEvaluation(t *testing.T) {
 	for _, c := range cases {
 		eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(200))
 
-		obj := eval.EvalLine(c.Line)
+		obj, err := eval.EvalLine(c.Line)
+		if err != nil {
+			t.Fatalf("Unexpected error: %s", err.Message)
+		}
 
 		if obj.Inspect() != c.ExpectPrint {
 			t.Fatalf("Expected inspect result to be %s, got %s", c.ExpectPrint, obj.Inspect())
@@ -309,7 +324,10 @@ func TestComparsionEvaluation(t *testing.T) {
 	for _, c := range cases {
 		eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(200))
 
-		obj := eval.EvalLine(c.Line)
+		obj, err := eval.EvalLine(c.Line)
+		if err != nil {
+			t.Fatalf("Unexpected error: %s", err.Message)
+		}
 
 		if obj.Inspect() != c.ExpectPrint {
 			t.Fatalf("Expected inspect result to be %s, got %s", c.ExpectPrint, obj.Inspect())
@@ -351,7 +369,10 @@ func TestPercent(t *testing.T) {
 			return -1, errors.New("Currency conversion not supported in this test suite")
 		})
 
-		obj := eval.EvalLine(c.Line)
+		obj, err := eval.EvalLine(c.Line)
+		if err != nil {
+			t.Fatalf("Unexpected error: %s", err.Message)
+		}
 
 		if obj.Inspect() != c.ExpectPrint {
 			t.Fatalf("Expected inspect result to be %s, got %s", c.ExpectPrint, obj.Inspect())
@@ -403,7 +424,10 @@ func TestBuiltinFunctionEvaluations(t *testing.T) {
 	for _, c := range cases {
 		eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(200))
 
-		obj := eval.EvalLine(c.Line)
+		obj, err := eval.EvalLine(c.Line)
+		if err != nil {
+			t.Fatalf("Unexpected error: %s", err.Message)
+		}
 
 		if obj.Inspect() != c.ExpectPrint {
 			t.Fatalf("Expected inspect result to be %s, got %s", c.ExpectPrint, obj.Inspect())

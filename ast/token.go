@@ -45,21 +45,25 @@ const (
 
 // Puter scanner scans expression line by line so no need to store line information here.
 type Token struct {
-	Type     TokenType
-	Literal  string
-	StartPos int
+	Type    TokenType
+	Literal string
+	pos     int
 }
 
 func NewToken(tokenType TokenType, literal string, pos int) *Token {
 	return &Token{
-		Type:     tokenType,
-		Literal:  literal,
-		StartPos: pos,
+		Type:    tokenType,
+		Literal: literal,
+		pos:     pos,
 	}
+}
+
+func (t *Token) StartPos() int {
+	return t.pos
 }
 
 // Inclusive start, exclusive end.
 // "cat" is start = 0 and end = 3
 func (t *Token) EndPos() int {
-	return t.StartPos + len(t.Literal)
+	return t.pos + len(t.Literal)
 }

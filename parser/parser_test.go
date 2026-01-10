@@ -7,7 +7,10 @@ import (
 )
 
 func TestNumberParsing(t *testing.T) {
-	exp := NewParser().Parse("1")
+	exp, err := NewParser().Parse("1")
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err.Message)
+	}
 	conv, _ := strconv.ParseFloat(exp.String(), 64)
 	if conv != 1 {
 		t.Fatalf("Parsing result is not 1, got %f", conv)
@@ -15,7 +18,10 @@ func TestNumberParsing(t *testing.T) {
 }
 
 func TestOperatorExpression(t *testing.T) {
-	exp := NewParser().Parse("1 + 2")
+	exp, err := NewParser().Parse("1 + 2")
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err.Message)
+	}
 	result := exp.String()
 	expected := "(1 + 2)"
 	if result != expected {
@@ -28,7 +34,10 @@ func TestOperatorExpression(t *testing.T) {
 }
 
 func TestCallExpressionWithArguments(t *testing.T) {
-	exp := NewParser().Parse("add(1, 2, 3)")
+	exp, err := NewParser().Parse("add(1, 2, 3)")
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err.Message)
+	}
 	result := exp.String()
 	if result != "add(1, 2, 3)" {
 		t.Fatalf("Parsing result is not add(1, 2, 3), got %s", result)
@@ -49,7 +58,10 @@ func TestCallExpressionWithArguments(t *testing.T) {
 }
 
 func TestCallExpressionWithNoArguments(t *testing.T) {
-	exp := NewParser().Parse("add()")
+	exp, err := NewParser().Parse("add()")
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err.Message)
+	}
 	result := exp.String()
 	if result != "add()" {
 		t.Fatalf("Parsing result is not add(), got %s", result)
@@ -71,7 +83,10 @@ func TestCallExpressionWithNoArguments(t *testing.T) {
 }
 
 func TestNumberAssignExpression(t *testing.T) {
-	exp := NewParser().Parse("a = 2")
+	exp, err := NewParser().Parse("a = 2")
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err.Message)
+	}
 	result := exp.String()
 	expected := "a = 2"
 	if result != expected {
@@ -94,7 +109,10 @@ func TestNumberAssignExpression(t *testing.T) {
 }
 
 func TestNameAssignExpression(t *testing.T) {
-	exp := NewParser().Parse("a = b")
+	exp, err := NewParser().Parse("a = b")
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err.Message)
+	}
 	result := exp.String()
 	expected := "a = b"
 	if result != expected {
@@ -274,11 +292,40 @@ func TestPrecedence(t *testing.T) {
 
 	for _, tt := range tests {
 		p := NewParser()
-		expression := p.Parse(tt.input)
+		expression, err := p.Parse(tt.input)
+		if err != nil {
+			t.Errorf("Unexpected error: %s", err.Message)
+		}
 
 		actual := expression.String()
 		if actual != tt.expected {
 			t.Errorf("expected=%q, got=%q", tt.expected, actual)
 		}
 	}
+}
+
+func TestErrorHandling(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{
+			"-a",
+			"(-a)",
+		},
+	}
+
+	for _, tt := range tests {
+		p := NewParser()
+		expression, err := p.Parse(tt.input)
+		if err != nil {
+			t.Errorf("Unexpected error: %s", err.Message)
+		}
+
+		actual := expression.String()
+		if actual != tt.expected {
+			t.Errorf("expected=%q, got=%q", tt.expected, actual)
+		}
+	}
+
 }
