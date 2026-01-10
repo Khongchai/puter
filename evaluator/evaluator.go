@@ -39,13 +39,14 @@ func NewEvaluator(ctx context.Context, currencyConverter ValueConverter) *Evalua
 
 // Evaluate the content of a line. Line separation is assumed
 // to have been done by some earlier stage.
-func (e *Evaluator) EvalLine(text string) (b.Box, *ast.Diagnostic) {
+func (e *Evaluator) EvalLine(text string) b.Box {
 	expression, err := e.parser.Parse(text)
 	if err != nil {
-		return nil, err
+		e.diagnostics = append(e.diagnostics, err)
+		return nil
 	}
 	result := e.evalExp(expression)
-	return result, nil
+	return result
 }
 
 func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
