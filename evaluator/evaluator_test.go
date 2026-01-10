@@ -315,22 +315,22 @@ func TestPercent(t *testing.T) {
 		{
 			"2%",
 			"2%",
-			b.NUMBER_BOX,
+			b.PERCENT_BOX,
 		},
 		{
 			"2 + 5%",
-			"7%",
-			b.NUMBER_BOX,
+			fmt.Sprintf("%g%%", 2*1.5),
+			b.PERCENT_BOX,
 		},
 		{
 			"2 in usd + 10% + 5 in usd",
-			"7.1%",
-			b.NUMBER_BOX,
+			fmt.Sprintf("%g usd", 2*1.1+5),
+			b.CURRENCY_BOX,
 		},
 		{
 			"2 in usd + 10% + 5 in thb",
-			"7.1%",
-			b.NUMBER_BOX,
+			fmt.Sprintf("%g thb", 2*1.1+5),
+			b.CURRENCY_BOX,
 		},
 	}
 	for _, c := range cases {
