@@ -39,9 +39,9 @@ Create a go program first, hook in lsp later.
     - [x] Add builtins support (continue from here (e *Evaluator) evalCallExpression(functionName ast.Expression)
         - [x] implement
         - [x] tests
-    - [ ] add % postfix 
-    - [ ] Move number-related logic to be on the boxes themselves.
-    - [ ] Allow (2 usd)
+    - [x] add % postfix 
+    ~~- [-] Deal with n^2 expression problem in `evalBinaryNumberExpression`~~
+        - Ok there is actually a plus side to this -- using switch statement like that is going to allow for very clear error branches.
     - [ ] Add error propagation and handling
     - [ ] Wrap with lsp
     - [ ] Publish poc
