@@ -19,7 +19,6 @@ Create a go program first, hook in lsp later.
         - [x] Boolean operators (!, ||, &&)
         - [x] `In` keyword for turning something into particular unit (`in ms in hr`)
 
-
     Refs:
     - https://github.com/desmosinc/pratt-parser-blog-code/tree/main/src
     - https://github.com/munificent/bantam/blob/master/src/com/stuffwithstuff/bantam/expressions/PrefixExpression.java
@@ -37,11 +36,12 @@ Create a go program first, hook in lsp later.
     - [x] Remaining operators 
         - [x] continue implementing comparision and equality operators in eval
         - [x] write tests for boolean comparsion expression
-    - [ ] Add builtins support (continue from here (e *Evaluator) evalCallExpression(functionName ast.Expression)
-        - [ ] mod keyword
-        - [ ] implement
-        - [ ] tests
-    - [ ] pi and e constant (allow overriding)
+    - [x] Add builtins support (continue from here (e *Evaluator) evalCallExpression(functionName ast.Expression)
+        - [x] implement
+        - [x] tests
+    - [ ] add % postfix 
+    - [ ] Move number-related logic to be on the boxes themselves.
+    - [ ] Allow (2 usd)
     - [ ] Add error propagation and handling
     - [ ] Wrap with lsp
     - [ ] Publish poc
@@ -50,6 +50,8 @@ Create a go program first, hook in lsp later.
 <!-- end section -->
 
 # Backlog
+- [ ] mod keyword (builtin invocation)
+- [ ] pi and e constant (allow overriding)
 - [ ] Summing everything above current line (can be done in a later stage that detects special keyword)
 - [ ] Add more unit supports (metrics, gbs)
 - [ ] Apply go worker and channels to optimize wait time when network fetching is required
