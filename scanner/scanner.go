@@ -99,6 +99,9 @@ func (s *Scanner) Next() *ast.Token {
 	case '^':
 		token = ast.NewToken(ast.CARET, string(s.ch(0)), s.pos)
 		s.pos++
+	case '%':
+		token = ast.NewToken(ast.PERCENT, string(s.ch(0)), s.pos)
+		s.pos++
 	case 0:
 		token = ast.NewToken(ast.EOF, "", s.pos)
 		s.pos++
