@@ -312,12 +312,26 @@ func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Ex
 	evalLeft := e.evalExp(left)
 	evalRight := e.evalExp(right)
 	switch l := evalLeft.(type) {
+	case *b.PercentBox:
+		switch r := evalRight.(type) {
+		case *b.NumberBox:
+			return &b.NumberBox{Value: callable(r.Value, (l.Value/100)*r.Value)}
+		case *b.CurrencyBox:
+			return &b.CurrencyBox{Value: callable(r.Value, (l.Value/100)*r.Value), Unit: r.Unit}
+		case *b.PercentBox:
+			return &b.PercentBox{Value: callable(l.Value, r.Value)}
+		default:
+			panic("Type not supported. Cannot add.")
+		}
 	case *b.NumberBox:
 		switch r := evalRight.(type) {
 		case *b.NumberBox:
 			return &b.NumberBox{Value: callable(l.Value, r.Value)}
 		case *b.CurrencyBox:
 			return &b.CurrencyBox{Value: callable(l.Value, r.Value), Unit: r.Unit}
+		case *b.PercentBox:
+			// 2 + 2% = 2 + (2/200 * 2)
+			return &b.NumberBox{Value: callable(l.Value, (r.Value/100)*l.Value)}
 		default:
 			panic("Type not supported. Cannot add.")
 		}
@@ -337,6 +351,9 @@ func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Ex
 			}
 
 			return &b.CurrencyBox{Value: callable(leftConverted, r.Value), Unit: r.Unit}
+		case *b.PercentBox:
+			// 2 + 2% = 2 + (2/200 * 2)
+			return &b.CurrencyBox{Value: callable(l.Value, (r.Value/100)*l.Value), Unit: l.Unit}
 		default:
 			panic("Type not supported. Cannot perform binary expression.")
 		}

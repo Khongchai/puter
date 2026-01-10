@@ -201,6 +201,16 @@ func TestCurrencyEvaluation(t *testing.T) {
 			"202 thb",
 			b.CURRENCY_BOX,
 		},
+		{
+			"1 usd + 2 in thb",
+			"202 thb",
+			b.CURRENCY_BOX,
+		},
+		{
+			"1 usd + 2 thb",
+			"202 thb",
+			b.CURRENCY_BOX,
+		},
 	}
 	for _, c := range cases {
 		eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(200))
@@ -319,8 +329,8 @@ func TestPercent(t *testing.T) {
 		},
 		{
 			"2 + 5%",
-			fmt.Sprintf("%g%%", 2*1.5),
-			b.PERCENT_BOX,
+			fmt.Sprintf("%g", 2*1.05),
+			b.NUMBER_BOX,
 		},
 		{
 			"2 in usd + 10% + 5 in usd",
@@ -328,8 +338,8 @@ func TestPercent(t *testing.T) {
 			b.CURRENCY_BOX,
 		},
 		{
-			"2 in usd + 10% + 5 in thb",
-			fmt.Sprintf("%g thb", 2*1.1+5),
+			"2 usd + 10% + 5 thb",
+			fmt.Sprintf("%g thb", (2*1.1)*34.4+5),
 			b.CURRENCY_BOX,
 		},
 	}
