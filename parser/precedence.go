@@ -14,4 +14,5 @@ const (
 	PrecPrefix
 	PrecIn
 	PrecCall
+	PrecPercent
 )

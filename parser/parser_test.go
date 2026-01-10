@@ -262,6 +262,14 @@ func TestPrecedence(t *testing.T) {
 			"1 in usd + 2 in thb",
 			"((1 in usd) + (2 in thb))",
 		},
+		{
+			"1%",
+			"(1 %)",
+		},
+		{
+			"1 usd",
+			"(1 usd)",
+		},
 	}
 
 	for _, tt := range tests {
