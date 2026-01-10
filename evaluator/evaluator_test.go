@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	b "puter/box"
+	b "puter/evaluator/box"
 	"testing"
 )
 

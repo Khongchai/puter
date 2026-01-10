@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math"
 	"puter/ast"
-	b "puter/box"
+	b "puter/evaluator/box"
 	p "puter/parser"
 )
 
