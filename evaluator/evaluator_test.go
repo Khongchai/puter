@@ -167,6 +167,11 @@ func TestBinaryBooleanOperatorEvaluations(t *testing.T) {
 func TestCurrencyEvaluation(t *testing.T) {
 	cases := []*EvaluationCase{
 		{
+			"2 usd",
+			"2 usd",
+			b.CURRENCY_BOX,
+		},
+		{
 			"x = 2",
 			"2",
 			b.NUMBER_BOX,
