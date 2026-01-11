@@ -1,7 +1,7 @@
 package parser
 
 import (
-	ast "puter/ast"
+	ast "puter/engine/ast"
 )
 
 type InfixParselet interface {

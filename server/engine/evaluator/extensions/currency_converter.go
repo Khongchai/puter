@@ -7,8 +7,8 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"puter/evaluator"
-	"puter/evaluator/box"
+	"puter/engine/evaluator"
+	"puter/engine/evaluator/box"
 )
 
 func GetCurrencyConverter() evaluator.ValueConverter {

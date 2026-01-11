@@ -1,7 +1,7 @@
 package scanner
 
 import (
-	ast "puter/ast"
+	ast "puter/engine/ast"
 )
 
 type Scanner struct {

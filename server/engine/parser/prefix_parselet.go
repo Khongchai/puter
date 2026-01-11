@@ -2,7 +2,7 @@ package parser
 
 import (
 	"fmt"
-	ast "puter/ast"
+	ast "puter/engine/ast"
 	"strconv"
 )
 
