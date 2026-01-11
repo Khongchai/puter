@@ -42,11 +42,9 @@ Create a go program first, hook in lsp later.
     - [x] add % postfix 
     ~~- [-] Deal with n^2 expression problem in `evalBinaryNumberExpression`~~
         - Ok there is actually a plus side to this -- using switch statement like that is going to allow for very clear error branches.
-    - [ ] Add error propagation and handling
+    - [x] Add error propagation and handling
         - [x] parser/scanner
-        - [ ] clear all panic from evaluator
-
-        - No need to write test, just wrap with lsp and see what's up
+        - [x] clear all panic from evaluator
     - [ ] Wrap with lsp
     - [ ] Publish poc
     - [ ] Optimize with non blocking goroutines.
