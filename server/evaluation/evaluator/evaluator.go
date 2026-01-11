@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log"
 	"math"
-	"puter/engine/ast"
-	b "puter/engine/evaluator/box"
-	p "puter/engine/parser"
+	"puter/evaluation/ast"
+	b "puter/evaluation/evaluator/box"
+	p "puter/evaluation/parser"
 )
 
 type ValueConverter = func(fromValue float64, fromUnit string, toUnit string) (float64, error)

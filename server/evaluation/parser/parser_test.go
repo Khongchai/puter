@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"puter/engine/ast"
+	"puter/evaluation/ast"
 	"strconv"
 	"testing"
 )

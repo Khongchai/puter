@@ -1,7 +1,7 @@
 package scanner
 
 import (
-	"puter/engine/ast"
+	"puter/evaluation/ast"
 	"testing"
 )
 

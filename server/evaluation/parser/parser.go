@@ -2,8 +2,8 @@ package parser
 
 import (
 	"fmt"
-	ast "puter/engine/ast"
-	s "puter/engine/scanner"
+	ast "puter/evaluation/ast"
+	s "puter/evaluation/scanner"
 )
 
 type Parser struct {
