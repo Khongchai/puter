@@ -410,6 +410,14 @@ func TestBuiltinFunctionEvaluations(t *testing.T) {
 
 		obj := eval.EvalLine(c.Line)
 
+		if len(eval.diagnostics) != 0 {
+			v := ""
+			for _, d := range eval.diagnostics {
+				v += fmt.Sprintf("[%s] ", d.Message)
+			}
+			t.Fatalf("Eval errors for case %s: %s", c.Line, v)
+		}
+
 		if obj.Inspect() != c.ExpectPrint {
 			t.Fatalf("Expected inspect result to be %s, got %s", c.ExpectPrint, obj.Inspect())
 		}

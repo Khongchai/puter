@@ -361,11 +361,11 @@ func (e *Evaluator) evalCallExpression(functionName ast.Expression, arguments []
 	case "sqrt":
 		return matchArgsAndReturn(1, func(v []float64) float64 { return math.Sqrt(v[0]) })
 	case "lerp":
-		return matchArgsAndReturn(1, func(v []float64) float64 {
+		return matchArgsAndReturn(3, func(v []float64) float64 {
 			return (1-args[2])*args[0] + args[2]*args[1]
 		})
 	case "invLerp":
-		return matchArgsAndReturn(1, func(v []float64) float64 {
+		return matchArgsAndReturn(3, func(v []float64) float64 {
 			return (args[2] - args[0]) / (args[1] - args[0])
 		})
 	case "sum":
