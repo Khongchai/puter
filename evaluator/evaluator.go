@@ -3,6 +3,7 @@ package evaluator
 import (
 	"context"
 	"fmt"
+	"log"
 	"math"
 	"puter/ast"
 	b "puter/evaluator/box"
@@ -41,6 +42,8 @@ func NewEvaluator(ctx context.Context, currencyConverter ValueConverter) *Evalua
 
 // Evaluate the content of a line. Line separation is assumed
 // to have been done by some earlier stage.
+//
+// The returned b.Box is nullable if an error is encountered during evaluation
 func (e *Evaluator) EvalLine(text string) b.Box {
 	expression, err := e.parser.Parse(text)
 	if err != nil {
@@ -56,35 +59,40 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 	case *ast.AssignExpression:
 		value := e.evalExp(exp.Right)
 		ident, ok := exp.Name.(*ast.IdentExpression)
-		if !ok {
-			panic("Invalid identifier")
+		if ok {
+			e.heap[ident.ActualValue] = value
+			return value
+
 		}
-		e.heap[ident.ActualValue] = value
+		e.diagnostics = append(
+			e.diagnostics,
+			ast.NewDiagnosticAtToken("Expected an identifier", ident.Token()),
+		)
 		return value
 	case *ast.CallExpression:
 		return e.evalCallExpression(exp.FunctionNameExpression, exp.Args)
 	case *ast.OperatorExpression:
 		switch exp.Operator.Type {
 		case ast.PLUS:
-			return e.evalBinaryNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
+			return e.evalBinaryNumberExpression(exp.Left, exp.Right, exp.Operator, func(a, b float64) float64 {
 				return a + b
 			})
 		case ast.MINUS:
-			return e.evalBinaryNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
+			return e.evalBinaryNumberExpression(exp.Left, exp.Right, exp.Operator, func(a, b float64) float64 {
 				return a - b
 			})
 		case ast.SLASH:
-			return e.evalBinaryNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
+			return e.evalBinaryNumberExpression(exp.Left, exp.Right, exp.Operator, func(a, b float64) float64 {
 				return a / b
 			})
 		case ast.IN:
 			return e.evalInExpression(exp.Left, exp.Right)
 		case ast.ASTERISK:
-			return e.evalBinaryNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
+			return e.evalBinaryNumberExpression(exp.Left, exp.Right, exp.Operator, func(a, b float64) float64 {
 				return a * b
 			})
 		case ast.CARET:
-			return e.evalBinaryNumberExpression(exp.Left, exp.Right, func(a, b float64) float64 {
+			return e.evalBinaryNumberExpression(exp.Left, exp.Right, exp.Operator, func(a, b float64) float64 {
 				return math.Pow(a, b)
 			})
 		case ast.LOGICAL_AND:
@@ -96,9 +104,9 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 				return a || b
 			})
 		case ast.EQ, ast.NOT_EQ, ast.LT, ast.GT, ast.LTE, ast.GTE:
-			return e.evalBinaryBooleanComparisonExpression(exp.Left, exp.Right, exp.Operator.Type)
+			return e.evalBinaryBooleanComparisonExpression(exp.Left, exp.Right, exp.Operator)
 		default:
-			panic("Invalid operator token")
+			return nil
 		}
 	case *ast.BooleanExpression:
 		return &b.BooleanBox{Value: exp.ActualValue}
@@ -115,11 +123,19 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 			left := e.evalExp(exp.Left)
 			l, isLeftNumber := left.(*b.NumberBox)
 			if !isLeftNumber {
-				panic("The left side of percent must be a number")
+				e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(
+					"The left-hand side expression of a percent symbol must be a number type",
+					exp.Left.Token(),
+				))
+				return nil
 			}
 			return &b.PercentBox{Value: l.Value}
 		}
-		panic("Postfix not supported")
+		e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(
+			"Unrecognized postfix operator",
+			exp.Token(),
+		))
+		return nil
 	case *ast.PrefixExpression:
 		operator := exp.TokenValue.Type
 		switch right := e.evalExp(exp.Right).(type) {
@@ -130,7 +146,11 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 			if operator == ast.PLUS {
 				return &b.NumberBox{Value: right.Value}
 			}
-			panic("Unsupported prefix operation on a number")
+			e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(
+				"Unsupported prefix operation on a number",
+				exp.Token(),
+			))
+			return nil
 		case *b.CurrencyBox:
 			if operator == ast.MINUS {
 				return &b.CurrencyBox{Value: -right.Value, Unit: right.Unit}
@@ -138,26 +158,43 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 			if operator == ast.PLUS {
 				return &b.CurrencyBox{Value: right.Value, Unit: right.Unit}
 			}
-			panic("Unsupported prefix operation on a number")
+			e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(
+				"Unsupported prefix operation on a currency",
+				exp.Token(),
+			))
+			return nil
 		case *b.BooleanBox:
 			if operator == ast.BANG {
 				return &b.BooleanBox{Value: !right.Value}
 			}
-			panic("Unsupported prefix operation on a boolean")
+			e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(
+				"Unsupported prefix operation on a boolean",
+				exp.Token(),
+			))
+			return nil
 		default:
-			panic("The right-hand side of this prefix expression is invalid")
+			e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(
+				"The right-hand expression of this prefix operation is not supported.",
+				exp.Token(),
+			))
+			return nil
 		}
 	case *ast.IdentExpression:
 		found, ok := e.heap[exp.ActualValue]
 		if !ok {
-			panic(fmt.Sprintf("Identifier %s not found", found.Inspect()))
+			e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(
+				"Identifier not found",
+				exp.Token(),
+			))
+			return nil
 		}
 		return found
 	case *ast.NumberExpression:
 		return &b.NumberBox{Value: exp.ActualValue}
 	default:
 		x := exp.String()
-		panic(fmt.Sprintf("Unhandled case %s", x))
+		log.Fatalf("Evaluator error: unhandled case %s", x)
+		return nil
 	}
 }
 
@@ -165,7 +202,8 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 func (e *Evaluator) evalInExpression(leftExpr ast.Expression, rightExpr ast.Expression) b.Box {
 	right, rightIsIdentifier := rightExpr.(*ast.IdentExpression)
 	if !rightIsIdentifier {
-		panic("Right side of an in expression must be a unit identifier")
+		e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken("Right side of an in expression must be a unit identifier", right.Token()))
+		return nil
 	}
 
 	// if left already a number box, no need for conversion. Just use the unit on the right
@@ -185,12 +223,15 @@ func (e *Evaluator) evalInExpression(leftExpr ast.Expression, rightExpr ast.Expr
 
 		converted, err := e.currencyConverter(box.Value, box.Unit, rightUnit)
 		if err != nil {
-			panic(err)
+			e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(err.Error(), right.Token()))
+			return nil
 		}
 		return &b.CurrencyBox{Value: converted, Unit: rightUnit}
 
 	default:
-		panic("Invalid left hand side of an in expresison.")
+		text := "Expect left-hand side of an in expression to be a number or a currency"
+		e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(text, right.Token()))
+		return nil
 	}
 }
 
@@ -198,25 +239,34 @@ func (e *Evaluator) evalBinaryBooleanLogicalExpression(left ast.Expression, righ
 	evalLeft, leftIsBool := e.evalExp(left).(*b.BooleanBox)
 	evalRight, rightIsBool := e.evalExp(right).(*b.BooleanBox)
 	if !leftIsBool || !rightIsBool {
-		panic("Both left and right side of a boolean binary operation must be boolean")
+		e.diagnostics = append(e.diagnostics, ast.NewDiagnostic(
+			"Both must be boolean",
+			left.Token().StartPos(),
+			right.Token().EndPos(),
+		))
+		return nil
 	}
 
 	return &b.BooleanBox{Value: callable(evalLeft.Value, evalRight.Value)}
 }
 
-func (e *Evaluator) evalBinaryBooleanComparisonExpression(left ast.Expression, right ast.Expression, operatorType ast.TokenType) b.Box {
+func (e *Evaluator) evalBinaryBooleanComparisonExpression(left ast.Expression, right ast.Expression, operator *ast.Token) b.Box {
+
 	evaluatedRight := e.evalExp(right)
 	evaluatedLeft := e.evalExp(left)
-	if operatorType == ast.EQ {
+	if operator.Type == ast.EQ {
 		return &b.BooleanBox{Value: evaluatedRight.Inspect() == evaluatedLeft.Inspect()}
 	}
-	if operatorType == ast.NOT_EQ {
+	if operator.Type == ast.NOT_EQ {
 		return &b.BooleanBox{Value: evaluatedRight.Inspect() != evaluatedLeft.Inspect()}
 	}
 
-	// TODO let's support this later, for example 3 usd > 2 thb. But for now 3 usd > (2 thb in usd) is fine.
 	if evaluatedRight.Type() != evaluatedLeft.Type() {
-		panic("Comparsion of different type or unit")
+		e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(
+			fmt.Sprintf("Can't compare %s and %s", evaluatedLeft.Type(), evaluatedRight.Type()),
+			operator,
+		))
+		return nil
 	}
 
 	comp := func(comp func(a, b float64) bool) *b.BooleanBox {
@@ -226,106 +276,127 @@ func (e *Evaluator) evalBinaryBooleanComparisonExpression(left ast.Expression, r
 			return &b.BooleanBox{Value: comp(l.Value, r.Value)}
 		case *b.CurrencyBox:
 			r, _ := (evaluatedRight).(*b.CurrencyBox)
-			return &b.BooleanBox{Value: comp(l.Value, r.Value)}
+			if l.Unit == r.Unit {
+				return &b.BooleanBox{Value: comp(l.Value, r.Value)}
+			}
+
+			converted, err := e.currencyConverter(l.Value, l.Unit, r.Unit)
+			if err != nil {
+				e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(err.Error(), operator))
+				return nil
+			}
+			return &b.BooleanBox{Value: comp(converted, r.Value)}
 		}
+		e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken("Relational operators only applicable to currency or number types", operator))
 		return nil
 	}
-
-	result := func() *b.BooleanBox {
-		switch operatorType {
-		case ast.GT:
-			return comp(func(a, b float64) bool { return a > b })
-		case ast.LT:
-			return comp(func(a, b float64) bool { return a < b })
-		case ast.GTE:
-			return comp(func(a, b float64) bool { return a >= b })
-		case ast.LTE:
-			return comp(func(a, b float64) bool { return a <= b })
-		}
+	switch operator.Type {
+	case ast.GT:
+		return comp(func(a, b float64) bool { return a > b })
+	case ast.LT:
+		return comp(func(a, b float64) bool { return a < b })
+	case ast.GTE:
+		return comp(func(a, b float64) bool { return a >= b })
+	case ast.LTE:
+		return comp(func(a, b float64) bool { return a <= b })
+	default:
+		e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken("Unrecognized operator", operator))
 		return nil
-	}()
-
-	if result != nil {
-		return result
 	}
-
-	panic("Unsupported boolean comparsion expression")
 }
 
 // For now we only support builtin functions and all builtin functions are simple math functions.
 func (e *Evaluator) evalCallExpression(functionName ast.Expression, arguments []ast.Expression) b.Box {
-	readArgs := func(expectedCount int, unlimited bool) []float64 {
-		if !unlimited && len(arguments) != expectedCount {
-			panic(fmt.Sprintf("Expected %d arguments, got %d len(arguments)", expectedCount, len(arguments)))
+	var args []float64
+	var diagnostics []*ast.Diagnostic
+	for _, arg := range arguments {
+		evaluated, ok := e.evalExp(arg).(*b.NumberBox)
+		if !ok {
+			diagnostics = append(diagnostics, ast.NewDiagnosticAtToken(
+				fmt.Sprintf("Method expect number, but got %s instead", evaluated.Type()),
+				arg.Token(),
+			))
+		} else {
+			args = append(args, evaluated.Value)
 		}
-
-		var results []float64
-		for _, arg := range arguments {
-			evaluated, ok := e.evalExp(arg).(*b.NumberBox)
-			if !ok {
-				panic(fmt.Sprintf("Method expect number, but got %s instead", evaluated.Type()))
-			}
-			results = append(results, evaluated.Value)
-		}
-
-		return results
 	}
 
-	result := func() float64 {
-		switch functionName.String() {
-		case "log10":
-			return math.Log10(readArgs(1, false)[0])
-		case "logE":
-			return math.Log(readArgs(1, false)[0])
-		case "log2":
-			return math.Log2(readArgs(1, false)[0])
-		case "round":
-			return math.Round(readArgs(1, false)[0])
-		case "floor":
-			return math.Floor(readArgs(1, false)[0])
-		case "ceil":
-			return math.Ceil(readArgs(1, false)[0])
-		case "abs":
-			return math.Abs(readArgs(1, false)[0])
-		case "sin":
-			return math.Sin(readArgs(1, false)[0])
-		case "cos":
-			return math.Cos(readArgs(1, false)[0])
-		case "tan":
-			return math.Tan(readArgs(1, false)[0])
-		case "sqrt":
-			return math.Sqrt(readArgs(1, false)[0])
-		case "lerp":
-			read := readArgs(3, false)
-			return (1-read[2])*read[0] + read[2]*read[1]
-		case "invLerp":
-			read := readArgs(3, false)
-			return (read[2] - read[0]) / (read[1] - read[0])
-		case "sum":
-			read := readArgs(-1, true)
-			s := 0.0
-			for _, n := range read {
-				s += n
-			}
-			return s
-		case "product":
-			read := readArgs(-1, true)
-			s := 0.0
-			for _, n := range read {
-				s *= n
-			}
-			return s
-		default:
-			panic("Unrecognized function name")
-		}
-	}()
+	if len(diagnostics) > 0 {
+		return nil
+	}
 
-	return &b.NumberBox{Value: result}
+	matchArgsAndReturn := func(expectedCount int, fn func([]float64) float64) b.Box {
+		if len(arguments) != expectedCount {
+			text := fmt.Sprintf("Expected %d arguments, got %d len(arguments)", expectedCount, len(arguments))
+			e.diagnostics = append(
+				e.diagnostics,
+				ast.NewDiagnosticAtToken(text, functionName.Token()),
+			)
+			return nil
+		}
+		v := fn(args)
+		return &b.NumberBox{Value: v}
+	}
+	switch functionName.String() {
+	case "log10":
+		return matchArgsAndReturn(1, func(v []float64) float64 { return math.Log10(v[0]) })
+	case "logE":
+		return matchArgsAndReturn(1, func(v []float64) float64 { return math.Log(v[0]) })
+	case "log2":
+		return matchArgsAndReturn(1, func(v []float64) float64 { return math.Log2(v[0]) })
+	case "round":
+		return matchArgsAndReturn(1, func(v []float64) float64 { return math.Round(v[0]) })
+	case "floor":
+		return matchArgsAndReturn(1, func(v []float64) float64 { return math.Floor(v[0]) })
+	case "ceil":
+		return matchArgsAndReturn(1, func(v []float64) float64 { return math.Ceil(v[0]) })
+	case "abs":
+		return matchArgsAndReturn(1, func(v []float64) float64 { return math.Abs(v[0]) })
+	case "sin":
+		return matchArgsAndReturn(1, func(v []float64) float64 { return math.Sin(v[0]) })
+	case "cos":
+		return matchArgsAndReturn(1, func(v []float64) float64 { return math.Cos(v[0]) })
+	case "tan":
+		return matchArgsAndReturn(1, func(v []float64) float64 { return math.Tan(v[0]) })
+	case "sqrt":
+		return matchArgsAndReturn(1, func(v []float64) float64 { return math.Sqrt(v[0]) })
+	case "lerp":
+		return matchArgsAndReturn(1, func(v []float64) float64 {
+			return (1-args[2])*args[0] + args[2]*args[1]
+		})
+	case "invLerp":
+		return matchArgsAndReturn(1, func(v []float64) float64 {
+			return (args[2] - args[0]) / (args[1] - args[0])
+		})
+	case "sum":
+		s := 0.0
+		for _, n := range args {
+			s += n
+		}
+		return &b.NumberBox{Value: s}
+	case "product":
+		s := 0.0
+		for _, n := range args {
+			s *= n
+		}
+		return &b.NumberBox{Value: s}
+	default:
+		e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken("Unknown function name", functionName.Token()))
+		return nil
+	}
 }
 
-func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Expression, callable func(a, b float64) float64) b.Box {
+func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Expression, operator *ast.Token, callable func(a, b float64) float64) b.Box {
 	evalLeft := e.evalExp(left)
 	evalRight := e.evalExp(right)
+	fail := func() b.Box {
+		e.diagnostics = append(e.diagnostics, ast.NewDiagnostic(
+			"Mismatch types",
+			left.Token().StartPos(),
+			right.Token().EndPos(),
+		))
+		return nil
+	}
 	switch l := evalLeft.(type) {
 	case *b.PercentBox:
 		switch r := evalRight.(type) {
@@ -336,7 +407,7 @@ func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Ex
 		case *b.PercentBox:
 			return &b.PercentBox{Value: callable(l.Value, r.Value)}
 		default:
-			panic("Type not supported. Cannot add.")
+			return fail()
 		}
 	case *b.NumberBox:
 		switch r := evalRight.(type) {
@@ -348,7 +419,11 @@ func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Ex
 			// 2 + 2% = 2 + (2/200 * 2)
 			return &b.NumberBox{Value: callable(l.Value, (r.Value/100)*l.Value)}
 		default:
-			panic("Type not supported. Cannot add.")
+			e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(
+				fmt.Sprintf("Cannot add %s and %s", evalLeft.Type(), evalRight.Type()),
+				operator,
+			))
+			return fail()
 		}
 	case *b.CurrencyBox:
 		switch r := evalRight.(type) {
@@ -362,7 +437,12 @@ func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Ex
 			// convert left to right
 			leftConverted, err := e.currencyConverter(l.Value, l.Unit, r.Unit)
 			if err != nil {
-				panic(err)
+				e.diagnostics = append(e.diagnostics, ast.NewDiagnostic(
+					err.Error(),
+					left.Token().StartPos(),
+					right.Token().EndPos(),
+				))
+				return nil
 			}
 
 			return &b.CurrencyBox{Value: callable(leftConverted, r.Value), Unit: r.Unit}
@@ -370,11 +450,11 @@ func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Ex
 			// 2 + 2% = 2 + (2/200 * 2)
 			return &b.CurrencyBox{Value: callable(l.Value, (r.Value/100)*l.Value), Unit: l.Unit}
 		default:
-			panic("Type not supported. Cannot perform binary expression.")
+			return fail()
 		}
 
 	default:
-		panic("Type not supported. Cannot perform binary expression.")
+		return fail()
 	}
 
 }

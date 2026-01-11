@@ -44,7 +44,7 @@ Create a go program first, hook in lsp later.
         - Ok there is actually a plus side to this -- using switch statement like that is going to allow for very clear error branches.
     - [ ] Add error propagation and handling
         - [x] parser/scanner
-        - [ ] evaluator
+        - [ ] clear all panic from evaluator
 
         - No need to write test, just wrap with lsp and see what's up
     - [ ] Wrap with lsp
