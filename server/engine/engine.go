@@ -144,6 +144,23 @@ func (e *Engine) cancelRequest(rawID lsproto.IntegerOrString) {
 	}
 }
 
+func (e *Engine) writeLoop(ctx context.Context) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case data := <-e.outgoingQueue:
+			bytes, err := json.Marshal(data)
+			if err != nil {
+				return fmt.Errorf("%w: %w", lsproto.ErrorCodeInvalidRequest, err)
+			}
+			if err := e.writer.Write(bytes); err != nil {
+				return fmt.Errorf("failed to write message: %w", err)
+			}
+		}
+	}
+}
+
 func (e *Engine) sendError(id *lsproto.ID, err error) {
 	code := lsproto.ErrorCodeInternalError
 	if errCode := lsproto.ErrorCode(0); errors.As(err, &errCode) {
