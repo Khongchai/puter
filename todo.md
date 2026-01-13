@@ -46,7 +46,8 @@ Create a go program first, hook in lsp later.
         - [x] parser/scanner
         - [x] clear all panic from evaluator
     - [ ] Wrap with lsp
-        - [ ] Continue setting up `readLoop`. Do it like microsoft to learn about queue handling in go 
+        - [ ] Finish engine.go Do it like microsoft to learn about queue handling in go 
+        - [ ] Start up server and see it being called by vscode!
     - [ ] Publish poc
     - [ ] Optimize with non blocking goroutines.
 

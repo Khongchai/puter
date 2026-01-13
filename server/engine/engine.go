@@ -8,6 +8,7 @@ import (
 	"io"
 	lsproto "puter/lsp"
 	"puter/utils"
+	"sync"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -20,12 +21,21 @@ type Writer interface {
 	Write(msg []byte) error
 }
 
+type pendingClientRequest struct {
+	req    *lsproto.RequestMessage
+	cancel context.CancelFunc
+}
+
 type Engine struct {
-	ctx           context.Context
-	reader        Reader
-	writer        Writer
-	requestQueue  chan *lsproto.RequestMessage
-	outgoingQueue chan *lsproto.Message
+	ctx                     context.Context
+	reader                  Reader
+	writer                  Writer
+	requestQueue            chan *lsproto.RequestMessage
+	outgoingQueue           chan *lsproto.Message
+	pendingServerRequests   map[lsproto.ID]chan *lsproto.ResponseMessage
+	pendingServerRequestsMu sync.Mutex
+	pendingClientRequests   map[lsproto.ID]pendingClientRequest
+	pendingClientRequestsMu sync.Mutex
 }
 
 func NewEngine(
@@ -34,19 +44,20 @@ func NewEngine(
 	writer Writer,
 ) *Engine {
 	return &Engine{
-		ctx,
-		reader,
-		writer,
-		make(chan *lsproto.RequestMessage, 100),
-		make(chan *lsproto.Message, 100),
+		ctx:           ctx,
+		reader:        reader,
+		writer:        writer,
+		requestQueue:  make(chan *lsproto.RequestMessage, 100),
+		outgoingQueue: make(chan *lsproto.Message, 100),
 	}
 }
 
 func (e *Engine) Run(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
-	g.Go(func() error { return e.dispatchLoop(ctx) })
-	g.Go(func() error { return e.writeLoop(ctx) })
 
+	// request response queues
+	// starts a worker that writes to outgoing queue.
+	g.Go(func() error { return e.writeLoop(ctx) })
 	// Don't run readLoop in the group, as it blocks on stdin read and cannot be cancelled.
 	readLoopErr := make(chan error, 1)
 	g.Go(func() error {
@@ -57,7 +68,12 @@ func (e *Engine) Run(ctx context.Context) error {
 			return err
 		}
 	})
+	// listens to incoming io events and dispatch to dispatchLoop
 	go func() { readLoopErr <- e.readLoop(ctx) }()
+
+	// handler queue
+	// handles incoming request
+	g.Go(func() error { return e.dispatchLoop(ctx) })
 
 	if err := g.Wait(); err != nil && !errors.Is(err, io.EOF) && ctx.Err() != nil {
 		return err
@@ -118,18 +134,39 @@ func (e *Engine) readLoop(ctx context.Context) error {
 	}
 }
 
+func (e *Engine) cancelRequest(rawID lsproto.IntegerOrString) {
+	id := lsproto.NewID(rawID)
+	e.pendingClientRequestsMu.Lock()
+	defer e.pendingClientRequestsMu.Unlock()
+	if pendingReq, ok := e.pendingClientRequests[*id]; ok {
+		pendingReq.cancel()
+		delete(e.pendingClientRequests, *id)
+	}
+}
+
 func (e *Engine) sendError(id *lsproto.ID, err error) {
 	code := lsproto.ErrorCodeInternalError
 	if errCode := lsproto.ErrorCode(0); errors.As(err, &errCode) {
 		code = errCode
 	}
-	e.outgoingQueue <- &lsproto.ResponseMessage{
+	e.sendResponse(&lsproto.ResponseMessage{
 		ID: id,
 		Error: &lsproto.ResponseError{
 			Code:    int32(code),
 			Message: err.Error(),
 		},
-	}
+	})
+}
+
+func (e *Engine) sendResult(id *lsproto.ID, result any) {
+	e.sendResponse(&lsproto.ResponseMessage{
+		ID:     id,
+		Result: result,
+	})
+}
+
+func (e *Engine) sendResponse(resp *lsproto.ResponseMessage) {
+	e.outgoingQueue <- resp.Message()
 }
 
 func (e *Engine) handleInitialize(ctx context.Context, params *lsproto.InitializeParams, _ *lsproto.RequestMessage) (lsproto.InitializeResponse, error) {
@@ -139,87 +176,34 @@ func (e *Engine) handleInitialize(ctx context.Context, params *lsproto.Initializ
 			Version: utils.PointerTo("0.0.1"),
 		},
 		Capabilities: &lsproto.ServerCapabilities{
-			PositionEncoding: ptrTo(e.positionEncoding),
 			TextDocumentSync: &lsproto.TextDocumentSyncOptionsOrKind{
 				Options: &lsproto.TextDocumentSyncOptions{
-					OpenClose: ptrTo(true),
-					Change:    ptrTo(lsproto.TextDocumentSyncKindIncremental),
+					OpenClose: utils.PointerTo(true),
+					Change:    utils.PointerTo(lsproto.TextDocumentSyncKindIncremental),
 					Save: &lsproto.BooleanOrSaveOptions{
-						Boolean: ptrTo(true),
+						Boolean: utils.PointerTo(true),
 					},
 				},
 			},
 			HoverProvider: &lsproto.BooleanOrHoverOptions{
-				Boolean: ptrTo(true),
+				Boolean: utils.PointerTo(true),
 			},
 			DefinitionProvider: &lsproto.BooleanOrDefinitionOptions{
-				Boolean: ptrTo(true),
+				Boolean: utils.PointerTo(true),
 			},
 			TypeDefinitionProvider: &lsproto.BooleanOrTypeDefinitionOptionsOrTypeDefinitionRegistrationOptions{
-				Boolean: ptrTo(true),
+				Boolean: utils.PointerTo(true),
 			},
 			ReferencesProvider: &lsproto.BooleanOrReferenceOptions{
-				Boolean: ptrTo(true),
-			},
-			ImplementationProvider: &lsproto.BooleanOrImplementationOptionsOrImplementationRegistrationOptions{
-				Boolean: ptrTo(true),
+				Boolean: utils.PointerTo(true),
 			},
 			DiagnosticProvider: &lsproto.DiagnosticOptionsOrRegistrationOptions{
 				Options: &lsproto.DiagnosticOptions{
 					InterFileDependencies: true,
 				},
 			},
-			CompletionProvider: &lsproto.CompletionOptions{
-				TriggerCharacters: &ls.TriggerCharacters,
-				ResolveProvider:   ptrTo(true),
-				// !!! other options
-			},
-			SignatureHelpProvider: &lsproto.SignatureHelpOptions{
-				TriggerCharacters: &[]string{"(", ","},
-			},
-			DocumentFormattingProvider: &lsproto.BooleanOrDocumentFormattingOptions{
-				Boolean: ptrTo(true),
-			},
-			DocumentRangeFormattingProvider: &lsproto.BooleanOrDocumentRangeFormattingOptions{
-				Boolean: ptrTo(true),
-			},
-			DocumentOnTypeFormattingProvider: &lsproto.DocumentOnTypeFormattingOptions{
-				FirstTriggerCharacter: "{",
-				MoreTriggerCharacter:  &[]string{"}", ";", "\n"},
-			},
-			WorkspaceSymbolProvider: &lsproto.BooleanOrWorkspaceSymbolOptions{
-				Boolean: ptrTo(true),
-			},
-			DocumentSymbolProvider: &lsproto.BooleanOrDocumentSymbolOptions{
-				Boolean: ptrTo(true),
-			},
-			FoldingRangeProvider: &lsproto.BooleanOrFoldingRangeOptionsOrFoldingRangeRegistrationOptions{
-				Boolean: ptrTo(true),
-			},
 			RenameProvider: &lsproto.BooleanOrRenameOptions{
-				Boolean: ptrTo(true),
-			},
-			DocumentHighlightProvider: &lsproto.BooleanOrDocumentHighlightOptions{
-				Boolean: ptrTo(true),
-			},
-			SelectionRangeProvider: &lsproto.BooleanOrSelectionRangeOptionsOrSelectionRangeRegistrationOptions{
-				Boolean: ptrTo(true),
-			},
-			InlayHintProvider: &lsproto.BooleanOrInlayHintOptionsOrInlayHintRegistrationOptions{
-				Boolean: ptrTo(true),
-			},
-			CodeLensProvider: &lsproto.CodeLensOptions{
-				ResolveProvider: ptrTo(true),
-			},
-			CodeActionProvider: &lsproto.BooleanOrCodeActionOptions{
-				CodeActionOptions: &lsproto.CodeActionOptions{
-					CodeActionKinds: &[]lsproto.CodeActionKind{
-						lsproto.CodeActionKindQuickFix,
-					},
-				},
-			},
-			CallHierarchyProvider: &lsproto.BooleanOrCallHierarchyOptionsOrCallHierarchyRegistrationOptions{
-				Boolean: ptrTo(true),
+				Boolean: utils.PointerTo(true),
 			},
 		},
 	}
