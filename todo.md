@@ -50,6 +50,7 @@ Create a go program first, hook in lsp later.
         - [ ] Start up server and see it being called by vscode!
     - [ ] Publish poc
     - [ ] Optimize with non blocking goroutines.
+- [ ] Limit goroutine to 1 goroutine per file (more than enough.) (just modify the current engine code to have one channel?)
 
 <!-- end section -->
 

@@ -9,6 +9,7 @@ import (
 	lsproto "puter/lsp"
 	"puter/utils"
 	"sync"
+	"time"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -159,6 +160,83 @@ func (e *Engine) writeLoop(ctx context.Context) error {
 			}
 		}
 	}
+}
+
+func (e *Engine) dispatchLoop(ctx context.Context) error {
+	ctx, lspExit := context.WithCancel(ctx)
+	defer lspExit()
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case req := <-e.requestQueue:
+			if req.ID != nil {
+				var cancel context.CancelFunc
+				e.pendingClientRequestsMu.Lock()
+				e.pendingClientRequests[*req.ID] = pendingClientRequest{
+					req:    req,
+					cancel: cancel,
+				}
+				e.pendingClientRequestsMu.Unlock()
+			}
+
+			handle := func() {
+				if err := e.handleRequestOrNotification(ctx, req); err != nil {
+					if errors.Is(err, context.Canceled) {
+						e.sendError(req.ID, lsproto.ErrorCodeRequestCancelled)
+					} else if errors.Is(err, io.EOF) {
+						lspExit()
+					} else {
+						e.sendError(req.ID, err)
+					}
+				}
+
+				if req.ID != nil {
+					e.pendingClientRequestsMu.Lock()
+					delete(e.pendingClientRequests, *req.ID)
+					e.pendingClientRequestsMu.Unlock()
+				}
+			}
+
+			if isBlockingMethod(req.Method) {
+				handle()
+			} else {
+				go handle()
+			}
+		}
+	}
+}
+
+func (e *Engine) handleRequestOrNotification(ctx context.Context, req *lsproto.RequestMessage) error {
+	ctx = lsproto.WithClientCapabilities(ctx, &e.clientCapabilities)
+
+	if handler := handlers()[req.Method]; handler != nil {
+		start := time.Now()
+		err := handler(s, ctx, req)
+		e.logger.Info("handled method '", req.Method, "' in ", time.Since(start))
+		return err
+	}
+	e.logger.Warn("unknown method '", req.Method, "'")
+	if req.ID != nil {
+		e.sendError(req.ID, lsproto.ErrorCodeInvalidRequest)
+	}
+	return nil
+}
+
+func isBlockingMethod(method lsproto.Method) bool {
+	switch method {
+	case lsproto.MethodInitialize,
+		lsproto.MethodInitialized,
+		lsproto.MethodTextDocumentDidOpen,
+		lsproto.MethodTextDocumentDidChange,
+		lsproto.MethodTextDocumentDidSave,
+		lsproto.MethodTextDocumentDidClose,
+		lsproto.MethodWorkspaceDidChangeWatchedFiles,
+		lsproto.MethodWorkspaceDidChangeConfiguration,
+		lsproto.MethodWorkspaceConfiguration:
+		return true
+	}
+	return false
 }
 
 func (e *Engine) sendError(id *lsproto.ID, err error) {
