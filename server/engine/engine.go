@@ -98,6 +98,8 @@ func (e *Engine) readLoop(ctx context.Context) error {
 			return fmt.Errorf("%w: %w", lsproto.ErrorCodeInvalidRequest, err)
 		}
 
+		e.logger.Info("read %+v", msg)
+
 		if err != nil {
 			if errors.Is(err, lsproto.ErrorCodeInvalidRequest) {
 				e.sendError(nil, err)
