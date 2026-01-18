@@ -11,14 +11,14 @@ import (
 )
 
 func main() {
-	print("Starting vocab-ls...\n")
+	print("Starting puter...\n")
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
 	inputReader := lsproto.NewBaseReader(os.Stdin)
 	outputWriter := lsproto.NewBaseWriter(os.Stdout)
-	logger := logging.NewLogger(os.Stdout)
+	logger := logging.NewLogger(os.Stderr)
 	engine := engine.NewEngine(
 		ctx,
 		inputReader,
@@ -26,5 +26,7 @@ func main() {
 		logger,
 	)
 
+	print("Engine running")
 	engine.Run(ctx)
+	print("Engine stopped")
 }

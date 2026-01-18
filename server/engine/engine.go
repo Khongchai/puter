@@ -54,6 +54,7 @@ func NewEngine(
 		writer:        writer,
 		requestQueue:  make(chan *lsproto.RequestMessage, 100),
 		outgoingQueue: make(chan *lsproto.Message, 100),
+		logger:        logger,
 		initComplete:  false,
 	}
 }
@@ -84,6 +85,7 @@ func (e *Engine) Run(ctx context.Context) error {
 	if err := g.Wait(); err != nil && !errors.Is(err, io.EOF) && ctx.Err() != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -108,7 +110,7 @@ func (e *Engine) readLoop(ctx context.Context) error {
 			return err
 		}
 
-		if msg.Kind == lsproto.MessageKindRequest {
+		if !e.initComplete && msg.Kind == lsproto.MessageKindRequest {
 			req := msg.AsRequest()
 			if req.Method == lsproto.MethodInitialize {
 				resp, err := e.handleInitialize(ctx, req.Params.(*lsproto.InitializeParams), req)
@@ -158,6 +160,7 @@ func (e *Engine) writeLoop(ctx context.Context) error {
 		case <-ctx.Done():
 			return ctx.Err()
 		case data := <-e.outgoingQueue:
+			time.Sleep(time.Second * 10)
 			bytes, err := json.Marshal(data)
 			if err != nil {
 				return fmt.Errorf("%w: %w", lsproto.ErrorCodeInvalidRequest, err)
@@ -337,26 +340,26 @@ func (e *Engine) handleInitialize(ctx context.Context, params *lsproto.Initializ
 					},
 				},
 			},
-			HoverProvider: &lsproto.BooleanOrHoverOptions{
-				Boolean: utils.PointerTo(true),
-			},
-			DefinitionProvider: &lsproto.BooleanOrDefinitionOptions{
-				Boolean: utils.PointerTo(true),
-			},
-			TypeDefinitionProvider: &lsproto.BooleanOrTypeDefinitionOptionsOrTypeDefinitionRegistrationOptions{
-				Boolean: utils.PointerTo(true),
-			},
-			ReferencesProvider: &lsproto.BooleanOrReferenceOptions{
-				Boolean: utils.PointerTo(true),
-			},
-			DiagnosticProvider: &lsproto.DiagnosticOptionsOrRegistrationOptions{
-				Options: &lsproto.DiagnosticOptions{
-					InterFileDependencies: true,
-				},
-			},
-			RenameProvider: &lsproto.BooleanOrRenameOptions{
-				Boolean: utils.PointerTo(true),
-			},
+			// HoverProvider: &lsproto.BooleanOrHoverOptions{
+			// 	Boolean: utils.PointerTo(true),
+			// },
+			// DefinitionProvider: &lsproto.BooleanOrDefinitionOptions{
+			// 	Boolean: utils.PointerTo(true),
+			// },
+			// TypeDefinitionProvider: &lsproto.BooleanOrTypeDefinitionOptionsOrTypeDefinitionRegistrationOptions{
+			// 	Boolean: utils.PointerTo(true),
+			// },
+			// ReferencesProvider: &lsproto.BooleanOrReferenceOptions{
+			// 	Boolean: utils.PointerTo(true),
+			// },
+			// DiagnosticProvider: &lsproto.DiagnosticOptionsOrRegistrationOptions{
+			// 	Options: &lsproto.DiagnosticOptions{
+			// 		InterFileDependencies: true,
+			// 	},
+			// },
+			// RenameProvider: &lsproto.BooleanOrRenameOptions{
+			// 	Boolean: utils.PointerTo(true),
+			// },
 		},
 	}
 
