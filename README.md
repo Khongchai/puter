@@ -1,5 +1,10 @@
 # puter
 
+# Development
+
+Compile client => npm run compile in /client
+Compile server => build-prod or debug in /server
+
 # Supported Comments Type
 
 ```md
