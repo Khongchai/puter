@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"puter/logging"
 	lsproto "puter/lsp"
 	"puter/utils"
 	"sync"
@@ -37,12 +38,15 @@ type Engine struct {
 	pendingServerRequestsMu sync.Mutex
 	pendingClientRequests   map[lsproto.ID]pendingClientRequest
 	pendingClientRequestsMu sync.Mutex
+	logger                  logging.Logger
+	initComplete            bool
 }
 
 func NewEngine(
 	ctx context.Context,
 	reader Reader,
 	writer Writer,
+	logger logging.Logger,
 ) *Engine {
 	return &Engine{
 		ctx:           ctx,
@@ -50,6 +54,7 @@ func NewEngine(
 		writer:        writer,
 		requestQueue:  make(chan *lsproto.RequestMessage, 100),
 		outgoingQueue: make(chan *lsproto.Message, 100),
+		initComplete:  false,
 	}
 }
 
@@ -69,7 +74,7 @@ func (e *Engine) Run(ctx context.Context) error {
 			return err
 		}
 	})
-	// listens to incoming io events and dispatch to dispatchLoop
+	// listens to incoming io events and handle in dispatchLoop
 	go func() { readLoopErr <- e.readLoop(ctx) }()
 
 	// handler queue
@@ -208,11 +213,9 @@ func (e *Engine) dispatchLoop(ctx context.Context) error {
 }
 
 func (e *Engine) handleRequestOrNotification(ctx context.Context, req *lsproto.RequestMessage) error {
-	ctx = lsproto.WithClientCapabilities(ctx, &e.clientCapabilities)
-
 	if handler := handlers()[req.Method]; handler != nil {
 		start := time.Now()
-		err := handler(s, ctx, req)
+		err := handler(e, ctx, req)
 		e.logger.Info("handled method '", req.Method, "' in ", time.Since(start))
 		return err
 	}
@@ -221,6 +224,53 @@ func (e *Engine) handleRequestOrNotification(ctx context.Context, req *lsproto.R
 		e.sendError(req.ID, lsproto.ErrorCodeInvalidRequest)
 	}
 	return nil
+}
+
+type handlerMap map[lsproto.Method]func(*Engine, context.Context, *lsproto.RequestMessage) error
+
+var handlers = sync.OnceValue(func() handlerMap {
+	handlers := make(handlerMap)
+
+	registerRequestHandler(handlers, lsproto.InitializeInfo, (*Engine).handleInitialize)
+	registerNotificationHandler(handlers, lsproto.InitializedInfo, (*Engine).handleInitialized)
+
+	return handlers
+})
+
+func registerNotificationHandler[Req any](handlers handlerMap, info lsproto.NotificationInfo[Req], fn func(*Engine, context.Context, Req) error) {
+	handlers[info.Method] = func(e *Engine, ctx context.Context, req *lsproto.RequestMessage) error {
+		var params Req
+		// Ignore empty params; all generated params are either pointers or any.
+		if req.Params != nil {
+			params = req.Params.(Req)
+		}
+		if err := fn(e, ctx, params); err != nil {
+			return err
+		}
+		return ctx.Err()
+	}
+}
+
+func registerRequestHandler[Req, Resp any](
+	handlers handlerMap,
+	info lsproto.RequestInfo[Req, Resp],
+	fn func(*Engine, context.Context, Req, *lsproto.RequestMessage) (Resp, error),
+) {
+	handlers[info.Method] = func(e *Engine, ctx context.Context, req *lsproto.RequestMessage) error {
+		var params Req
+		// Ignore empty params.
+		if req.Params != nil {
+			params = req.Params.(Req)
+		}
+		resp, err := fn(e, ctx, params, req)
+		if err != nil {
+			return err
+		}
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		return e.sendResult(req.ID, resp)
+	}
 }
 
 func isBlockingMethod(method lsproto.Method) bool {
@@ -253,15 +303,20 @@ func (e *Engine) sendError(id *lsproto.ID, err error) {
 	})
 }
 
-func (e *Engine) sendResult(id *lsproto.ID, result any) {
-	e.sendResponse(&lsproto.ResponseMessage{
+func (e *Engine) sendResult(id *lsproto.ID, result any) error {
+	return e.sendResponse(&lsproto.ResponseMessage{
 		ID:     id,
 		Result: result,
 	})
 }
 
-func (e *Engine) sendResponse(resp *lsproto.ResponseMessage) {
-	e.outgoingQueue <- resp.Message()
+func (e *Engine) sendResponse(resp *lsproto.ResponseMessage) error {
+	select {
+	case e.outgoingQueue <- resp.Message():
+		return nil
+	case <-e.ctx.Done():
+		return e.ctx.Err()
+	}
 }
 
 func (e *Engine) handleInitialize(ctx context.Context, params *lsproto.InitializeParams, _ *lsproto.RequestMessage) (lsproto.InitializeResponse, error) {
@@ -304,4 +359,9 @@ func (e *Engine) handleInitialize(ctx context.Context, params *lsproto.Initializ
 	}
 
 	return response, nil
+}
+
+func (e *Engine) handleInitialized(ctx context.Context, params *lsproto.InitializedParams) error {
+	e.initComplete = true
+	return nil
 }
