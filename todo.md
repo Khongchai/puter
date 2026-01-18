@@ -46,8 +46,19 @@ Create a go program first, hook in lsp later.
         - [x] parser/scanner
         - [x] clear all panic from evaluator
     - [ ] Wrap with lsp
-        - [ ] Finish engine.go Do it like microsoft to learn about queue handling in go 
-        - [ ] Start up server and see it being called by vscode!
+        - [x] Finish engine.go Do it like microsoft to learn about queue handling in go 
+        - [x] Start up server and see it being called by vscode!
+        - [ ] Test that 
+        ```
+        // | 1 + 2 
+        const something = 2;
+        ```
+        Emits text decoration of 3
+            - [ ] Finish interpreter
+            - [ ] On document change, parse and return text decoration (full change for now, no partial) (new custom event)
+            - [ ] Handle response from didChange in vscode
+
+    - [ ] Partial document change handling
     - [ ] Publish poc
     - [ ] Optimize with non blocking goroutines.
 - [ ] Limit goroutine to 1 goroutine per file (more than enough.) (just modify the current engine code to have one channel?)
