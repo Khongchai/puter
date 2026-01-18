@@ -55,8 +55,9 @@ Create a go program first, hook in lsp later.
         ```
         Emits text decoration of 3
             - [ ] Finish interpreter
-            - [ ] On document change, parse and return text decoration (full change for now, no partial) (new custom event)
-            - [ ] Handle response from didChange in vscode
+                - [ ]  continue wiht design doc
+                - [ ] On document change, parse and return text decoration (partial handling) (new custom event)
+                - [ ] Handle response from didChange in vscode
 
     - [ ] Partial document change handling
     - [ ] Publish poc

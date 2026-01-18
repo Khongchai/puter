@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"puter/interpreter"
 	"puter/logging"
 	lsproto "puter/lsp"
 	"puter/utils"
@@ -40,6 +41,7 @@ type Engine struct {
 	pendingClientRequestsMu sync.Mutex
 	logger                  logging.Logger
 	initComplete            bool
+	interpreter             *interpreter.Interpreter
 }
 
 func NewEngine(
@@ -47,6 +49,7 @@ func NewEngine(
 	reader Reader,
 	writer Writer,
 	logger logging.Logger,
+	interpreter *interpreter.Interpreter,
 ) *Engine {
 	return &Engine{
 		ctx:           ctx,
@@ -56,6 +59,7 @@ func NewEngine(
 		outgoingQueue: make(chan *lsproto.Message, 100),
 		logger:        logger,
 		initComplete:  false,
+		interpreter:   interpreter,
 	}
 }
 
@@ -239,6 +243,8 @@ var handlers = sync.OnceValue(func() handlerMap {
 	registerRequestHandler(handlers, lsproto.InitializeInfo, (*Engine).handleInitialize)
 	registerNotificationHandler(handlers, lsproto.InitializedInfo, (*Engine).handleInitialized)
 
+	registerNotificationHandler(handlers, lsproto.TextDocumentDidChangeInfo, (*Engine).handleTextDocumentDidChange)
+
 	return handlers
 })
 
@@ -368,5 +374,14 @@ func (e *Engine) handleInitialize(ctx context.Context, params *lsproto.Initializ
 
 func (e *Engine) handleInitialized(ctx context.Context, params *lsproto.InitializedParams) error {
 	e.initComplete = true
+	return nil
+}
+
+func (e *Engine) handleTextDocumentDidChange(ctx context.Context, params *lsproto.DidChangeTextDocumentParams) error {
+	// uri := params.TextDocument.Uri
+	for _, change := range params.ContentChanges {
+		// e.interpreter.Interpret()
+		print(change.WholeDocument)
+	}
 	return nil
 }

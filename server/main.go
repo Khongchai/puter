@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"puter/engine"
+	"puter/interpreter"
 	"puter/logging"
 	lsproto "puter/lsp"
 	"syscall"
@@ -19,11 +20,13 @@ func main() {
 	inputReader := lsproto.NewBaseReader(os.Stdin)
 	outputWriter := lsproto.NewBaseWriter(os.Stdout)
 	logger := logging.NewLogger(os.Stderr)
+	interpreter := interpreter.NewInterpreter()
 	engine := engine.NewEngine(
 		ctx,
 		inputReader,
 		outputWriter,
 		logger,
+		interpreter,
 	)
 
 	print("Engine running")

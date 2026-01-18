@@ -3,11 +3,15 @@ package interpreter
 import "puter/evaluation/evaluator"
 
 type EvaluatorState struct {
-	evaluators []*evaluator.Evaluator
+	StartLineInclusive int
+	EndLineInclusive   int
+	Evaluator          *evaluator.Evaluator
 }
 
+type DocumentUri = string
+
 type Interpreter struct {
-	evaluator map[int]*evaluator.Evaluator
+	evaluatorStates map[DocumentUri][]*EvaluatorState
 }
 
 // Interpreter takes in a text file, finds out if there is a line in that text file
@@ -31,6 +35,5 @@ func NewInterpreter() *Interpreter {
 	return &Interpreter{}
 }
 
-func Interpret(lint int, lineText string) {
-
+func (interpreter *Interpreter) Interpret(uri string, line int, lineText string) {
 }
