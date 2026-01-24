@@ -340,7 +340,7 @@ func (e *Engine) handleInitialize(ctx context.Context, params *lsproto.Initializ
 			TextDocumentSync: &lsproto.TextDocumentSyncOptionsOrKind{
 				Options: &lsproto.TextDocumentSyncOptions{
 					OpenClose: utils.PointerTo(true),
-					Change:    utils.PointerTo(lsproto.TextDocumentSyncKindIncremental),
+					Change:    utils.PointerTo(lsproto.TextDocumentSyncKindFull),
 					Save: &lsproto.BooleanOrSaveOptions{
 						Boolean: utils.PointerTo(true),
 					},
@@ -380,7 +380,13 @@ func (e *Engine) handleInitialized(ctx context.Context, params *lsproto.Initiali
 func (e *Engine) handleTextDocumentDidChange(ctx context.Context, params *lsproto.DidChangeTextDocumentParams) error {
 	// uri := params.TextDocument.Uri
 	for _, change := range params.ContentChanges {
-		// e.interpreter.Interpret()
+		// newDecorations := e.interpreter.Interpret(
+		// 	change.Partial.Text,
+		// 	int(change.Partial.Range.Start.Line),
+		// 	int(change.Partial.Range.Start.Character),
+		// 	int(change.Partial.Range.Start.Line),
+		// )
+		// print(newDecorations)
 		print(change.WholeDocument)
 	}
 	return nil
