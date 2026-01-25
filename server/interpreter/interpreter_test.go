@@ -2,7 +2,10 @@ package interpreter
 
 import (
 	"puter/evaluation/evaluator"
+	"strconv"
+	"strings"
 	"testing"
+	"time"
 )
 
 func getDefaultCurrencyConverter(defaultValue float64) evaluator.ValueConverter {
@@ -94,4 +97,33 @@ func FuzzInterpretation(f *testing.F) {
 			}
 		}
 	})
+}
+
+func TestPerformanceLargeFile(t *testing.T) {
+	interpreter := NewInterpreter(t.Context(), getDefaultCurrencyConverter(200))
+
+	// 1. generate a "huge" source file (10,000 lines)
+	lineCount := 10000
+	lines := make([]string, lineCount)
+	for i := 0; i < lineCount; i++ {
+		// every 10th line is an evaluation trigger, others are "JS"
+		if i%10 == 0 {
+			lines[i] = "// | 1 + " + strconv.Itoa(i)
+		} else {
+			lines[i] = "const x" + strconv.Itoa(i) + " = () => { console.log('hello'); };"
+		}
+	}
+	hugeText := strings.Join(lines, "\n")
+
+	start := time.Now()
+	results := interpreter.Interpret(hugeText)
+	elapsed := time.Since(start)
+
+	t.Logf("\n--- Performance Result ---")
+	t.Logf("File Size:    %.2f MB", float64(len(hugeText))/(1024*1024))
+	t.Logf("Total Lines:  %d", lineCount)
+	t.Logf("Evaluations:  %d", len(results))
+	t.Logf("Time Taken:   %f", elapsed.Seconds())
+	t.Logf("Avg per line: %f", (elapsed / time.Duration(lineCount)).Seconds())
+	t.Logf("--------------------------")
 }
