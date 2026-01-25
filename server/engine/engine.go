@@ -382,6 +382,9 @@ func (e *Engine) handleTextDocumentDidChange(ctx context.Context, params *lsprot
 		interpretations := e.interpreter.Interpret(
 			change.WholeDocument.Text,
 		)
+		if len(interpretations) == 0 {
+			continue
+		}
 		response := &lsproto.RequestMessage{
 			Method: "custom/evaluationResult",
 			Params: interpretations,
