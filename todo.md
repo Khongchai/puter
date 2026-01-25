@@ -60,6 +60,8 @@ Create a go program first, hook in lsp later.
 
 	return nil
 }
+
+// 1 + 2
 - [ ] Handle diagnostics -- not implemented on the client side yet.
 
 <!-- end section -->

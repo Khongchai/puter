@@ -99,6 +99,46 @@ func FuzzInterpretation(f *testing.F) {
 	})
 }
 
+func TestIntegration(t *testing.T) {
+	type TestCase struct {
+		ExpectPrint []string
+		ExpectLine  []int
+		InputText   string
+	}
+	cases := []*TestCase{
+		{
+			ExpectPrint: []string{"3", "5"},
+			ExpectLine:  []int{5, 6},
+			InputText: joinLines(
+				"func (e *Engine) handleTextDocumentDidChange(ctx context.Context, params *lsproto.DidChangeTextDocumentParams) error {",
+				"// uri := params.TextDocument.Uri",
+				"return nil",
+				"}",
+				"",
+				"// | a = 1 + 2",
+				"// | a + 2",
+			),
+		},
+	}
+
+	for _, testCase := range cases {
+		interpreter := NewInterpreter(t.Context(), getDefaultCurrencyConverter(200))
+		interpretations := interpreter.Interpret(testCase.InputText)
+		if len(testCase.ExpectPrint) != len(testCase.ExpectLine) {
+			t.Fatalf("Invalid test case")
+		}
+		for i := range interpretations {
+			if testCase.ExpectPrint[i] != interpretations[i].EvalResult {
+				t.Fatalf("Expected %s, instead got %s", testCase.ExpectPrint[i], interpretations[i].EvalResult)
+			}
+			if testCase.ExpectLine[i] != interpretations[i].LineIndex {
+				t.Fatalf("Expected line of result %s to be %d, not %d", interpretations[i].EvalResult, testCase.ExpectLine[i], interpretations[i].LineIndex)
+			}
+		}
+	}
+
+}
+
 func TestPerformanceLargeFile(t *testing.T) {
 	interpreter := NewInterpreter(t.Context(), getDefaultCurrencyConverter(200))
 
