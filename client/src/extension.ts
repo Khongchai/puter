@@ -62,15 +62,40 @@ export async function activate(context: vscode.ExtensionContext) {
   });
   client.onNotification(
     "custom/evaluationReport",
-    (payload: {
-      evaluations: Array<{
-        lineIndex: number;
-        evalResult: string;
-        diagnostics: vscode.Diagnostic[];
-      }>;
-    }) => {
-      debugger;
-      console.log("Received custom data:", payload);
+    (
+      ...payload: {
+        LineIndex: number;
+        EvalResult: string;
+        Diagnostics: vscode.Diagnostic[];
+      }[]
+    ) => {
+      for (const evaluation of payload) {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+          continue;
+        }
+
+        const lineIndex = evaluation.LineIndex;
+        const line = editor.document.lineAt(lineIndex);
+
+        const decoration = vscode.window.createTextEditorDecorationType({
+          after: {
+            color: "#637777",
+            fontStyle: "italic",
+            margin: "0 0 0 3em",
+            contentText: evaluation.EvalResult,
+          },
+        });
+
+        const range = new vscode.Range(
+          lineIndex,
+          line.range.end.character,
+          lineIndex,
+          line.range.end.character,
+        );
+
+        editor.setDecorations(decoration, [range]);
+      }
     },
   );
 }
