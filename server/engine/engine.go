@@ -164,7 +164,6 @@ func (e *Engine) writeLoop(ctx context.Context) error {
 		case <-ctx.Done():
 			return ctx.Err()
 		case data := <-e.outgoingQueue:
-			time.Sleep(time.Second * 10)
 			bytes, err := json.Marshal(data)
 			if err != nil {
 				return fmt.Errorf("%w: %w", lsproto.ErrorCodeInvalidRequest, err)
@@ -380,9 +379,10 @@ func (e *Engine) handleInitialized(ctx context.Context, params *lsproto.Initiali
 func (e *Engine) handleTextDocumentDidChange(ctx context.Context, params *lsproto.DidChangeTextDocumentParams) error {
 	// uri := params.TextDocument.Uri
 	for _, change := range params.ContentChanges {
-		_ = e.interpreter.Interpret(
+		interpretations = e.interpreter.Interpret(
 			change.WholeDocument.Text,
 		)
+		e.sendResult()
 		// TODO handle this shit here
 	}
 	return nil
