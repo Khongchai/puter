@@ -55,7 +55,7 @@ func (interpreter *Interpreter) Interpret(text string) []*Interpretation {
 
 	maybeHandlePipeAndForwardLine := func(pos int, line int) (int, int) {
 		forwardedPos := skipEverythingUntilPipeOrNewline(text, pos)
-		if text[forwardedPos] == '|' {
+		if peek(text, forwardedPos) == '|' {
 			collected, nextPos := collectUntilNewLine(text, forwardedPos+1)
 			interpretation := interpreter.evaluateAndInterpretResult(evaluator, collected, lineIndex)
 			line++
@@ -73,7 +73,7 @@ func (interpreter *Interpreter) Interpret(text string) []*Interpretation {
 		switch c {
 		// line comment in python
 		case '#':
-			nextPos, nextLine := maybeHandlePipeAndForwardLine(i+2, lineIndex)
+			nextPos, nextLine := maybeHandlePipeAndForwardLine(i+1, lineIndex)
 			lineIndex = nextLine
 			i = nextPos
 		case '/':
