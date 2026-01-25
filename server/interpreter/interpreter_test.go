@@ -66,5 +66,32 @@ func TestInterpretingValidSingleLineResult(t *testing.T) {
 // test that we won't ever be stuck in an infinite loop...
 // nor do we encounter nil error
 func FuzzInterpretation(f *testing.F) {
+	f.Add("//| 1+1")
+	f.Add("/* | 2+2 */")
+	f.Add("# | 3+3")
+	f.Add("/ / | 1")
+	f.Add("/*\n| 1\n*/")
+	f.Add("\r\n#|1\r\n")
+	f.Add("🔥🔥🔥 #| 1+1")
 
+	f.Fuzz(func(t *testing.T, input string) {
+		interpreter := NewInterpreter(t.Context(), getDefaultCurrencyConverter(200))
+
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Recovered from panic with input %q: %v", input, r)
+			}
+		}()
+
+		interpretations := interpreter.Interpret(input)
+
+		for _, interp := range interpretations {
+			if interp == nil {
+				t.Error("Returned a nil interpretation")
+			}
+			if interp.LineIndex < 0 {
+				t.Errorf("Negative line index: %d", interp.LineIndex)
+			}
+		}
+	})
 }
