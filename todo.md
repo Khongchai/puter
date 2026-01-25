@@ -54,15 +54,13 @@ Create a go program first, hook in lsp later.
         const something = 2;
         ```
         Emits text decoration of 3
-            - [ ] Finish interpreter
-                - [ ]  continue wiht design doc
-                - [ ] On document change, parse and return text decoration (full handling, no partial) (new custom event)
-                - [ ] Handle response from didChange in vscode
+- [ ]  Handle decoration -- this case not yet passing
+- func (e *Engine) handleTextDocumentDidChange(ctx context.Context, params *lsproto.DidChangeTextDocumentParams) error {
+	// uri := params.TextDocument.Uri
 
-    - [ ] Partial document change handling
-    - [ ] Publish poc
-    - [ ] Optimize with non blocking goroutines.
-- [ ] Limit goroutine to 1 goroutine per file (more than enough.) (just modify the current engine code to have one channel?)
+	return nil
+}
+- [ ] Handle diagnostics -- not implemented on the client side yet.
 
 <!-- end section -->
 
