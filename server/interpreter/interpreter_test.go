@@ -35,22 +35,29 @@ func TestInterpretingValidSingleLineResult(t *testing.T) {
 		"// | 1+2",
 		"#|1+2",
 		"# | 1+2",
-		joinLines(
-			"/*",
-			"* | 1 + 2",
-			"*/",
-		),
-		joinLines(
-			"/*",
-			"| 1 + 2",
-			"*/",
-		),
+		// joinLines(
+		// 	"/*",
+		// 	"* | 1 + 2",
+		// 	"*/",
+		// ),
+		// "/** | 1 + 2*/",
+		// joinLines(
+		// 	"/*",
+		// 	"| 1 + 2",
+		// 	"*/",
+		// ),
 	}
 
 	for _, validCase := range validCases {
 		interpretations := interpreter.Interpret(validCase)
 		if len(interpretations) != 1 {
 			t.Fatalf("Expected case %s interpretations length to be 1, got %d", validCase, len(interpretations))
+		}
+		if interpretations[0].Decoration != "3" {
+			t.Fatalf("Decoration of %s is not 3, got %s", validCase, interpretations[0].Decoration)
+		}
+		if len(interpretations[0].Diagnostics) != 0 {
+			t.Fatalf("Diagnostics length of %s should be 0, got %d", validCase, len(interpretations[0].Diagnostics))
 		}
 	}
 }

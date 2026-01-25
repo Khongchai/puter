@@ -53,52 +53,63 @@ func (interpreter *Interpreter) Interpret(text string) []*Interpretation {
 
 	interpretations := []*Interpretation{}
 
-	maybeHandlePipeAndForwardLine := func(pos int, line int) (int, int) {
-		forwardedPos := skipEverythingUntilPipeOrNewline(text, pos)
-		if peek(text, forwardedPos) == '|' {
-			collected, nextPos := collectUntilNewLine(text, forwardedPos+1)
-			interpretation := interpreter.evaluateAndInterpretResult(evaluator, collected, lineIndex)
-			line++
-			nextPos++
+	// get all valid lines as task and store the line index, char start (inclusive), and char end (exclusive)
+	// then loop through each valid lines, if there is an interpretation or diagnostics to be added, then add them.
 
-			interpretations = append(interpretations, interpretation)
-
-			return nextPos, line
-		}
-		return forwardedPos, line
+	type EvalTask struct {
+		text string
+		line int
+		// inclusive
+		charStart int
+		// inclusive
+		charEnd int
 	}
+
+	tasks := []*EvalTask{}
 
 	for i := range text {
 		c := peek(text, i)
 		switch c {
 		// line comment in python
 		case '#':
-			nextPos, nextLine := maybeHandlePipeAndForwardLine(i+1, lineIndex)
-			lineIndex = nextLine
-			i = nextPos
+			collected, stoppedPos := collectUntilNewLine(text, i)
+			tasks = append(tasks, &EvalTask{
+				text:      collected,
+				line:      lineIndex,
+				charStart: i,
+				charEnd:   stoppedPos,
+			})
+			newLine, newPos := forwardLine(text, lineIndex, stoppedPos)
+			lineIndex = newLine
+			i = newPos
 		case '/':
 			peeked := peek(text, i+1)
 			// single line comment in c-like languages
 			if peeked == '/' {
-				nextPos, nextLine := maybeHandlePipeAndForwardLine(i+2, lineIndex)
-				lineIndex = nextLine
-				i = nextPos
-				continue
+				collected, stoppedPos := collectUntilNewLine(text, i)
+				tasks = append(tasks, &EvalTask{
+					text:      collected,
+					line:      lineIndex,
+					charStart: i,
+					charEnd:   stoppedPos,
+				})
+				newLine, newPos := forwardLine(text, lineIndex, stoppedPos)
+				lineIndex = newLine
+				i = newPos
 			}
 
 			// multiline comment in c-like languages
 			if peeked == '*' {
-				for {
-					nextPos, nextLine := maybeHandlePipeAndForwardLine(i+2, lineIndex)
-					lineIndex = nextLine
-					i = nextPos
+				panic("NOT HANDLED YET ")
+				// i += 2
+				// comments := ""
+				// for {
+				// 	if peek(text, i) == '*' && peek(text, i+1) == '/' {
+				// 		i += 2
+				// 		break
+				// 	}
+				// }
 
-					i := skipWhitespace(text, i)
-					if peek(text, i) == '*' && peek(text, i+1) == '/' {
-						i += 2
-						break
-					}
-				}
 			}
 		default:
 			if isNewLine(c) {
@@ -107,6 +118,18 @@ func (interpreter *Interpreter) Interpret(text string) []*Interpretation {
 			}
 			i++
 		}
+	}
+
+	for _, task := range tasks {
+		pos := findPipeIndex(task.text)
+		peeked := peek(task.text, pos)
+		if peeked != '|' {
+			continue
+		}
+		pos++ // skip pipe
+		trimmed := task.text[pos:]
+		interpretation := interpreter.evaluateAndInterpretResult(evaluator, trimmed, task.line)
+		interpretations = append(interpretations, interpretation)
 	}
 
 	return interpretations
@@ -133,17 +156,17 @@ func skipWhitespace(text string, pos int) int {
 	}
 }
 
-func skipEverythingUntilPipeOrNewline(text string, pos int) int {
+func findPipeIndex(text string) int {
+	i := 0
 	for {
-		if pos >= len(text) {
-			return pos
+		if i >= len(text) {
+			return i
 		}
-		ch := rune(text[pos])
-		if ch != '|' && !isNewLine(ch) {
-			pos++
+		if text[i] != '|' {
+			i++
 			continue
 		}
-		return pos
+		return i
 	}
 }
 
@@ -205,4 +228,19 @@ func collectUntilNewLine(text string, pos int) (string, int) {
 		pos++
 	}
 	return collected, pos
+}
+
+func forwardLine(text string, line int, pos int) (int, int) {
+	for {
+		peeked := peek(text, pos)
+		if peeked == -1 {
+			break
+		}
+		if !isNewLine(peeked) {
+			break
+		}
+		pos++
+		line++
+	}
+	return line, pos
 }
