@@ -14,7 +14,7 @@ export async function activate(context: vscode.ExtensionContext) {
     const lsPath = path.resolve(context.extensionPath, "binaries");
     const exePath = path.join(
       lsPath,
-      `puter${process.platform === "win32" ? ".exe" : ""}`
+      `puter${process.platform === "win32" ? ".exe" : ""}`,
     );
     const option: ServerOptions = {
       // Note: if we can't find the package during build, take a look at this
@@ -49,7 +49,7 @@ export async function activate(context: vscode.ExtensionContext) {
     "puter",
     "puter language server",
     serverOptions,
-    clientOptions
+    clientOptions,
   );
 
   await client.start();
@@ -60,6 +60,19 @@ export async function activate(context: vscode.ExtensionContext) {
       },
     },
   });
+  client.onNotification(
+    "custom/evaluationReport",
+    (payload: {
+      evaluations: Array<{
+        lineIndex: number;
+        evalResult: string;
+        diagnostics: vscode.Diagnostic[];
+      }>;
+    }) => {
+      debugger;
+      console.log("Received custom data:", payload);
+    },
+  );
 }
 
 export async function deactivate() {

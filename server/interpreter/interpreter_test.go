@@ -57,8 +57,8 @@ func TestInterpretingValidSingleLineResult(t *testing.T) {
 		if len(interpretations) != 1 {
 			t.Fatalf("Expected case %s interpretations length to be 1, got %d", validCase, len(interpretations))
 		}
-		if interpretations[0].Decoration != "3" {
-			t.Fatalf("Decoration of %s is not 3, got %s", validCase, interpretations[0].Decoration)
+		if interpretations[0].EvalResult != "3" {
+			t.Fatalf("Decoration of %s is not 3, got %s", validCase, interpretations[0].EvalResult)
 		}
 		if len(interpretations[0].Diagnostics) != 0 {
 			t.Fatalf("Diagnostics length of %s should be 0, got %d", validCase, len(interpretations[0].Diagnostics))

@@ -304,25 +304,25 @@ func (e *Engine) sendError(id *lsproto.ID, err error) {
 	if errCode := lsproto.ErrorCode(0); errors.As(err, &errCode) {
 		code = errCode
 	}
-	e.sendResponse(&lsproto.ResponseMessage{
+	e.send((&lsproto.ResponseMessage{
 		ID: id,
 		Error: &lsproto.ResponseError{
 			Code:    int32(code),
 			Message: err.Error(),
 		},
-	})
+	}).Message())
 }
 
 func (e *Engine) sendResult(id *lsproto.ID, result any) error {
-	return e.sendResponse(&lsproto.ResponseMessage{
+	return e.send((&lsproto.ResponseMessage{
 		ID:     id,
 		Result: result,
-	})
+	}).Message())
 }
 
-func (e *Engine) sendResponse(resp *lsproto.ResponseMessage) error {
+func (e *Engine) send(resp *lsproto.Message) error {
 	select {
-	case e.outgoingQueue <- resp.Message():
+	case e.outgoingQueue <- resp:
 		return nil
 	case <-e.ctx.Done():
 		return e.ctx.Err()
@@ -379,11 +379,14 @@ func (e *Engine) handleInitialized(ctx context.Context, params *lsproto.Initiali
 func (e *Engine) handleTextDocumentDidChange(ctx context.Context, params *lsproto.DidChangeTextDocumentParams) error {
 	// uri := params.TextDocument.Uri
 	for _, change := range params.ContentChanges {
-		interpretations = e.interpreter.Interpret(
+		interpretations := e.interpreter.Interpret(
 			change.WholeDocument.Text,
 		)
-		e.sendResult()
-		// TODO handle this shit here
+		response := &lsproto.RequestMessage{
+			Method: "custom/evaluationResult",
+			Params: interpretations,
+		}
+		e.send(response.Message())
 	}
 	return nil
 }

@@ -14,7 +14,7 @@ type Interpreter struct {
 
 type Interpretation struct {
 	LineIndex   int
-	Decoration  string
+	EvalResult  string
 	Diagnostics []*lsproto.Diagnostic
 }
 
@@ -233,7 +233,7 @@ func (interpreter *Interpreter) evaluateAndInterpretResult(
 	return &Interpretation{
 		LineIndex:   lineIndex,
 		Diagnostics: lsDiag,
-		Decoration:  decoration,
+		EvalResult:  decoration,
 	}
 }
 
