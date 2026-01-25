@@ -79,7 +79,7 @@ func (interpreter *Interpreter) Interpret(text string) []*Interpretation {
 				charStart: i,
 				charEnd:   stoppedPos,
 			})
-			newLine, newPos := forwardLine(text, lineIndex, stoppedPos)
+			newLine, newPos := forwardLine(text, lineIndex, stoppedPos+1)
 			lineIndex = newLine
 			i = newPos
 		case '/':
@@ -93,23 +93,52 @@ func (interpreter *Interpreter) Interpret(text string) []*Interpretation {
 					charStart: i,
 					charEnd:   stoppedPos,
 				})
-				newLine, newPos := forwardLine(text, lineIndex, stoppedPos)
+				newLine, newPos := forwardLine(text, lineIndex, stoppedPos+1)
 				lineIndex = newLine
 				i = newPos
 			}
 
 			// multiline comment in c-like languages
 			if peeked == '*' {
-				panic("NOT HANDLED YET ")
-				// i += 2
-				// comments := ""
-				// for {
-				// 	if peek(text, i) == '*' && peek(text, i+1) == '/' {
-				// 		i += 2
-				// 		break
-				// 	}
-				// }
+				// multiline can also be single line, eg /* something */ so for simplicity,
+				// just collect everything until line termination and handle evaluation later
+				collected := ""
+				j := i
+				for {
+					peeked := peek(text, j)
+					if peeked == -1 {
+						break
+					}
+					if peeked == '*' && peek(text, j+1) == '/' {
+						j += 2
+						collected += "*/"
+						break
+					}
+					collected += string(peeked)
+					j++
+				}
 
+				// at this point, collected is /* {...} */ where inside can include newline char too
+				lineIndexInner := 0
+				j = 0
+				for {
+					j = skipWhitespace(collected, j)
+					collectedInner, stoppedPos := collectUntilNewLine(collected, j)
+					tasks = append(tasks, &EvalTask{
+						text:      collectedInner,
+						line:      lineIndex + lineIndexInner,
+						charStart: i,
+						charEnd:   stoppedPos,
+					})
+					newLine, newPos := forwardLine(collected, lineIndexInner, stoppedPos+1)
+					lineIndexInner = newLine
+					j = newPos
+					if j >= len(collected) {
+						break
+					}
+				}
+				i += len(collected)
+				lineIndex = lineIndexInner
 			}
 		default:
 			if isNewLine(c) {
@@ -208,10 +237,6 @@ func (interpreter *Interpreter) evaluateAndInterpretResult(
 	}
 }
 
-func isWhiteSpace(ch byte) bool {
-	return ch == ' '
-}
-
 func isNewLine(ch rune) bool {
 	return ch == '\t' || ch == '\n' || ch == '\r'
 }
@@ -227,7 +252,7 @@ func collectUntilNewLine(text string, pos int) (string, int) {
 		collected += string(text[pos])
 		pos++
 	}
-	return collected, pos
+	return collected, pos - 1
 }
 
 func forwardLine(text string, line int, pos int) (int, int) {
