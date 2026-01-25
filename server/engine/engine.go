@@ -380,14 +380,10 @@ func (e *Engine) handleInitialized(ctx context.Context, params *lsproto.Initiali
 func (e *Engine) handleTextDocumentDidChange(ctx context.Context, params *lsproto.DidChangeTextDocumentParams) error {
 	// uri := params.TextDocument.Uri
 	for _, change := range params.ContentChanges {
-		// newDecorations := e.interpreter.Interpret(
-		// 	change.Partial.Text,
-		// 	int(change.Partial.Range.Start.Line),
-		// 	int(change.Partial.Range.Start.Character),
-		// 	int(change.Partial.Range.Start.Line),
-		// )
-		// print(newDecorations)
-		print(change.WholeDocument)
+		_ = e.interpreter.Interpret(
+			change.WholeDocument.Text,
+		)
+		// TODO handle this shit here
 	}
 	return nil
 }

@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"puter/engine"
+	"puter/engine/extensions"
 	"puter/interpreter"
 	"puter/logging"
 	lsproto "puter/lsp"
@@ -12,15 +13,18 @@ import (
 )
 
 func main() {
-	print("Starting puter...\n")
+	logger := logging.NewLogger(os.Stderr)
+	logger.Info("Starting puter...\n")
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
 	inputReader := lsproto.NewBaseReader(os.Stdin)
 	outputWriter := lsproto.NewBaseWriter(os.Stdout)
-	logger := logging.NewLogger(os.Stderr)
-	interpreter := interpreter.NewInterpreter()
+
+	currencyConverter := extensions.GetCurrencyConverter()
+	interpreter := interpreter.NewInterpreter(ctx, currencyConverter)
+
 	engine := engine.NewEngine(
 		ctx,
 		inputReader,

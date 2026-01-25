@@ -45,6 +45,7 @@ func NewEvaluator(ctx context.Context, currencyConverter ValueConverter) *Evalua
 //
 // The returned b.Box is nullable if an error is encountered during evaluation
 func (e *Evaluator) EvalLine(text string) b.Box {
+	e.diagnostics = []*ast.Diagnostic{}
 	expression, err := e.parser.Parse(text)
 	if err != nil {
 		e.diagnostics = append(e.diagnostics, err)
@@ -457,4 +458,8 @@ func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Ex
 		return fail()
 	}
 
+}
+
+func (e *Evaluator) GetDiagnostics() []*ast.Diagnostic {
+	return e.diagnostics
 }
