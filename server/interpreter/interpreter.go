@@ -54,16 +54,27 @@ func (interpreter *Interpreter) Interpret(text string) []*Interpretation {
 	i := 0 // line index
 	lines := slices.Collect(strings.SplitSeq(text, "\n"))
 	for i < len(lines) {
-		if len(lines[i]) <= 2 { // 2 is double slash, use this + "|" as minimum line length
+		if len(lines[i]) < 2 { // 2 is double slash, use this + "|" as minimum line length
 			i++
-			pos++
+			pos += len(lines[i])
 			continue
 		}
 
-		starter := lines[i][:2]
+		firstTwoCharsNotSpace := func() string {
+			s := ""
+			for _, c := range lines[i] {
+				if len(s) == 2 {
+					return s
+				}
+				if c != ' ' {
+					s += string(c)
+				}
+			}
+			return s
+		}()
 
 		// python or c-like normal comment
-		if starter[0] == '#' || starter == "//" {
+		if firstTwoCharsNotSpace[0] == '#' || firstTwoCharsNotSpace == "//" {
 			index := strings.Index(lines[i], "|")
 			if index != -1 && len(lines[i]) > index+1 {
 				evaluatable := lines[i][index+1:]
@@ -72,18 +83,30 @@ func (interpreter *Interpreter) Interpret(text string) []*Interpretation {
 			}
 		}
 
-		if starter == "/*" {
-			pos += 2
-			i++
-			for i < len(lines) {
-				hasEnd := strings.Contains(lines[i], "*/")
-				if !hasEnd {
-					index := strings.Index(lines[i], "|")
-					if index != -1 && len(lines[i]) > index+1 {
-						evaluatable := lines[i][index+1:]
-						interpretation := interpreter.evaluateAndInterpretResult(evaluator, evaluatable, i)
-						interpretations = append(interpretations, interpretation)
+		if firstTwoCharsNotSpace == "/*" {
+			hasEndSameLine := strings.Contains(lines[i], "*/")
+			if hasEndSameLine {
+				pipeIndex := strings.Index(lines[i], "|")
+				enderIndex := strings.Index(lines[i], "*/")
+				if pipeIndex != -1 {
+					middleText := lines[i][pipeIndex+1 : enderIndex]
+					interpretation := interpreter.evaluateAndInterpretResult(evaluator, middleText, i)
+					interpretations = append(interpretations, interpretation)
+				}
+			} else {
+				pos += 2
+				i++
+				for i < len(lines) {
+					hasEnd := strings.Contains(lines[i], "*/")
+					if !hasEnd {
+						index := strings.Index(lines[i], "|")
+						if index != -1 && len(lines[i]) > index+1 {
+							evaluatable := lines[i][index+1:]
+							interpretation := interpreter.evaluateAndInterpretResult(evaluator, evaluatable, i)
+							interpretations = append(interpretations, interpretation)
+						}
 					}
+					i++
 				}
 			}
 		}

@@ -36,6 +36,7 @@ func TestInterpretingValidSingleLineResult(t *testing.T) {
 	validCases := []string{
 		"//|1+2",
 		"// | 1+2",
+		" #| 1+2",
 		"#|1+2",
 		"# | 1+2",
 		joinLines(
@@ -48,7 +49,7 @@ func TestInterpretingValidSingleLineResult(t *testing.T) {
 			"| 1 + 2",
 			"*/",
 		),
-		// "/* | 1 + 2*/",
+		"/* | 1 + 2 */",
 	}
 
 	for _, validCase := range validCases {
