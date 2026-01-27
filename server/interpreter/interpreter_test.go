@@ -48,7 +48,6 @@ func TestInterpretingValidSingleLineResult(t *testing.T) {
 			"| 1 + 2",
 			"*/",
 		),
-		// not handling this, kind of useless pattern, just do // bro
 		// "/* | 1 + 2*/",
 	}
 

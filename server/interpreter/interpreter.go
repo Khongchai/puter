@@ -5,6 +5,8 @@ import (
 	"puter/evaluation/evaluator"
 	lsproto "puter/lsp"
 	"puter/utils"
+	"slices"
+	"strings"
 )
 
 type Interpreter struct {
@@ -46,119 +48,48 @@ func NewInterpreter(ctx context.Context, currencyConverter evaluator.ValueConver
 func (interpreter *Interpreter) Interpret(text string) []*Interpretation {
 	evaluator := evaluator.NewEvaluator(interpreter.ctx, interpreter.currencyConverter)
 
-	// for each line, check if comment patterns is found at the start of line, not counting
-	// whitespace, if so, it's a valid line.
-	// If line is not
-	lineIndex := 0
-
 	interpretations := []*Interpretation{}
 
-	// get all valid lines as task and store the line index, char start (inclusive), and char end (exclusive)
-	// then loop through each valid lines, if there is an interpretation or diagnostics to be added, then add them.
-
-	type EvalTask struct {
-		text string
-		line int
-		// inclusive
-		charStart int
-		// inclusive
-		charEnd int
-	}
-
-	tasks := []*EvalTask{}
-
-	for i := range text {
-		c := peek(text, i)
-		switch c {
-		// line comment in python
-		case '#':
-			collected, stoppedPos := collectUntilNewLine(text, i)
-			tasks = append(tasks, &EvalTask{
-				text:      collected,
-				line:      lineIndex,
-				charStart: i,
-				charEnd:   stoppedPos,
-			})
-			newLine, newPos := forwardLine(text, lineIndex, stoppedPos+1)
-			lineIndex = newLine
-			i = newPos
-		case '/':
-			peeked := peek(text, i+1)
-			// single line comment in c-like languages
-			if peeked == '/' {
-				collected, stoppedPos := collectUntilNewLine(text, i)
-				tasks = append(tasks, &EvalTask{
-					text:      collected,
-					line:      lineIndex,
-					charStart: i,
-					charEnd:   stoppedPos,
-				})
-				newLine, newPos := forwardLine(text, lineIndex, stoppedPos+1)
-				lineIndex = newLine
-				i = newPos
-			}
-
-			// multiline comment in c-like languages
-			if peeked == '*' {
-				// multiline can also be single line, eg /* something */ so for simplicity,
-				// just collect everything until line termination and handle evaluation later
-				collected := ""
-				j := i
-				for {
-					peeked := peek(text, j)
-					if peeked == -1 {
-						break
-					}
-					if peeked == '*' && peek(text, j+1) == '/' {
-						j += 2
-						collected += "*/"
-						break
-					}
-					collected += string(peeked)
-					j++
-				}
-
-				// at this point, collected is /* {...} */ where inside can include newline char too
-				lineIndexInner := 0
-				j = 0
-				for {
-					j = skipWhitespace(collected, j)
-					collectedInner, stoppedPos := collectUntilNewLine(collected, j)
-					tasks = append(tasks, &EvalTask{
-						text:      collectedInner,
-						line:      lineIndex + lineIndexInner,
-						charStart: i,
-						charEnd:   stoppedPos,
-					})
-					newLine, newPos := forwardLine(collected, lineIndexInner, stoppedPos+1)
-					lineIndexInner = newLine
-					j = newPos
-					if j >= len(collected) {
-						break
-					}
-				}
-				i += len(collected)
-				lineIndex = lineIndexInner
-			}
-		default:
-			if isNewLine(c) {
-				i++
-				lineIndex++
-			}
+	pos := 0
+	i := 0 // line index
+	lines := slices.Collect(strings.SplitSeq(text, "\n"))
+	for i < len(lines) {
+		if len(lines[i]) <= 2 { // 2 is double slash, use this + "|" as minimum line length
 			i++
-		}
-	}
-
-	for _, task := range tasks {
-		pos := findPipeIndex(task.text)
-		peeked := peek(task.text, pos)
-		if peeked != '|' {
+			pos++
 			continue
 		}
-		pos++ // skip pipe
-		trimmed := task.text[pos:]
-		interpretation := interpreter.evaluateAndInterpretResult(evaluator, trimmed, task.line)
-		interpretations = append(interpretations, interpretation)
+
+		starter := lines[i][:2]
+
+		// python or c-like normal comment
+		if starter[0] == '#' || starter == "//" {
+			index := strings.Index(lines[i], "|")
+			if index != -1 && len(lines[i]) > index+1 {
+				evaluatable := lines[i][index+1:]
+				interpretation := interpreter.evaluateAndInterpretResult(evaluator, evaluatable, i)
+				interpretations = append(interpretations, interpretation)
+			}
+		}
+
+		if starter == "/*" {
+			pos += 2
+			i++
+			for i < len(lines) {
+				hasEnd := strings.Contains(lines[i], "*/")
+				if !hasEnd {
+					index := strings.Index(lines[i], "|")
+					if index != -1 && len(lines[i]) > index+1 {
+						evaluatable := lines[i][index+1:]
+						interpretation := interpreter.evaluateAndInterpretResult(evaluator, evaluatable, i)
+						interpretations = append(interpretations, interpretation)
+					}
+				}
+			}
+		}
+
+		pos += len(text)
+		i++
 	}
 
 	return interpretations
@@ -189,7 +120,7 @@ func findPipeIndex(text string) int {
 	i := 0
 	for {
 		if i >= len(text) {
-			return i
+			return -1
 		}
 		if text[i] != '|' {
 			i++
