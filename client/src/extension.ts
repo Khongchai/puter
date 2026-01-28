@@ -9,7 +9,7 @@ import {
 
 let client: LanguageClient | undefined;
 
-const evalDecorationType = vscode.window.createTextEditorDecorationType({
+const decorationType = vscode.window.createTextEditorDecorationType({
   after: {
     color: "#637777",
     fontStyle: "italic",
@@ -88,6 +88,14 @@ export async function activate(context: vscode.ExtensionContext) {
         return;
       }
 
+      if (
+        payloads.length === 0 ||
+        payloads.every((p) => p.interpretations.length === 0)
+      ) {
+        editor.setDecorations(decorationType, []);
+        return;
+      }
+
       for (const payload of payloads) {
         const decorationOptions: vscode.DecorationOptions[] =
           payload.interpretations.map((evaluation) => {
@@ -107,7 +115,7 @@ export async function activate(context: vscode.ExtensionContext) {
             };
           });
 
-        editor.setDecorations(evalDecorationType, decorationOptions);
+        editor.setDecorations(decorationType, decorationOptions);
 
         const diagnostics = payload.interpretations.flatMap((p) => {
           return p.Diagnostics;

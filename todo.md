@@ -69,7 +69,8 @@ Create a go program first, hook in lsp later.
 - [ ] Evaluation not run on start (it should!)
 - [ ] Cache call to frankfurter api
 - [ ] assignment wrong side.
-- [ ] When deleting items, the decoration remains.
+- [x] When deleting items, the decoration remains.
+- [ ] Wrong diagnostics position sometimes
 
 <!-- end section -->
 
