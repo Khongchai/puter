@@ -387,7 +387,7 @@ func (e *Engine) handleTextDocumentDidChange(ctx context.Context, params *lsprot
 		}
 		response := &lsproto.RequestMessage{
 			Method: "custom/evaluationReport",
-			Params: interpretations,
+			Params: map[string]any{"interpretations": interpretations, "uri": params.TextDocument.Uri},
 		}
 		e.send(response.Message())
 	}

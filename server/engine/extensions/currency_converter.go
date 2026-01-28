@@ -9,10 +9,13 @@ import (
 	"net/http"
 	"puter/evaluation/evaluator"
 	"puter/evaluation/evaluator/box"
+	"strings"
 )
 
 func GetCurrencyConverter() evaluator.ValueConverter {
 	return func(fromValue float64, fromUnit string, toUnit string) (float64, error) {
+		fromUnit = strings.ToUpper(fromUnit)
+		toUnit = strings.ToUpper(toUnit)
 		if _, unitIsCurrency := FiatCurrencies[fromUnit]; !unitIsCurrency {
 			return -1, fmt.Errorf("%s is not a valid ISO 4217 currency code.", fromUnit)
 		}
@@ -24,7 +27,7 @@ func GetCurrencyConverter() evaluator.ValueConverter {
 			return -1, fmt.Errorf("Conversion between %s and %s not supported", fromUnit, toUnit)
 		}
 
-		conversionRate, err := fetchCurrencyConversionRate(fromValue, fromUnit, toUnit)
+		conversionRate, err := fetchCurrencyConversionRate(fromUnit, toUnit)
 		if err != nil {
 			return 0.0, err
 		}
@@ -55,7 +58,7 @@ type FrankfurterResponse struct {
 	Rates  map[string]float64 `json:"rates"`
 }
 
-func fetchCurrencyConversionRate(fromValue float64, fromUnit string, toUnit string) (float64, error) {
+func fetchCurrencyConversionRate(fromUnit string, toUnit string) (float64, error) {
 	resp, err := http.Get(fmt.Sprintf("https://api.frankfurter.dev/v1/latest?base=%s", fromUnit))
 	if err != nil {
 		log.Fatalf("Request failed: %v", err)
@@ -77,7 +80,7 @@ func fetchCurrencyConversionRate(fromValue float64, fromUnit string, toUnit stri
 		return 0.0, fmt.Errorf("Conversion rate not found between %s and %s", fromUnit, toUnit)
 	}
 
-	return fromValue * rate, nil
+	return rate, nil
 }
 
 // TODO include crypto currencies here

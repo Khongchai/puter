@@ -17,6 +17,9 @@ const evalDecorationType = vscode.window.createTextEditorDecorationType({
   },
 });
 
+const diagnosticCollection =
+  vscode.languages.createDiagnosticCollection("puter");
+
 export async function activate(context: vscode.ExtensionContext) {
   const serverOptions = (() => {
     const lsPath = path.resolve(context.extensionPath, "binaries");
@@ -71,37 +74,46 @@ export async function activate(context: vscode.ExtensionContext) {
   client.onNotification(
     "custom/evaluationReport",
     (
-      ...payload: {
-        LineIndex: number;
-        EvalResult: string;
-        Diagnostics: vscode.Diagnostic[];
-      }[]
+      ...payloads: Array<{
+        uri: string;
+        interpretations: Array<{
+          LineIndex: number;
+          EvalResult: string;
+          Diagnostics: vscode.Diagnostic[];
+        }>;
+      }>
     ) => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) {
         return;
       }
 
-      const decorationOptions: vscode.DecorationOptions[] = payload.map(
-        (evaluation) => {
-          const line = editor.document.lineAt(evaluation.LineIndex);
-          return {
-            range: new vscode.Range(
-              evaluation.LineIndex,
-              line.range.end.character,
-              evaluation.LineIndex,
-              line.range.end.character,
-            ),
-            renderOptions: {
-              after: {
-                contentText: evaluation.EvalResult,
+      for (const payload of payloads) {
+        const decorationOptions: vscode.DecorationOptions[] =
+          payload.interpretations.map((evaluation) => {
+            const line = editor.document.lineAt(evaluation.LineIndex);
+            return {
+              range: new vscode.Range(
+                evaluation.LineIndex,
+                line.range.end.character,
+                evaluation.LineIndex,
+                line.range.end.character,
+              ),
+              renderOptions: {
+                after: {
+                  contentText: evaluation.EvalResult,
+                },
               },
-            },
-          };
-        },
-      );
+            };
+          });
 
-      editor.setDecorations(evalDecorationType, decorationOptions);
+        editor.setDecorations(evalDecorationType, decorationOptions);
+
+        const diagnostics = payload.interpretations.flatMap((p) => {
+          return p.Diagnostics;
+        });
+        diagnosticCollection.set(vscode.Uri.parse(payload.uri), diagnostics);
+      }
     },
   );
 }

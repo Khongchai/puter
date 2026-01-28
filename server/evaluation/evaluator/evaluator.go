@@ -184,7 +184,7 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 		found, ok := e.heap[exp.ActualValue]
 		if !ok {
 			e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(
-				"Identifier not found",
+				fmt.Sprintf("Identifier %s not found", exp.ActualValue),
 				exp.Token(),
 			))
 			return nil
