@@ -9,6 +9,14 @@ import {
 
 let client: LanguageClient | undefined;
 
+const evalDecorationType = vscode.window.createTextEditorDecorationType({
+  after: {
+    color: "#637777",
+    fontStyle: "italic",
+    margin: "0 0 0 3em",
+  },
+});
+
 export async function activate(context: vscode.ExtensionContext) {
   const serverOptions = (() => {
     const lsPath = path.resolve(context.extensionPath, "binaries");
@@ -69,33 +77,31 @@ export async function activate(context: vscode.ExtensionContext) {
         Diagnostics: vscode.Diagnostic[];
       }[]
     ) => {
-      for (const evaluation of payload) {
-        const editor = vscode.window.activeTextEditor;
-        if (!editor) {
-          continue;
-        }
-
-        const lineIndex = evaluation.LineIndex;
-        const line = editor.document.lineAt(lineIndex);
-
-        const decoration = vscode.window.createTextEditorDecorationType({
-          after: {
-            color: "#637777",
-            fontStyle: "italic",
-            margin: "0 0 0 3em",
-            contentText: evaluation.EvalResult,
-          },
-        });
-
-        const range = new vscode.Range(
-          lineIndex,
-          line.range.end.character,
-          lineIndex,
-          line.range.end.character,
-        );
-
-        editor.setDecorations(decoration, [range]);
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) {
+        return;
       }
+
+      const decorationOptions: vscode.DecorationOptions[] = payload.map(
+        (evaluation) => {
+          const line = editor.document.lineAt(evaluation.LineIndex);
+          return {
+            range: new vscode.Range(
+              evaluation.LineIndex,
+              line.range.end.character,
+              evaluation.LineIndex,
+              line.range.end.character,
+            ),
+            renderOptions: {
+              after: {
+                contentText: evaluation.EvalResult,
+              },
+            },
+          };
+        },
+      );
+
+      editor.setDecorations(evalDecorationType, decorationOptions);
     },
   );
 }

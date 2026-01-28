@@ -54,8 +54,8 @@ Create a go program first, hook in lsp later.
         const something = 2;
         ```
         Emits text decoration of 3
-- [ ] Fix this test case func TestIntegration(t *testing.T) {
-- [ ]  Handle decoration -- this case not yet passing
+- [x] Fix this test case func TestIntegration(t *testing.T) {
+- [x]  Handle decoration -- this case not yet passing
 - func (e *Engine) handleTextDocumentDidChange(ctx context.Context, params *lsproto.DidChangeTextDocumentParams) error {
 	// uri := params.TextDocument.Uri
 
@@ -64,6 +64,7 @@ Create a go program first, hook in lsp later.
 
 // 1 + 2
 - [ ] Handle diagnostics -- not implemented on the client side yet.
+- [ ] When beginning a new line, if previous line is a comment, begin with either # | or // |
 
 <!-- end section -->
 
