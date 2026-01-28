@@ -55,8 +55,8 @@ func (interpreter *Interpreter) Interpret(text string) []*Interpretation {
 	lines := slices.Collect(strings.SplitSeq(text, "\n"))
 	for i < len(lines) {
 		if len(lines[i]) < 2 { // 2 is double slash, use this + "|" as minimum line length
-			i++
 			pos += len(lines[i])
+			i++
 			continue
 		}
 
