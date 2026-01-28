@@ -14,14 +14,14 @@ import (
 func GetCurrencyConverter() evaluator.ValueConverter {
 	return func(fromValue float64, fromUnit string, toUnit string) (float64, error) {
 		if _, unitIsCurrency := FiatCurrencies[fromUnit]; !unitIsCurrency {
-			panic(fmt.Sprintf("%s is not a valid ISO 4217 currency code.", fromUnit))
+			return -1, fmt.Errorf("%s is not a valid ISO 4217 currency code.", fromUnit)
 		}
 		if _, unitIsCurrency := FiatCurrencies[toUnit]; !unitIsCurrency {
-			panic(fmt.Sprintf("%s is not a valid ISO 4217 currency code.", toUnit))
+			return -1, fmt.Errorf("%s is not a valid ISO 4217 currency code.", toUnit)
 		}
 		ok := isCurrencyConversionSupported(fromUnit, toUnit)
 		if !ok {
-			panic(fmt.Sprintf("Conversion between %s and %s not supported", fromUnit, toUnit))
+			return -1, fmt.Errorf("Conversion between %s and %s not supported", fromUnit, toUnit)
 		}
 
 		conversionRate, err := fetchCurrencyConversionRate(fromValue, fromUnit, toUnit)
