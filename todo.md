@@ -65,7 +65,7 @@ Create a go program first, hook in lsp later.
 // 1 + 2
 - [x] Make sure currency conversion is working.
 - [x] Handle diagnostics -- not implemented on the client side yet.
-- [ ] When beginning a new line, if previous line is a comment, begin with either # | or // |
+- [x] When beginning a new line, if previous line is a comment, begin with either # | or // |
 - [ ] Evaluation not run on start (it should!)
 - [ ] Cache call to frankfurter api
 - [ ] diagnostics position for assignment wrong side.
