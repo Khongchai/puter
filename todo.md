@@ -66,25 +66,13 @@ Create a go program first, hook in lsp later.
 - [x] Make sure currency conversion is working.
 - [x] Handle diagnostics -- not implemented on the client side yet.
 - [x] When beginning a new line, if previous line is a comment, begin with either # | or // |
-- [ ] Evaluation not run on start (it should!)
-- [ ] Cache call to frankfurter api
-- [ ] diagnostics position for assignment wrong side.
+- [x] Cache call to frankfurter api
 - [x] When deleting items, the decoration remains.
-- [ ] Wrong diagnostics position sometimes
-
-<!-- end section -->
-
-# Backlog
-- [ ] mod keyword (builtin invocation)
-- [ ] pi and e constant (allow overriding)
-- [ ] Summing everything above current line (can be done in a later stage that detects special keyword)
 - [ ] Add more unit supports (metrics, gbs)
-- [ ] Apply go worker and channels to optimize wait time when network fetching is required
-- [ ] handle non utf8 char with DecodeRuneInString
-- [ ] Multiline and parsing initialization in executor layer.
+- [ ] pi and e constant (allow overriding)
+- [ ] mod keyword (builtin invocation)
+- [ ] Summing everything above current line (can be done in a later stage that detects special keyword)
 - [ ] Support binary value view
     - `| 2 in binary`
 - [ ] Support hex value view
     - `| 2 in hex`
-- [ ] Should also allow this `// | x = 2, y = 3` (multiple declaration in one line)
-- [ ] Apply promise to make the program's rate conversion faster.
