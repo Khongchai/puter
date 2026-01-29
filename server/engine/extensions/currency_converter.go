@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"puter/evaluation/evaluator"
 	"puter/evaluation/evaluator/box"
@@ -58,26 +57,42 @@ type FrankfurterResponse struct {
 	Rates  map[string]float64 `json:"rates"`
 }
 
+var responseCache = map[string]*FrankfurterResponse{}
+
 func fetchCurrencyConversionRate(fromUnit string, toUnit string) (float64, error) {
-	resp, err := http.Get(fmt.Sprintf("https://api.frankfurter.dev/v1/latest?base=%s", fromUnit))
-	if err != nil {
-		log.Fatalf("Request failed: %v", err)
-	}
-	defer resp.Body.Close()
+	data, err := func() (*FrankfurterResponse, error) {
+		if result, ok := responseCache[fromUnit]; ok {
+			return result, nil
+		}
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return 0.0, errors.New("Could not read response body")
-	}
+		resp, err := http.Get(fmt.Sprintf("https://api.frankfurter.dev/v1/latest?base=%s", fromUnit))
+		if err != nil {
+			return nil, errors.New("Request to frankfruter api failed")
+		}
+		defer resp.Body.Close()
 
-	var data FrankfurterResponse
-	if err := json.Unmarshal(body, &data); err != nil {
-		return 0.0, errors.New("Could not read response body")
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, errors.New("Could not read response body")
+		}
+
+		var data FrankfurterResponse
+		if err := json.Unmarshal(body, &data); err != nil {
+			return nil, errors.New("Could not read response body")
+		}
+
+		responseCache[fromUnit] = &data
+
+		return &data, nil
+	}()
+
+	if err != nil {
+		return -1, err
 	}
 
 	rate, ok := data.Rates[toUnit]
 	if !ok {
-		return 0.0, fmt.Errorf("Conversion rate not found between %s and %s", fromUnit, toUnit)
+		return -1, fmt.Errorf("Conversion rate not found between %s and %s", fromUnit, toUnit)
 	}
 
 	return rate, nil

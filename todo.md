@@ -68,7 +68,7 @@ Create a go program first, hook in lsp later.
 - [ ] When beginning a new line, if previous line is a comment, begin with either # | or // |
 - [ ] Evaluation not run on start (it should!)
 - [ ] Cache call to frankfurter api
-- [ ] assignment wrong side.
+- [ ] diagnostics position for assignment wrong side.
 - [x] When deleting items, the decoration remains.
 - [ ] Wrong diagnostics position sometimes
 
