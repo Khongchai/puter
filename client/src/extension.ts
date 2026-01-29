@@ -64,6 +64,7 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   await client.start();
+
   await client.sendNotification("workspace/didChangeConfiguration", {
     settings: {
       "vscode-languageclient": {
@@ -124,6 +125,30 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     },
   );
+
+  const allLanguages = await vscode.languages.getLanguages();
+  const rule: vscode.LanguageConfiguration = {
+    onEnterRules: [
+      {
+        beforeText: /^\s*\/\/\s*\|.*$/,
+        action: {
+          indentAction: vscode.IndentAction.None,
+          appendText: "// | ",
+        },
+      },
+      {
+        beforeText: /^\s*#\s*\|.*$/,
+        action: {
+          indentAction: vscode.IndentAction.None,
+          appendText: "# | ",
+        },
+      },
+    ],
+  };
+  const disposables = allLanguages.map((lang) =>
+    vscode.languages.setLanguageConfiguration(lang, rule),
+  );
+  context.subscriptions.push(...disposables);
 }
 
 export async function deactivate() {
