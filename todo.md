@@ -68,6 +68,7 @@ Create a go program first, hook in lsp later.
 - [x] When beginning a new line, if previous line is a comment, begin with either # | or // |
 - [x] Cache call to frankfurter api
 - [x] When deleting items, the decoration remains.
+- [ ] For some reason typescript's pipe produces diagnostics warning without comment start before
 - [ ] Add more unit supports (metrics, gbs)
 - [ ] pi and e constant (allow overriding)
 - [ ] mod keyword (builtin invocation)
