@@ -76,3 +76,4 @@ Create a go program first, hook in lsp later.
     - `| 2 in binary`
 - [ ] Support hex value view
     - `| 2 in hex`
+- [ ] Builtin number functions need to support all units, but not cross units (lerp(usd, btc, number) does not make any sense)
