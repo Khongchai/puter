@@ -3,3 +3,5 @@ scratchpad.md
 dist
 
 node_modules
+
+*.vsix
