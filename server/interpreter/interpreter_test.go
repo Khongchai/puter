@@ -96,6 +96,53 @@ func FuzzInterpretation(f *testing.F) {
 	})
 }
 
+func TestLineCommand(t *testing.T) {
+	type TestCase struct {
+		ExpectPrint []string
+		ExpectLine  []int
+		InputText   string
+	}
+	cases := []*TestCase{
+		{
+			ExpectPrint: []string{"2", "5", "3", "30"},
+			ExpectLine:  []int{0, 1, 2, 3},
+			InputText: joinLines(
+				"// | x = 2",
+				"// | 5",
+				"// | 3",
+				"// | product",
+			),
+		},
+		// {
+		// 	ExpectPrint: []string{"2", "5", "3", "208 thb"},
+		// 	ExpectLine:  []int{0, 1, 2, 3},
+		// 	InputText: joinLines(
+		// 		"// | x = 2 usd", // usd,
+		// 		"// | 5 thb",     // convert previous line using default converter to 200, add tihs one is 205 thb
+		// 		"// | 3 thb",     // add this one to 208
+		// 		"// | sum",
+		// 	),
+		// },
+	}
+
+	for _, testCase := range cases {
+		interpreter := NewInterpreter(t.Context(), getDefaultCurrencyConverter(200))
+		interpretations := interpreter.Interpret(testCase.InputText)
+		if len(testCase.ExpectPrint) != len(testCase.ExpectLine) {
+			t.Fatalf("Invalid test case")
+		}
+		for i := range interpretations {
+			if testCase.ExpectPrint[i] != interpretations[i].EvalResult {
+				t.Fatalf("Expected %s, instead got %s", testCase.ExpectPrint[i], interpretations[i].EvalResult)
+			}
+			if testCase.ExpectLine[i] != interpretations[i].LineIndex {
+				t.Fatalf("Expected line of result %s to be %d, not %d", interpretations[i].EvalResult, testCase.ExpectLine[i], interpretations[i].LineIndex)
+			}
+		}
+	}
+
+}
+
 func TestIntegration(t *testing.T) {
 	type TestCase struct {
 		ExpectPrint []string
