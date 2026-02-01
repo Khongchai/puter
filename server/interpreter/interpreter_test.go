@@ -31,6 +31,14 @@ func TestInterpretEmptyFile(t *testing.T) {
 	}
 }
 
+func TestInvalidPipe(t *testing.T) {
+	interpreter := NewInterpreter(t.Context(), getDefaultCurrencyConverter(200))
+	result := interpreter.Interpret(`type Something = "foo" | "bar"`)
+	if len(result) != 0 {
+		t.Fatalf("Expected empty result, got instead %d results", len(result))
+	}
+}
+
 func TestInterpretingValidSingleLineResult(t *testing.T) {
 	interpreter := NewInterpreter(t.Context(), getDefaultCurrencyConverter(200))
 	validCases := []string{
@@ -39,17 +47,6 @@ func TestInterpretingValidSingleLineResult(t *testing.T) {
 		" #| 1+2",
 		"#|1+2",
 		"# | 1+2",
-		joinLines(
-			"/*",
-			"* | 1 + 2",
-			"*/",
-		),
-		joinLines(
-			"/*",
-			"| 1 + 2",
-			"*/",
-		),
-		"/* | 1 + 2 */",
 	}
 
 	for _, validCase := range validCases {

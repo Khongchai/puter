@@ -83,74 +83,11 @@ func (interpreter *Interpreter) Interpret(text string) []*Interpretation {
 			}
 		}
 
-		if firstTwoCharsNotSpace == "/*" {
-			hasEndSameLine := strings.Contains(lines[i], "*/")
-			if hasEndSameLine {
-				pipeIndex := strings.Index(lines[i], "|")
-				enderIndex := strings.Index(lines[i], "*/")
-				if pipeIndex != -1 {
-					middleText := lines[i][pipeIndex+1 : enderIndex]
-					interpretation := interpreter.evaluateAndInterpretResult(evaluator, middleText, i)
-					interpretations = append(interpretations, interpretation)
-				}
-			} else {
-				pos += 2
-				i++
-				for i < len(lines) {
-					hasEnd := strings.Contains(lines[i], "*/")
-					if !hasEnd {
-						index := strings.Index(lines[i], "|")
-						if index != -1 && len(lines[i]) > index+1 {
-							evaluatable := lines[i][index+1:]
-							interpretation := interpreter.evaluateAndInterpretResult(evaluator, evaluatable, i)
-							interpretations = append(interpretations, interpretation)
-						}
-					}
-					i++
-				}
-			}
-		}
-
 		pos += len(text)
 		i++
 	}
 
 	return interpretations
-}
-
-func peek(text string, i int) rune {
-	if i >= len(text) {
-		return -1
-	}
-	return rune(text[i])
-}
-
-func skipWhitespace(text string, pos int) int {
-	for {
-		if pos >= len(text) {
-			return pos
-		}
-		ch := rune(text[pos])
-		if ch == ' ' {
-			pos++
-			continue
-		}
-		return pos
-	}
-}
-
-func findPipeIndex(text string) int {
-	i := 0
-	for {
-		if i >= len(text) {
-			return -1
-		}
-		if text[i] != '|' {
-			i++
-			continue
-		}
-		return i
-	}
 }
 
 func (interpreter *Interpreter) evaluateAndInterpretResult(
@@ -189,37 +126,4 @@ func (interpreter *Interpreter) evaluateAndInterpretResult(
 		Diagnostics: lsDiag,
 		EvalResult:  decoration,
 	}
-}
-
-func isNewLine(ch rune) bool {
-	return ch == '\t' || ch == '\n' || ch == '\r'
-}
-
-// Return the text and position before new line
-func collectUntilNewLine(text string, pos int) (string, int) {
-	collected := ""
-	for {
-		peeked := peek(text, pos)
-		if isNewLine(peeked) || peeked == -1 {
-			break
-		}
-		collected += string(text[pos])
-		pos++
-	}
-	return collected, pos - 1
-}
-
-func forwardLine(text string, line int, pos int) (int, int) {
-	for {
-		peeked := peek(text, pos)
-		if peeked == -1 {
-			break
-		}
-		if !isNewLine(peeked) {
-			break
-		}
-		pos++
-		line++
-	}
-	return line, pos
 }
