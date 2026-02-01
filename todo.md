@@ -70,11 +70,10 @@ Create a go program first, hook in lsp later.
 - [x] When deleting items, the decoration remains.
 - [x] For some reason typescript's pipe produces diagnostics warning without comment start before
 - [ ] Add more unit supports (metrics, gbs, crypto)
-    - [ ] Number representation (only affect printing): hex, binary << doing this right now. For all operations, take whatever unit the right hand number is.
+    - [x] Number representation (only affect printing): hex, binary << doing this right now. For all operations, take whatever unit the right hand number is.
     - [ ] measurement units
     - [ ] data size units
     - [ ] Currency: crypto
-    - [ ] Support bitwise operators (this means moving power to pow or/and **)
 - [ ] pi and e constant (allow overriding)
 - [ ] mod keyword (builtin invocation)
 - [ ] Summing everything above current line (can be done in a later stage that detects special keyword)
