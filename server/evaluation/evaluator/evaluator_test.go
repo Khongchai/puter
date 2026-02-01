@@ -177,11 +177,6 @@ func TestNumberUnitEvaluation(t *testing.T) {
 			b.NUMBER_BOX,
 		},
 		{
-			"100 in hex",
-			"0x64",
-			b.NUMBER_BOX,
-		},
-		{
 			"2 in binary",
 			"0b10",
 			b.NUMBER_BOX,

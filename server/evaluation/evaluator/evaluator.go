@@ -207,12 +207,12 @@ func (e *Evaluator) evalInExpression(leftExpr ast.Expression, rightExpr ast.Expr
 		return nil
 	}
 
-	isNumberKeyword, numberKeyword := b.IsNumberKeyword(right.ActualValue)
+	rightIsNumberKeyword, numberKeyword := b.IsNumberKeyword(right.ActualValue)
 
 	leftBox := e.evalExp(leftExpr)
 	switch box := leftBox.(type) {
 	case *b.NumberBox:
-		if isNumberKeyword {
+		if rightIsNumberKeyword {
 			return b.NewNumberbox(box.Value, numberKeyword)
 		}
 		return &b.CurrencyBox{
@@ -223,6 +223,10 @@ func (e *Evaluator) evalInExpression(leftExpr ast.Expression, rightExpr ast.Expr
 		rightUnit := right.ActualValue
 		if rightUnit == box.Unit {
 			return &b.CurrencyBox{Number: box.Number, Unit: rightUnit}
+		}
+
+		if rightIsNumberKeyword {
+			return &b.CurrencyBox{Number: b.NewNumberbox(box.Number.Value, numberKeyword), Unit: box.Unit}
 		}
 
 		converted, err := e.currencyConverter(box.Number.Value, box.Unit, rightUnit)

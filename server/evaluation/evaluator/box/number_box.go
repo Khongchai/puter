@@ -24,17 +24,18 @@ func NewNumberbox(value float64, numberType NumberType) *NumberBox {
 }
 
 func (nb *NumberBox) Inspect() string {
-	if nb.NumberType == NaN {
-		return "NaN"
-	}
-	if nb.NumberType == Binary {
-		return fmt.Sprintf("0b%b", nb.Value)
-	}
-	if nb.NumberType == Hex {
-		return fmt.Sprintf("%#x", nb.Value)
-	}
-
-	formatted := fmt.Sprintf("%g", nb.Value)
+	formatted := func() string {
+		if nb.NumberType == NaN {
+			return "NaN"
+		}
+		if nb.NumberType == Binary {
+			return fmt.Sprintf("0b%b", int(nb.Value))
+		}
+		if nb.NumberType == Hex {
+			return fmt.Sprintf("0x%x", int(nb.Value))
+		}
+		return fmt.Sprintf("%g", nb.Value)
+	}()
 	return formatted
 }
 
