@@ -68,13 +68,14 @@ Create a go program first, hook in lsp later.
 - [x] When beginning a new line, if previous line is a comment, begin with either # | or // |
 - [x] Cache call to frankfurter api
 - [x] When deleting items, the decoration remains.
-- [ ] For some reason typescript's pipe produces diagnostics warning without comment start before
-- [ ] Add more unit supports (metrics, gbs)
+- [x] For some reason typescript's pipe produces diagnostics warning without comment start before
+- [ ] Add more unit supports (metrics, gbs, crypto)
+    - [ ] Currency: crypto
+    - [ ] measurement units
+    - [ ] data size units
+    - [ ] Number representation (only affect printing): hex, binary
+    - [ ] Support bitwise operators (this means moving power to pow or/and **)
 - [ ] pi and e constant (allow overriding)
 - [ ] mod keyword (builtin invocation)
 - [ ] Summing everything above current line (can be done in a later stage that detects special keyword)
-- [ ] Support binary value view
-    - `| 2 in binary`
-- [ ] Support hex value view
-    - `| 2 in hex`
 - [ ] Builtin number functions need to support all units, but not cross units (lerp(usd, btc, number) does not make any sense)
