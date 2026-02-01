@@ -164,6 +164,53 @@ func TestBinaryBooleanOperatorEvaluations(t *testing.T) {
 	}
 }
 
+func TestNumberUnitEvaluation(t *testing.T) {
+	cases := []*EvaluationCase{
+		{
+			"2 hex",
+			"0x2",
+			b.NUMBER_BOX,
+		},
+		{
+			"2 in hex",
+			"0x2",
+			b.NUMBER_BOX,
+		},
+		{
+			"100 in hex",
+			"0x64",
+			b.NUMBER_BOX,
+		},
+		{
+			"2 in binary",
+			"0b10",
+			b.NUMBER_BOX,
+		},
+		{
+			"100 in binary",
+			"0b1100100",
+			b.NUMBER_BOX,
+		},
+		{
+			"100 usd in binary",
+			"0b1100100 usd",
+			b.CURRENCY_BOX,
+		},
+	}
+	for _, c := range cases {
+		eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(200))
+
+		obj := eval.EvalLine(c.Line)
+
+		if obj.Inspect() != c.ExpectPrint {
+			t.Fatalf("Expected inspect result to be %s, got %s", c.ExpectPrint, obj.Inspect())
+		}
+		if obj.Type() != c.ExpectType {
+			t.Fatalf("Expected identifier object, got %+v", obj.Type())
+		}
+	}
+}
+
 func TestCurrencyEvaluation(t *testing.T) {
 	cases := []*EvaluationCase{
 		{

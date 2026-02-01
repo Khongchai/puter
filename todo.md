@@ -70,12 +70,13 @@ Create a go program first, hook in lsp later.
 - [x] When deleting items, the decoration remains.
 - [x] For some reason typescript's pipe produces diagnostics warning without comment start before
 - [ ] Add more unit supports (metrics, gbs, crypto)
-    - [ ] Currency: crypto
+    - [ ] Number representation (only affect printing): hex, binary << doing this right now. For all operations, take whatever unit the right hand number is.
     - [ ] measurement units
     - [ ] data size units
-    - [ ] Number representation (only affect printing): hex, binary
+    - [ ] Currency: crypto
     - [ ] Support bitwise operators (this means moving power to pow or/and **)
 - [ ] pi and e constant (allow overriding)
 - [ ] mod keyword (builtin invocation)
 - [ ] Summing everything above current line (can be done in a later stage that detects special keyword)
 - [ ] Builtin number functions need to support all units, but not cross units (lerp(usd, btc, number) does not make any sense)
+- [ ] Accept binary number format as input

@@ -142,10 +142,10 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 		switch right := e.evalExp(exp.Right).(type) {
 		case *b.NumberBox:
 			if operator == ast.MINUS {
-				return &b.NumberBox{Value: -right.Value}
+				return b.NewNumberbox(-right.Value, right.NumberType)
 			}
 			if operator == ast.PLUS {
-				return &b.NumberBox{Value: right.Value}
+				return b.NewNumberbox(right.Value, right.NumberType)
 			}
 			e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(
 				"Unsupported prefix operation on a number",
@@ -154,10 +154,10 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 			return nil
 		case *b.CurrencyBox:
 			if operator == ast.MINUS {
-				return &b.CurrencyBox{Value: -right.Value, Unit: right.Unit}
+				return &b.CurrencyBox{Number: b.NewNumberbox(-right.Number.Value, right.Number.NumberType), Unit: right.Unit}
 			}
 			if operator == ast.PLUS {
-				return &b.CurrencyBox{Value: right.Value, Unit: right.Unit}
+				return &b.CurrencyBox{Number: b.NewNumberbox(right.Number.Value, right.Number.NumberType), Unit: right.Unit}
 			}
 			e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(
 				"Unsupported prefix operation on a currency",
@@ -191,7 +191,7 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 		}
 		return found
 	case *ast.NumberExpression:
-		return &b.NumberBox{Value: exp.ActualValue}
+		return b.NewNumberbox(exp.ActualValue, b.Decimal)
 	default:
 		x := exp.String()
 		log.Fatalf("Evaluator error: unhandled case %s", x)
@@ -207,27 +207,30 @@ func (e *Evaluator) evalInExpression(leftExpr ast.Expression, rightExpr ast.Expr
 		return nil
 	}
 
-	// if left already a number box, no need for conversion. Just use the unit on the right
-	// otherwise try to convert by converting whatever unit left is to the right unit.
+	isNumberKeyword, numberKeyword := b.IsNumberKeyword(right.ActualValue)
+
 	leftBox := e.evalExp(leftExpr)
 	switch box := leftBox.(type) {
 	case *b.NumberBox:
+		if isNumberKeyword {
+			return b.NewNumberbox(box.Value, numberKeyword)
+		}
 		return &b.CurrencyBox{
-			Value: box.Value,
-			Unit:  right.ActualValue,
+			Number: b.NewNumberbox(box.Value, box.NumberType),
+			Unit:   right.ActualValue,
 		}
 	case *b.CurrencyBox:
 		rightUnit := right.ActualValue
 		if rightUnit == box.Unit {
-			return &b.CurrencyBox{Value: box.Value, Unit: rightUnit}
+			return &b.CurrencyBox{Number: box.Number, Unit: rightUnit}
 		}
 
-		converted, err := e.currencyConverter(box.Value, box.Unit, rightUnit)
+		converted, err := e.currencyConverter(box.Number.Value, box.Unit, rightUnit)
 		if err != nil {
 			e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(err.Error(), right.Token()))
 			return nil
 		}
-		return &b.CurrencyBox{Value: converted, Unit: rightUnit}
+		return &b.CurrencyBox{Number: b.NewNumberbox(converted, box.Number.NumberType), Unit: rightUnit}
 
 	default:
 		text := "Expect left-hand side of an in expression to be a number or a currency"
@@ -278,15 +281,15 @@ func (e *Evaluator) evalBinaryBooleanComparisonExpression(left ast.Expression, r
 		case *b.CurrencyBox:
 			r, _ := (evaluatedRight).(*b.CurrencyBox)
 			if l.Unit == r.Unit {
-				return &b.BooleanBox{Value: comp(l.Value, r.Value)}
+				return &b.BooleanBox{Value: comp(l.Number.Value, r.Number.Value)}
 			}
 
-			converted, err := e.currencyConverter(l.Value, l.Unit, r.Unit)
+			converted, err := e.currencyConverter(l.Number.Value, l.Unit, r.Unit)
 			if err != nil {
 				e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(err.Error(), operator))
 				return nil
 			}
-			return &b.BooleanBox{Value: comp(converted, r.Value)}
+			return &b.BooleanBox{Value: comp(converted, r.Number.Value)}
 		}
 		e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken("Relational operators only applicable to currency or number types", operator))
 		return nil
@@ -404,7 +407,7 @@ func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Ex
 		case *b.NumberBox:
 			return &b.NumberBox{Value: callable(r.Value, (l.Value/100)*r.Value)}
 		case *b.CurrencyBox:
-			return &b.CurrencyBox{Value: callable(r.Value, (l.Value/100)*r.Value), Unit: r.Unit}
+			return &b.CurrencyBox{Number: b.NewNumberbox(callable(r.Number.Value, (l.Value/100)*r.Number.Value), r.Number.NumberType), Unit: r.Unit}
 		case *b.PercentBox:
 			return &b.PercentBox{Value: callable(l.Value, r.Value)}
 		default:
@@ -415,7 +418,7 @@ func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Ex
 		case *b.NumberBox:
 			return &b.NumberBox{Value: callable(l.Value, r.Value)}
 		case *b.CurrencyBox:
-			return &b.CurrencyBox{Value: callable(l.Value, r.Value), Unit: r.Unit}
+			return &b.CurrencyBox{Number: b.NewNumberbox(callable(l.Value, r.Number.Value), r.Number.NumberType), Unit: r.Unit}
 		case *b.PercentBox:
 			// 2 + 2% = 2 + (2/200 * 2)
 			return &b.NumberBox{Value: callable(l.Value, (r.Value/100)*l.Value)}
@@ -429,14 +432,14 @@ func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Ex
 	case *b.CurrencyBox:
 		switch r := evalRight.(type) {
 		case *b.NumberBox:
-			return &b.CurrencyBox{Value: callable(l.Value, r.Value), Unit: l.Unit}
+			return &b.CurrencyBox{Number: b.NewNumberbox(callable(l.Number.Value, r.Value), r.NumberType), Unit: l.Unit}
 		case *b.CurrencyBox:
 			if r.Unit == l.Unit {
-				return &b.CurrencyBox{Value: callable(l.Value, r.Value), Unit: l.Unit}
+				return &b.CurrencyBox{Number: b.NewNumberbox(callable(l.Number.Value, r.Number.Value), r.Number.NumberType), Unit: l.Unit}
 			}
 
 			// convert left to right
-			leftConverted, err := e.currencyConverter(l.Value, l.Unit, r.Unit)
+			leftConverted, err := e.currencyConverter(l.Number.Value, l.Unit, r.Unit)
 			if err != nil {
 				e.diagnostics = append(e.diagnostics, ast.NewDiagnostic(
 					err.Error(),
@@ -446,10 +449,10 @@ func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Ex
 				return nil
 			}
 
-			return &b.CurrencyBox{Value: callable(leftConverted, r.Value), Unit: r.Unit}
+			return &b.CurrencyBox{Number: b.NewNumberbox(callable(leftConverted, r.Number.Value), r.Number.NumberType), Unit: r.Unit}
 		case *b.PercentBox:
 			// 2 + 2% = 2 + (2/200 * 2)
-			return &b.CurrencyBox{Value: callable(l.Value, (r.Value/100)*l.Value), Unit: l.Unit}
+			return &b.CurrencyBox{Number: b.NewNumberbox(callable(l.Number.Value, (r.Value/100)*l.Number.Value), l.Number.NumberType), Unit: l.Unit}
 		default:
 			return fail()
 		}
