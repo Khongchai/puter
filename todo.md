@@ -69,13 +69,13 @@ Create a go program first, hook in lsp later.
 - [x] Cache call to frankfurter api
 - [x] When deleting items, the decoration remains.
 - [x] For some reason typescript's pipe produces diagnostics warning without comment start before
-- [ ] Line command for doing things to everything above current line (can be done in a later stage that detects special keyword)
+- [x] Line command for doing things to everything above current line (can be done in a later stage that detects special keyword)
     - func TestLineCommand(t *testing.T) { << here right now.
 - [ ] Add more unit supports (metrics, gbs, crypto)
     - [x] Number representation (only affect printing): hex, binary << doing this right now. For all operations, take whatever unit the right hand number is.
-    - [ ] measurement units
+    - [ ] add measurement units
+    - [ ] refactor all operations into visitor pattern otherwise u die!
     - [ ] data size units
-    - [ ] Currency: crypto
 - [ ] pi and e constant (allow overriding)
 - [ ] mod keyword (builtin invocation)
 - [ ] Builtin number functions need to support all units, but not cross units (lerp(usd, btc, number) does not make any sense)
