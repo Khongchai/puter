@@ -16,4 +16,6 @@ const (
 	FUNCTION_BOX     = "FUNCTION"
 	BUILTIN_BOX      = "BUILTIN"
 	CURRENCY_BOX     = "CURRENCY"
+	MEASUREMENT_BOX  = "MEASUREMENT_BOX" // cm, km, lbs, pounds, etc
+	// STORAGE_BOX gb, mc, kb...
 )

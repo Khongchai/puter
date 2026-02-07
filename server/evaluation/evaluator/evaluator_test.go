@@ -268,6 +268,38 @@ func TestCurrencyEvaluation(t *testing.T) {
 	}
 }
 
+func TestMeasurementEvaluation(t *testing.T) {
+	cases := []*EvaluationCase{
+		{
+			"2 cm",
+			"2 cm",
+			b.MEASUREMENT_BOX,
+		},
+		{
+			"2 km in cm",
+			"2 km in cm",
+			b.MEASUREMENT_BOX,
+		},
+		{
+			"200 cm",
+			"200 cm",
+			b.MEASUREMENT_BOX,
+		},
+	}
+	for _, c := range cases {
+		eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(200))
+
+		obj := eval.EvalLine(c.Line)
+
+		if obj.Inspect() != c.ExpectPrint {
+			t.Fatalf("Expected inspect result to be %s, got %s", c.ExpectPrint, obj.Inspect())
+		}
+		if obj.Type() != c.ExpectType {
+			t.Fatalf("Expected identifier object, got %+v", obj.Type())
+		}
+	}
+}
+
 func TestCurrencyConversionMultiline(t *testing.T) {
 	eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(100))
 

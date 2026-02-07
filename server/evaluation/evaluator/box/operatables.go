@@ -9,5 +9,5 @@ type BinaryNumberOperatable interface {
 // Can apply "in" keyword
 // 20 in usd << number "in" usd
 type InPrefixOperatable interface {
-	OperateIn(left Box, keyword string, currencyConverter ValueConverter) (Box, error)
+	OperateIn(keyword string, currencyConverter ValueConverter) (Box, error)
 }

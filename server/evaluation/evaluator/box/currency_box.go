@@ -49,7 +49,7 @@ func (cb *CurrencyBox) OperateBinary(right Box, operator BinaryOperation[float64
 
 var _ InPrefixOperatable = (*CurrencyBox)(nil)
 
-func (nb *CurrencyBox) OperateIn(left Box, keyword string, currencyConverter ValueConverter) (Box, error) {
+func (nb *CurrencyBox) OperateIn(keyword string, currencyConverter ValueConverter) (Box, error) {
 	if nb.Unit == keyword {
 		return &CurrencyBox{Number: nb.Number, Unit: nb.Unit}, nil
 	}

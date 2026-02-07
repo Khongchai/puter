@@ -2,6 +2,7 @@ package box
 
 import (
 	"fmt"
+	"strings"
 )
 
 type NumberType string
@@ -59,13 +60,26 @@ func (nb *NumberBox) OperateBinary(right Box, operator BinaryOperation[float64],
 
 var _ InPrefixOperatable = (*NumberBox)(nil)
 
-func (nb *NumberBox) OperateIn(left Box, keyword string, valueConverter ValueConverter) (Box, error) {
+func (nb *NumberBox) OperateIn(keyword string, valueConverter ValueConverter) (Box, error) {
 	isNumberKeyword, numberType := IsNumberKeyword(keyword)
 	if isNumberKeyword {
 		return NewNumberbox(nb.Value, numberType), nil
+	}
+	isMeasurementKeyword, measurementType := IsMeasurementKeyword(keyword)
+	if isMeasurementKeyword {
+		return NewMeasurementBox(NewNumberbox(nb.Value, nb.NumberType), measurementType), nil
 	}
 	return &CurrencyBox{
 		Number: NewNumberbox(nb.Value, nb.NumberType),
 		Unit:   keyword,
 	}, nil
+}
+
+func IsNumberKeyword(keyword string) (bool, NumberType) {
+	lowercased := strings.ToLower(keyword)
+	is := lowercased == string(Decimal) || keyword == string(Binary) || keyword == string(Hex)
+	if is {
+		return true, NumberType(lowercased)
+	}
+	return false, NaN
 }

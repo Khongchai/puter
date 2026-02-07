@@ -213,7 +213,7 @@ func (e *Evaluator) evalInExpression(leftExpr ast.Expression, rightExpr ast.Expr
 		))
 		return nil
 	} else {
-		res, err := operatable.OperateIn(leftBox, right.ActualValue, e.currencyConverter)
+		res, err := operatable.OperateIn(right.ActualValue, e.currencyConverter)
 		if err != nil {
 			e.diagnostics = append(e.diagnostics, ast.NewDiagnostic(
 				err.Error(),
