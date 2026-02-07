@@ -51,3 +51,18 @@ func IsNumberKeyword(keyword string) (bool, NumberType) {
 	}
 	return false, NaN
 }
+
+var _ BinaryNumberOperatables = (*NumberBox)(nil)
+
+func (nb *NumberBox) OperateBinary(right Box, operator BinaryOperation[float64], valueConverter ValueConverter) (Box, error) {
+	switch r := right.(type) {
+	case *NumberBox:
+		return &NumberBox{Value: operator(nb.Value, r.Value)}, nil
+	case *CurrencyBox:
+		return &CurrencyBox{Number: NewNumberbox(operator(nb.Value, r.Number.Value), r.Number.NumberType), Unit: r.Unit}, nil
+	case *PercentBox:
+		return &NumberBox{Value: operator(nb.Value, (r.Value/100)*nb.Value)}, nil
+	default:
+		return nil, fmt.Errorf("Cannot perform this operation on %s and %s", nb.Type(), right.Type())
+	}
+}

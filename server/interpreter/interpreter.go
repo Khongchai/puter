@@ -12,7 +12,7 @@ import (
 
 type Interpreter struct {
 	ctx               context.Context
-	currencyConverter evaluator.ValueConverter
+	currencyConverter box.ValueConverter
 }
 
 type Interpretation struct {
@@ -39,7 +39,7 @@ type Interpretation struct {
 //
 // }
 // ```
-func NewInterpreter(ctx context.Context, currencyConverter evaluator.ValueConverter) *Interpreter {
+func NewInterpreter(ctx context.Context, currencyConverter box.ValueConverter) *Interpreter {
 	return &Interpreter{
 		ctx,
 		currencyConverter,

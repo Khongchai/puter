@@ -6,12 +6,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"puter/evaluation/evaluator"
 	"puter/evaluation/evaluator/box"
 	"strings"
 )
 
-func GetCurrencyConverter() evaluator.ValueConverter {
+func GetCurrencyConverter() box.ValueConverter {
 	return func(fromValue float64, fromUnit string, toUnit string) (float64, error) {
 		fromUnit = strings.ToUpper(fromUnit)
 		toUnit = strings.ToUpper(toUnit)

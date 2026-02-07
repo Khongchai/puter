@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func getDefaultCurrencyConverter(defaultValue float64) ValueConverter {
+func getDefaultCurrencyConverter(defaultValue float64) b.ValueConverter {
 	return func(fromValue float64, fromUnit string, toUnit string) (float64, error) {
 		return defaultValue, nil
 	}

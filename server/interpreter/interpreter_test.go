@@ -1,14 +1,14 @@
 package interpreter
 
 import (
-	"puter/evaluation/evaluator"
+	"puter/evaluation/evaluator/box"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
 )
 
-func getDefaultCurrencyConverter(defaultValue float64) evaluator.ValueConverter {
+func getDefaultCurrencyConverter(defaultValue float64) box.ValueConverter {
 	return func(fromValue float64, fromUnit string, toUnit string) (float64, error) {
 		return defaultValue, nil
 	}

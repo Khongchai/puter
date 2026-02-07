@@ -2,7 +2,6 @@ package interpreter
 
 import (
 	"fmt"
-	"puter/evaluation/evaluator"
 	"puter/evaluation/evaluator/box"
 )
 
@@ -19,10 +18,10 @@ type LineAccumulator struct {
 	command           string
 	acc               box.Box
 	operation         func(a, b float64) float64
-	currencyConverter evaluator.ValueConverter
+	currencyConverter box.ValueConverter
 }
 
-func NewLineAccumulator(command string, line int, currencyConverter evaluator.ValueConverter) *LineAccumulator {
+func NewLineAccumulator(command string, line int, currencyConverter box.ValueConverter) *LineAccumulator {
 	if !IsAccumulationCommand(command) {
 		panic(fmt.Sprintf("Invalid line command. Got %s", command))
 	}

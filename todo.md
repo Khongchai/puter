@@ -76,6 +76,7 @@ Create a go program first, hook in lsp later.
     - [ ] add measurement units
     - [ ] refactor all operations into visitor pattern otherwise u die!
     - [ ] data size units
+    - [ ] Carry around value converters struct (multiple converter inside, currency converter, unit converter ,etc)
 - [ ] pi and e constant (allow overriding)
 - [ ] mod keyword (builtin invocation)
 - [ ] Builtin number functions need to support all units, but not cross units (lerp(usd, btc, number) does not make any sense)

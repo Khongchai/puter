@@ -10,13 +10,11 @@ import (
 	p "puter/evaluation/parser"
 )
 
-type ValueConverter = func(fromValue float64, fromUnit string, toUnit string) (float64, error)
-
 type Evaluator struct {
 	parser p.Parser
 	// A map of identifier to puter object
 	heap              map[string]b.Box
-	currencyConverter ValueConverter
+	currencyConverter b.ValueConverter
 	ctx               context.Context
 	// Eval stage holds multiple diagnostics error.
 	// For simplicity, parser and tokenizer always return one errors but this stage returns
@@ -31,7 +29,7 @@ type Evaluator struct {
 	diagnostics []*ast.Diagnostic
 }
 
-func NewEvaluator(ctx context.Context, currencyConverter ValueConverter) *Evaluator {
+func NewEvaluator(ctx context.Context, currencyConverter b.ValueConverter) *Evaluator {
 	return &Evaluator{
 		ctx:               ctx,
 		parser:            *p.NewParser(),
@@ -394,77 +392,27 @@ func (e *Evaluator) evalCallExpression(functionName ast.Expression, arguments []
 	}
 }
 
-func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Expression, operator *ast.Token, callable func(a, b float64) float64) b.Box {
-	evalLeft := e.evalExp(left)
-	evalRight := e.evalExp(right)
-	fail := func() b.Box {
+func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Expression, operator *ast.Token, operation func(a, b float64) float64) b.Box {
+	var boxLeft b.Box = e.evalExp(left)
+	var boxRight b.Box = e.evalExp(right)
+	if operatable, ok := boxLeft.(b.BinaryNumberOperatables); !ok {
 		e.diagnostics = append(e.diagnostics, ast.NewDiagnostic(
-			"Mismatch types",
+			"Left hand side of this expression is not evaluable by this operator",
 			left.Token().StartPos(),
-			right.Token().EndPos(),
+			operator.EndPos(),
 		))
 		return nil
-	}
-	switch l := evalLeft.(type) {
-	case *b.PercentBox:
-		switch r := evalRight.(type) {
-		case *b.NumberBox:
-			return &b.NumberBox{Value: callable(r.Value, (l.Value/100)*r.Value)}
-		case *b.CurrencyBox:
-			return &b.CurrencyBox{Number: b.NewNumberbox(callable(r.Number.Value, (l.Value/100)*r.Number.Value), r.Number.NumberType), Unit: r.Unit}
-		case *b.PercentBox:
-			return &b.PercentBox{Value: callable(l.Value, r.Value)}
-		default:
-			return fail()
-		}
-	case *b.NumberBox:
-		switch r := evalRight.(type) {
-		case *b.NumberBox:
-			return &b.NumberBox{Value: callable(l.Value, r.Value)}
-		case *b.CurrencyBox:
-			return &b.CurrencyBox{Number: b.NewNumberbox(callable(l.Value, r.Number.Value), r.Number.NumberType), Unit: r.Unit}
-		case *b.PercentBox:
-			// 2 + 2% = 2 + (2/200 * 2)
-			return &b.NumberBox{Value: callable(l.Value, (r.Value/100)*l.Value)}
-		default:
-			e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(
-				fmt.Sprintf("Cannot add %s and %s", evalLeft.Type(), evalRight.Type()),
-				operator,
+	} else {
+		res, err := operatable.OperateBinary(boxRight, operation, e.currencyConverter)
+		if err != nil {
+			e.diagnostics = append(e.diagnostics, ast.NewDiagnostic(
+				err.Error(),
+				left.Token().StartPos(),
+				right.Token().EndPos(),
 			))
-			return fail()
 		}
-	case *b.CurrencyBox:
-		switch r := evalRight.(type) {
-		case *b.NumberBox:
-			return &b.CurrencyBox{Number: b.NewNumberbox(callable(l.Number.Value, r.Value), r.NumberType), Unit: l.Unit}
-		case *b.CurrencyBox:
-			if r.Unit == l.Unit {
-				return &b.CurrencyBox{Number: b.NewNumberbox(callable(l.Number.Value, r.Number.Value), r.Number.NumberType), Unit: l.Unit}
-			}
-
-			// convert left to right
-			leftConverted, err := e.currencyConverter(l.Number.Value, l.Unit, r.Unit)
-			if err != nil {
-				e.diagnostics = append(e.diagnostics, ast.NewDiagnostic(
-					err.Error(),
-					left.Token().StartPos(),
-					right.Token().EndPos(),
-				))
-				return nil
-			}
-
-			return &b.CurrencyBox{Number: b.NewNumberbox(callable(leftConverted, r.Number.Value), r.Number.NumberType), Unit: r.Unit}
-		case *b.PercentBox:
-			// 2 + 2% = 2 + (2/200 * 2)
-			return &b.CurrencyBox{Number: b.NewNumberbox(callable(l.Number.Value, (r.Value/100)*l.Number.Value), l.Number.NumberType), Unit: l.Unit}
-		default:
-			return fail()
-		}
-
-	default:
-		return fail()
+		return res
 	}
-
 }
 
 func (e *Evaluator) GetDiagnostics() []*ast.Diagnostic {
