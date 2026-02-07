@@ -2,7 +2,6 @@ package box
 
 import (
 	"fmt"
-	"strings"
 )
 
 type NumberType string
@@ -43,16 +42,7 @@ func (nb *NumberBox) Type() BoxType {
 	return NUMBER_BOX
 }
 
-func IsNumberKeyword(keyword string) (bool, NumberType) {
-	lowercased := strings.ToLower(keyword)
-	is := lowercased == string(Decimal) || keyword == string(Binary) || keyword == string(Hex)
-	if is {
-		return true, NumberType(lowercased)
-	}
-	return false, NaN
-}
-
-var _ BinaryNumberOperatables = (*NumberBox)(nil)
+var _ BinaryNumberOperatable = (*NumberBox)(nil)
 
 func (nb *NumberBox) OperateBinary(right Box, operator BinaryOperation[float64], valueConverter ValueConverter) (Box, error) {
 	switch r := right.(type) {
@@ -65,4 +55,17 @@ func (nb *NumberBox) OperateBinary(right Box, operator BinaryOperation[float64],
 	default:
 		return nil, fmt.Errorf("Cannot perform this operation on %s and %s", nb.Type(), right.Type())
 	}
+}
+
+var _ InPrefixOperatable = (*NumberBox)(nil)
+
+func (nb *NumberBox) OperateIn(left Box, keyword string, valueConverter ValueConverter) (Box, error) {
+	isNumberKeyword, numberType := IsNumberKeyword(keyword)
+	if isNumberKeyword {
+		return NewNumberbox(nb.Value, numberType), nil
+	}
+	return &CurrencyBox{
+		Number: NewNumberbox(nb.Value, nb.NumberType),
+		Unit:   keyword,
+	}, nil
 }

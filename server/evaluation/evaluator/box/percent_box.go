@@ -17,7 +17,7 @@ func (nb *PercentBox) Type() BoxType {
 	return PERCENT_BOX
 }
 
-var _ BinaryNumberOperatables = (*PercentBox)(nil)
+var _ BinaryNumberOperatable = (*PercentBox)(nil)
 
 func (pb *PercentBox) OperateBinary(right Box, operator BinaryOperation[float64], valueConverter ValueConverter) (Box, error) {
 	switch r := right.(type) {

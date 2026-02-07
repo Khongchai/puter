@@ -197,7 +197,6 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 	}
 }
 
-// If left is not a number box, but another unit-based expression, convert it first before returning a new value.
 func (e *Evaluator) evalInExpression(leftExpr ast.Expression, rightExpr ast.Expression) b.Box {
 	right, rightIsIdentifier := rightExpr.(*ast.IdentExpression)
 	if !rightIsIdentifier {
@@ -205,39 +204,24 @@ func (e *Evaluator) evalInExpression(leftExpr ast.Expression, rightExpr ast.Expr
 		return nil
 	}
 
-	rightIsNumberKeyword, numberKeyword := b.IsNumberKeyword(right.ActualValue)
-
 	leftBox := e.evalExp(leftExpr)
-	switch box := leftBox.(type) {
-	case *b.NumberBox:
-		if rightIsNumberKeyword {
-			return b.NewNumberbox(box.Value, numberKeyword)
-		}
-		return &b.CurrencyBox{
-			Number: b.NewNumberbox(box.Value, box.NumberType),
-			Unit:   right.ActualValue,
-		}
-	case *b.CurrencyBox:
-		rightUnit := right.ActualValue
-		if rightUnit == box.Unit {
-			return &b.CurrencyBox{Number: box.Number, Unit: rightUnit}
-		}
-
-		if rightIsNumberKeyword {
-			return &b.CurrencyBox{Number: b.NewNumberbox(box.Number.Value, numberKeyword), Unit: box.Unit}
-		}
-
-		converted, err := e.currencyConverter(box.Number.Value, box.Unit, rightUnit)
-		if err != nil {
-			e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(err.Error(), right.Token()))
-			return nil
-		}
-		return &b.CurrencyBox{Number: b.NewNumberbox(converted, box.Number.NumberType), Unit: rightUnit}
-
-	default:
-		text := "Expect left-hand side of an in expression to be a number or a currency"
-		e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(text, right.Token()))
+	if operatable, ok := leftBox.(b.InPrefixOperatable); !ok {
+		e.diagnostics = append(e.diagnostics, ast.NewDiagnostic(
+			"Left hand side of this expression is not evaluable by this operator",
+			leftExpr.Token().StartPos(),
+			rightExpr.Token().EndPos(),
+		))
 		return nil
+	} else {
+		res, err := operatable.OperateIn(leftBox, right.ActualValue, e.currencyConverter)
+		if err != nil {
+			e.diagnostics = append(e.diagnostics, ast.NewDiagnostic(
+				err.Error(),
+				leftExpr.Token().StartPos(),
+				right.Token().EndPos(),
+			))
+		}
+		return res
 	}
 }
 
@@ -395,7 +379,7 @@ func (e *Evaluator) evalCallExpression(functionName ast.Expression, arguments []
 func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Expression, operator *ast.Token, operation func(a, b float64) float64) b.Box {
 	var boxLeft b.Box = e.evalExp(left)
 	var boxRight b.Box = e.evalExp(right)
-	if operatable, ok := boxLeft.(b.BinaryNumberOperatables); !ok {
+	if operatable, ok := boxLeft.(b.BinaryNumberOperatable); !ok {
 		e.diagnostics = append(e.diagnostics, ast.NewDiagnostic(
 			"Left hand side of this expression is not evaluable by this operator",
 			left.Token().StartPos(),

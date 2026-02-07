@@ -20,7 +20,7 @@ func (cb *CurrencyBox) Type() BoxType {
 
 type Currency = string
 
-var _ BinaryNumberOperatables = (*CurrencyBox)(nil)
+var _ BinaryNumberOperatable = (*CurrencyBox)(nil)
 
 func (cb *CurrencyBox) OperateBinary(right Box, operator BinaryOperation[float64], currencyConverter ValueConverter) (Box, error) {
 	switch r := right.(type) {
@@ -45,4 +45,23 @@ func (cb *CurrencyBox) OperateBinary(right Box, operator BinaryOperation[float64
 		return nil, fmt.Errorf("Cannot perform this operation on %s and %s", cb.Type(), right.Type())
 	}
 
+}
+
+var _ InPrefixOperatable = (*CurrencyBox)(nil)
+
+func (nb *CurrencyBox) OperateIn(left Box, keyword string, currencyConverter ValueConverter) (Box, error) {
+	if nb.Unit == keyword {
+		return &CurrencyBox{Number: nb.Number, Unit: nb.Unit}, nil
+	}
+
+	isNumberKeyword, numberType := IsNumberKeyword(keyword)
+	if isNumberKeyword {
+		return &CurrencyBox{Number: NewNumberbox(nb.Number.Value, numberType), Unit: nb.Unit}, nil
+	}
+
+	converted, err := currencyConverter(nb.Number.Value, nb.Unit, keyword)
+	if err != nil {
+		return nil, err
+	}
+	return &CurrencyBox{Number: NewNumberbox(converted, nb.Number.NumberType), Unit: keyword}, nil
 }

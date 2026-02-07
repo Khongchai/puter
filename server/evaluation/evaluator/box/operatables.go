@@ -2,6 +2,12 @@ package box
 
 type BinaryOperation[T any] = func(a, b T) T
 
-type BinaryNumberOperatables interface {
-	OperateBinary(right Box, operation BinaryOperation[float64], valueConverter ValueConverter) (Box, error)
+type BinaryNumberOperatable interface {
+	OperateBinary(right Box, operation BinaryOperation[float64], currencyConverter ValueConverter) (Box, error)
+}
+
+// Can apply "in" keyword
+// 20 in usd << number "in" usd
+type InPrefixOperatable interface {
+	OperateIn(left Box, keyword string, currencyConverter ValueConverter) (Box, error)
 }
