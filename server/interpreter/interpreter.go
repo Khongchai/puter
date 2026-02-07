@@ -123,13 +123,7 @@ func (interpreter *Interpreter) handleLineAccumulationCommands(out []*Interpreta
 			if acc != nil {
 				out[acc.GetLine()].EvalResult = acc.Print()
 			}
-			if newAcc, err := NewLineAccumulator(text, i); err != nil {
-				// something's wrong, just ignore
-				continue
-			} else {
-				acc = newAcc
-			}
-
+			acc = NewLineAccumulator(text, i, interpreter.currencyConverter)
 			continue
 		}
 

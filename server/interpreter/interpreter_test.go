@@ -113,16 +113,24 @@ func TestLineCommand(t *testing.T) {
 				"// | product",
 			),
 		},
-		// {
-		// 	ExpectPrint: []string{"2 usd", "5 thb", "3 thb", "208 thb"},
-		// 	ExpectLine:  []int{0, 1, 2, 3},
-		// 	InputText: joinLines(
-		// 		"// | x = 2 usd", // usd,
-		// 		"// | 5 thb",     // convert previous line using default converter to 200, add tihs one is 205 thb
-		// 		"// | 3 thb",     // add this one to 208
-		// 		"// | sum",
-		// 	),
-		// },
+		{
+			ExpectPrint: []string{"5 thb", "3 thb", "8 thb"},
+			ExpectLine:  []int{0, 1, 2},
+			InputText: joinLines(
+				"// | 5 thb",
+				"// | 3 thb",
+				"// | sum",
+			),
+		},
+		{
+			ExpectPrint: []string{"2 usd", "5 thb", "202 usd"},
+			ExpectLine:  []int{0, 1, 2},
+			InputText: joinLines(
+				"// | x = 2 usd",
+				"// | 5 thb",
+				"// | sum",
+			),
+		},
 	}
 
 	for _, testCase := range cases {
