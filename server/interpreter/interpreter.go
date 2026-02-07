@@ -2,7 +2,6 @@ package interpreter
 
 import (
 	"context"
-	"fmt"
 	"puter/evaluation/evaluator"
 	"puter/evaluation/evaluator/box"
 	lsproto "puter/lsp"
@@ -85,7 +84,7 @@ func (interpreter *Interpreter) Interpret(text string) []*Interpretation {
 			if index != -1 && len(lines[i]) > index+1 {
 				evaluatable := lines[i][index+1:]
 				trimmed := strings.Trim(evaluatable, " ")
-				if isLineCommand(trimmed) {
+				if IsAccumulationCommand(trimmed) {
 					hasLineCommands = true
 					interpretations = append(interpretations, &Interpretation{
 						LineIndex:   i,
@@ -104,70 +103,46 @@ func (interpreter *Interpreter) Interpret(text string) []*Interpretation {
 		i++
 	}
 
-	// if there exist line command `sum` or `product`, iterate
-	// backward until either command is found. Once found, start an accumulator and
-	// sum or multiple everything above until line index is 0 or another command is found.
-	// Then populate the interpretation with the new result.
 	if hasLineCommands {
-		var operation func(a, b float64) float64 = nil
-		var latestInterpretationLine = -1
-		acc := 0.0
-		for i = len(interpretations) - 1; i >= 0; i-- {
-			text := interpretations[i].EvalResult
-			if isLineCommand(text) {
-				if operation != nil {
-					interpretations[latestInterpretationLine].EvalResult = fmt.Sprintf("%g", acc)
-					if text == "sum" || text == "difference" {
-						acc = 0
-					} else {
-						acc = 1
-					}
-				}
-
-				latestInterpretationLine = i
-				switch text {
-				case "sum":
-					operation = add
-					acc = 0
-				case "product":
-					operation = multiply
-					acc = 1
-				case "difference":
-					operation = difference
-					acc = 0
-				case "quotient":
-					operation = quotient
-					acc = 1
-				}
-				continue
-			}
-			if operation != nil {
-				result := interpretations[i].Box
-				resultNumber, resultIsNumber := result.(*box.NumberBox)
-				if resultIsNumber {
-					acc = operation(acc, resultNumber.Value)
-					continue
-				}
-				// resultCurrency, resultIsCurrency := result.(*box.CurrencyBox)
-				// if resultIsCurrency {
-
-				// }
-
-			}
-
-		}
-
-		if operation != nil {
-			interpretations[latestInterpretationLine].EvalResult = fmt.Sprintf("%g", acc)
-			if text == "sum" || text == "difference" {
-				acc = 0
-			} else {
-				acc = 1
-			}
-		}
+		interpreter.handleLineAccumulationCommands(interpretations)
 	}
 
 	return interpretations
+}
+
+// if there exist line command `sum` or `product`, iterate
+// backward until either command is found. Once found, start an accumulator and
+// sum or multiple everything above until line index is 0 or another command is found.
+// Then populate the interpretation with the new result.
+func (interpreter *Interpreter) handleLineAccumulationCommands(out []*Interpretation) {
+	var acc *LineAccumulator
+	for i := len(out) - 1; i >= 0; i-- {
+		text := out[i].EvalResult
+		// first time encountering accumulation keyword, initialize a new line accumulator
+		if IsAccumulationCommand(text) {
+			if acc != nil {
+				out[acc.GetLine()].EvalResult = acc.Print()
+			}
+			if newAcc, err := NewLineAccumulator(text, i); err != nil {
+				// something's wrong, just ignore
+				continue
+			} else {
+				acc = newAcc
+			}
+
+			continue
+		}
+
+		if acc != nil {
+			acc.Accept(out[i].Box)
+		}
+	}
+
+	// first line case
+	if acc != nil {
+		out[acc.GetLine()].EvalResult = acc.Print()
+		acc = nil
+	}
 }
 
 func (interpreter *Interpreter) evaluateAndInterpretResult(
@@ -207,24 +182,4 @@ func (interpreter *Interpreter) evaluateAndInterpretResult(
 		EvalResult:  decoration,
 		Box:         box,
 	}
-}
-
-func isLineCommand(text string) bool {
-	return text == "sum" || text == "product" || text == "quotient" || text == "difference"
-}
-
-func multiply(a, b float64) float64 {
-	return a * b
-}
-
-func add(a, b float64) float64 {
-	return a + b
-}
-
-func difference(a, b float64) float64 {
-	return a - b
-}
-
-func quotient(a, b float64) float64 {
-	return a / b
 }

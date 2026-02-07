@@ -114,7 +114,7 @@ func TestLineCommand(t *testing.T) {
 			),
 		},
 		// {
-		// 	ExpectPrint: []string{"2", "5", "3", "208 thb"},
+		// 	ExpectPrint: []string{"2 usd", "5 thb", "3 thb", "208 thb"},
 		// 	ExpectLine:  []int{0, 1, 2, 3},
 		// 	InputText: joinLines(
 		// 		"// | x = 2 usd", // usd,
