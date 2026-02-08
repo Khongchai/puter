@@ -287,7 +287,7 @@ func TestMeasurementEvaluation(t *testing.T) {
 		},
 		{
 			"1000 m in km",
-			"1 km",
+			"1 kilometers",
 			b.MEASUREMENT_BOX,
 		},
 	}

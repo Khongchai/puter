@@ -73,8 +73,11 @@ Create a go program first, hook in lsp later.
     - func TestLineCommand(t *testing.T) { << here right now.
 - [ ] Add more unit supports (metrics, gbs, crypto)
     - [x] Number representation (only affect printing): hex, binary << doing this right now. For all operations, take whatever unit the right hand number is.
-    - [ ] add measurement units
+    - [x] add measurement units
+        - [x] distance
+        - [ ] other stuff
     - [ ] refactor all operations into visitor pattern otherwise u die!
+    - [ ] Inject all value converters
     - [ ] data size units
     - [ ] Carry around value converters struct (multiple converter inside, currency converter, unit converter ,etc)
 - [ ] pi and e constant (allow overriding)

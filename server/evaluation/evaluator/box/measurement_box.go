@@ -116,7 +116,16 @@ func (left *MeasurementBox) OperateBinary(right Box, operator BinaryOperation[fl
 	case *NumberBox:
 		return NewMeasurementBox(NewNumberbox(operator(left.Value.Value, r.Value), r.NumberType), left.MeasurementType), nil
 	case *MeasurementBox:
-		return NewMeasurementBox(NewNumberbox(operator(left.Value.Value, r.Value.Value), r.Value.NumberType), left.MeasurementType), nil
+		{
+			if left.MeasurementType == r.MeasurementType {
+				return NewMeasurementBox(NewNumberbox(operator(left.Value.Value, r.Value.Value), r.Value.NumberType), left.MeasurementType), nil
+			}
+			leftInRight, err := convertUnits(left.Value.Value, string(left.MeasurementType), string(r.MeasurementType))
+			if err != nil {
+				return nil, err
+			}
+			return NewMeasurementBox(NewNumberbox(operator(leftInRight, r.Value.Value), r.Value.NumberType), r.MeasurementType), nil
+		}
 	default:
 		return nil, fmt.Errorf("Cannot perform this operation on %s and %s", left.Type(), right.Type())
 	}
@@ -129,17 +138,24 @@ func (mb *MeasurementBox) OperateIn(keyword string, _ ValueConverter) (Box, erro
 		return NewMeasurementBox(mb.Value, mb.MeasurementType), nil
 	}
 
-	isMeasurementKeyword, measurementType := IsMeasurementKeyword(keyword)
-	if !isMeasurementKeyword {
-		return nil, fmt.Errorf("Cannot convert %s to %s", mb.MeasurementType, keyword)
+	inNewUnit, err := convertUnits(mb.Value.Value, string(mb.MeasurementType), keyword)
+	if err != nil {
+		return nil, err
 	}
 
-	fromDetail := measurementTypes[mb.MeasurementType]
-	targetDetail := measurementTypes[measurementType]
+	return NewMeasurementBox(NewNumberbox(inNewUnit, mb.Value.NumberType), MeasurementType(keyword)), nil
+}
 
-	normalized := fromDetail.toBaseUnit(mb.Value.Value)
+var convertUnits ValueConverter = func(fromValue float64, fromUnit string, toUnit string) (float64, error) {
+	isFromKeyword, _ := IsMeasurementKeyword(fromUnit)
+	isToKeyword, _ := IsMeasurementKeyword(toUnit)
+	if !isFromKeyword || !isToKeyword {
+		return -1, fmt.Errorf("Cannot convert %s to %s", fromUnit, toUnit)
+	}
+	fromDetail := measurementTypes[MeasurementType(fromUnit)]
+	targetDetail := measurementTypes[MeasurementType(toUnit)]
+
+	normalized := fromDetail.toBaseUnit(fromValue)
 	inNewUnit := targetDetail.fromBaseUnit(normalized)
-
-	return NewMeasurementBox(NewNumberbox(inNewUnit, mb.Value.NumberType), mb.MeasurementType), nil
-
+	return inNewUnit, nil
 }
