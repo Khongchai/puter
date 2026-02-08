@@ -1,3 +1,5 @@
+// adding new fixed unit type support can be done from this file.
+
 package unit
 
 import "strings"
