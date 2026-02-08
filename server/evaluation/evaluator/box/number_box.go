@@ -50,11 +50,11 @@ var _ BinaryNumberOperatable = (*NumberBox)(nil)
 func (nb *NumberBox) OperateBinaryNumber(right Box, operator func(a, b float64) float64, converters *unit.Converters) (Box, error) {
 	switch r := right.(type) {
 	case *NumberBox:
-		return &NumberBox{Value: operator(nb.Value, r.Value)}, nil
+		return &NumberBox{Value: operator(nb.Value, r.Value), NumberType: r.NumberType}, nil
 	case *CurrencyBox:
 		return &CurrencyBox{Number: NewNumberbox(operator(nb.Value, r.Number.Value), r.Number.NumberType), Unit: r.Unit}, nil
 	case *PercentBox:
-		return &NumberBox{Value: operator(nb.Value, (r.Value/100)*nb.Value)}, nil
+		return &NumberBox{Value: operator(nb.Value, (r.Value/100)*nb.Value), NumberType: nb.NumberType}, nil
 	default:
 		return nil, fmt.Errorf("Cannot perform this operation on %s and %s", nb.Type(), right.Type())
 	}

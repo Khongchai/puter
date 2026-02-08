@@ -301,6 +301,10 @@ func TestPrecedence(t *testing.T) {
 			"1 usd",
 			"(1 usd)",
 		},
+		{
+			"2^10 in binary",
+			"(2 ^ (10 in binary)",
+		},
 	}
 
 	for _, tt := range tests {
