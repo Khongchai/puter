@@ -18,3 +18,7 @@ type InPrefixOperatable interface {
 type BinaryBooleanOperatable interface {
 	OperateBinaryBoolean(right Box, operator *ast.Token, converters *unit.Converters) (Box, error)
 }
+
+type HoldsNumber interface {
+	GetNumber() float64
+}

@@ -97,3 +97,9 @@ func (left *MeasurementBox) OperateBinaryBoolean(right Box, operator *ast.Token,
 
 	return &BooleanBox{Value: result}, nil
 }
+
+var _ HoldsNumber = (*MeasurementBox)(nil)
+
+func (m *MeasurementBox) GetNumber() float64 {
+	return m.Number.Value
+}

@@ -468,7 +468,7 @@ func TestBuiltinFunctionEvaluations(t *testing.T) {
 			b.NUMBER_BOX,
 		},
 		{
-			"log10(2)",
+			"log10(2usd)",
 			fmt.Sprintf("%g", math.Log10(2)),
 			b.NUMBER_BOX,
 		},
@@ -478,7 +478,7 @@ func TestBuiltinFunctionEvaluations(t *testing.T) {
 			b.NUMBER_BOX,
 		},
 		{
-			"log2(2)",
+			"log2(2m)",
 			fmt.Sprintf("%g", math.Log2(2)),
 			b.NUMBER_BOX,
 		},

@@ -99,3 +99,9 @@ func (left *CurrencyBox) OperateBinaryBoolean(right Box, operator *ast.Token, co
 
 	return &BooleanBox{Value: result}, nil
 }
+
+var _ HoldsNumber = (*CurrencyBox)(nil)
+
+func (c *CurrencyBox) GetNumber() float64 {
+	return c.Number.Value
+}

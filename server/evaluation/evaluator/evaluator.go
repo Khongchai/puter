@@ -270,14 +270,14 @@ func (e *Evaluator) evalCallExpression(functionName ast.Expression, arguments []
 	var args []float64
 	var diagnostics []*ast.Diagnostic
 	for _, arg := range arguments {
-		evaluated, ok := e.evalExp(arg).(*b.NumberBox)
+		evaluated, ok := e.evalExp(arg).(b.HoldsNumber)
 		if !ok {
 			diagnostics = append(diagnostics, ast.NewDiagnosticAtToken(
-				fmt.Sprintf("Method expect number, but got %s instead", evaluated.Type()),
+				fmt.Sprintf("Method expect a number type, but got %s instead", arg.Token().Type),
 				arg.Token(),
 			))
 		} else {
-			args = append(args, evaluated.Value)
+			args = append(args, evaluated.GetNumber())
 		}
 	}
 
