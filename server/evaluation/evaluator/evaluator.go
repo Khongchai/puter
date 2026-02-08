@@ -99,7 +99,7 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 			return e.evalBinaryNumberExpression(exp.Left, exp.Right, exp.Operator, func(a, b float64) float64 {
 				return a * b
 			})
-		case ast.CARET:
+		case ast.DOUBLE_ASTERISK:
 			return e.evalBinaryNumberExpression(exp.Left, exp.Right, exp.Operator, func(a, b float64) float64 {
 				return math.Pow(a, b)
 			})

@@ -72,8 +72,13 @@ func (s *Scanner) Next() *ast.Token {
 		token = ast.NewToken(ast.SLASH, string(s.ch(0)), s.pos)
 		s.pos++
 	case '*':
-		token = ast.NewToken(ast.ASTERISK, string(s.ch(0)), s.pos)
-		s.pos++
+		if s.ch(1) == '*' {
+			token = ast.NewToken(ast.DOUBLE_ASTERISK, "**", s.pos)
+			s.pos += 2
+		} else {
+			token = ast.NewToken(ast.ASTERISK, string(s.ch(0)), s.pos)
+			s.pos++
+		}
 	case '<':
 		if s.ch(1) == '=' {
 			token = ast.NewToken(ast.LTE, "<=", s.pos)

@@ -39,7 +39,7 @@ func NewParser() *Parser {
 	parser.infixParseFns[ast.MINUS] = NewbinaryOperatorParselet(PrecSum, false)
 	parser.infixParseFns[ast.ASTERISK] = NewbinaryOperatorParselet(PrecProduct, false)
 	parser.infixParseFns[ast.SLASH] = NewbinaryOperatorParselet(PrecProduct, false)
-	parser.infixParseFns[ast.CARET] = NewbinaryOperatorParselet(PrecExponent, true)
+	parser.infixParseFns[ast.DOUBLE_ASTERISK] = NewbinaryOperatorParselet(PrecExponent, true)
 	parser.infixParseFns[ast.GT] = NewbinaryOperatorParselet(PrecLessGreater, false)
 	parser.infixParseFns[ast.LT] = NewbinaryOperatorParselet(PrecLessGreater, false)
 	parser.infixParseFns[ast.LTE] = NewbinaryOperatorParselet(PrecLessGreater, false)

@@ -77,7 +77,7 @@ func TestNumberBinaryOperatorEvaluations(t *testing.T) {
 			b.NUMBER_BOX,
 		},
 		{
-			"2 ^ 4",
+			"2 ** 4",
 			"16",
 			b.NUMBER_BOX,
 		},
