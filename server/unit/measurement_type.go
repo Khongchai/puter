@@ -47,30 +47,30 @@ var MeasurementTypes = map[MeasurementType]*MeasurementDetail{
 	},
 
 	// Length - Imperial
-	// "in": {
-	// 	measures:     "length",
-	// 	fullName:     "inches",
-	// 	toBaseUnit:   func(value float64) float64 { return value },
-	// 	fromBaseUnit: func(value float64) float64 { return value },
-	// },
-	// "ft": {
-	// 	measures:     "length",
-	// 	fullName:     "feet",
-	// 	toBaseUnit:   func(value float64) float64 { return value * 10 },
-	// 	fromBaseUnit: func(value float64) float64 { return value / 10 },
-	// },
-	// "yd": {
-	// 	measures:     "length",
-	// 	fullName:     "yards",
-	// 	toBaseUnit:   func(value float64) float64 { return value * 10 * 100 },
-	// 	fromBaseUnit: func(value float64) float64 { return value / 10 / 100 },
-	// },
-	// "mi": {
-	// 	measures:     "length",
-	// 	fullName:     "miles",
-	// 	toBaseUnit:   func(value float64) float64 { return value * 10 * 100 * 1000 },
-	// 	fromBaseUnit: func(value float64) float64 { return value / 10 / 100 / 1000 },
-	// },
+	"in": {
+		Measures:     "length",
+		FullName:     "inches",
+		ToBaseUnit:   func(value float64) float64 { return value * 25.4 },
+		FromBaseUnit: func(value float64) float64 { return value / 25.4 },
+	},
+	"ft": {
+		Measures:     "length",
+		FullName:     "feet",
+		ToBaseUnit:   func(value float64) float64 { return value * 25.4 * 12 },
+		FromBaseUnit: func(value float64) float64 { return value / 12 / 25.4 },
+	},
+	"yd": {
+		Measures:     "length",
+		FullName:     "yards",
+		ToBaseUnit:   func(value float64) float64 { return value * 25.4 * 12 * 3 },
+		FromBaseUnit: func(value float64) float64 { return value / 3 / 12 / 25.4 },
+	},
+	"mi": {
+		Measures:     "length",
+		FullName:     "miles",
+		ToBaseUnit:   func(value float64) float64 { return value * 25.4 * 12 * 5280 },
+		FromBaseUnit: func(value float64) float64 { return value / 5280 / 12 / 25.4 },
+	},
 
 	// // Mass/Weight
 	// "mg":  "milligrams",
