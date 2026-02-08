@@ -306,6 +306,9 @@ func (e *Evaluator) evalCallExpression(functionName ast.Expression, arguments []
 		return &b.NumberBox{Value: v}
 	}
 	switch functionName.String() {
+
+	case "mod":
+		return matchArgsAndReturn(2, func(v []float64) float64 { return math.Mod(v[0], v[1]) })
 	case "log10":
 		return matchArgsAndReturn(1, func(v []float64) float64 { return math.Log10(v[0]) })
 	case "logE":
