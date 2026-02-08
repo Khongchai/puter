@@ -1,19 +1,9 @@
 # Puter
 
-# Development
-
-Compile client => npm run compile in /client
-Compile server => build-prod or debug in /server
-
 # Supported Comments Type
 
 ```md
-/**
- *
- *
- */
 // 
-<!--  -->
 # 
 ```
 
@@ -22,61 +12,44 @@ Compile server => build-prod or debug in /server
 Immediately after comment begin, put a pipe symbol and type in expressions.
 
 ```md
-/**
- * 
- * | 1 + 1
- */
-// | 2 usd to thb
-<!-- | 1 in cm to km -->
-#  | (log(10) + 5) kb to gb
+// | 1 + 1
+// | 2 usd in thb
+// | 1 cm in km 
+// | (logE(10) + 5) kb to gb 
 ```
+
+![alt text](./docs-images/basic-usage.png)
+
+Or you can perform simple arithmetic operations on everything above current line.
+
+```
+plane_ticket = 258 usd
+hotel_2_nights = 5000 thb
+other_stuff = 5.5 usd
+sum
+```
+
+![](./docs-images/sum-above.png)
 
 # Syntax
 
-Any math expressions followed by `unit` to `unit`. 
-
-Incompatible units will be underlined in red.
-
-```md
-// 2 usd in centimeters  << wrong!
-```
+Any math expressions followed by `unit` in `unit` with builtin functions support. 
 
 ## Supported Units
 
-- All currencies' [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217).
-- metrics: cm, m, km
-- file size: kb, mb, gb, tb,
+[Currencies](https://github.com/Khongchai/puter/blob/main/server/unit/currency_type.go)
+
+[Everything else](https://github.com/Khongchai/puter/blob/main/server/unit/fixed_unit_type.go)
 
 ## Supported Math Functions
-- log
-- sqrt
-- pow
-- sum
 
-## Line functions
-
-In puter, each line is an expression that produces a value. Calling a function
-without passing any arguments is the same as passing each individual result from each connected lines (no space between lines) to the function
-
-```
-2
-2
-a = 3
-200 in usd
-sum << same as `sum(2, 2, 3, 200) in usd`
-```
-
-This only works with function that accepts multiple arguments though. So something like sqrt won't work here.
-
-
-
-
-
-
+[Here](https://github.com/Khongchai/puter/blob/9ecb3f6fbc4e14ed9cef4dca87241f2e96970527/server/evaluation/evaluator/evaluator.go#L352)
 
 # Puter Calculator
 
-## Basic Arithmetic
+## More Examples
+
+Download puter and copy everything below into a markdown file to see the result.
 
 ```javascript
 // | 2 + 3
