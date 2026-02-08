@@ -272,17 +272,22 @@ func TestMeasurementEvaluation(t *testing.T) {
 	cases := []*EvaluationCase{
 		{
 			"2 cm",
-			"2 cm",
+			"2 centimeters",
 			b.MEASUREMENT_BOX,
 		},
 		{
 			"2 km in cm",
-			"2 km in cm",
+			"200000 centimeters",
 			b.MEASUREMENT_BOX,
 		},
 		{
-			"200 cm",
-			"200 cm",
+			"(20 cm) + 1 m",
+			"1.2 meters",
+			b.MEASUREMENT_BOX,
+		},
+		{
+			"1000 m in km",
+			"1 km",
 			b.MEASUREMENT_BOX,
 		},
 	}

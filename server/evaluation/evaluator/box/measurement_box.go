@@ -9,42 +9,77 @@ import (
 
 type MeasurementType string
 
-var measurementTypes = map[MeasurementType]string{
+type MeasurementDetail struct {
+	// what this measures, for example length, length-imperial, etc
+	measures string
+
+	fullName string
+
+	// the equation for transating to base unit
+	// what base unit is the smallest unit defined in the group.
+	toBaseUnit func(value float64) float64
+
+	// the equation for transating to base unit
+	// what base unit is the smallest unit defined in the group.
+	fromBaseUnit func(value float64) float64
+}
+
+var measurementTypes = map[MeasurementType]*MeasurementDetail{
 	// Length - Metric
-	"mm": "millimeters",
-	"cm": "centimeters",
-	"m":  "meters",
-	"km": "kilometers",
+	"mm": {
+		measures:     "length",
+		fullName:     "millimeters",
+		toBaseUnit:   func(value float64) float64 { return value },
+		fromBaseUnit: func(value float64) float64 { return value },
+	},
+	"cm": {
+		measures:     "length",
+		fullName:     "centimeters",
+		toBaseUnit:   func(value float64) float64 { return value * 10 },
+		fromBaseUnit: func(value float64) float64 { return value / 10 },
+	},
+	"m": {
+		measures:     "length",
+		fullName:     "meters",
+		toBaseUnit:   func(value float64) float64 { return value * 10 * 100 },
+		fromBaseUnit: func(value float64) float64 { return value / 10 / 100 },
+	},
+	"km": {
+		measures:     "length",
+		fullName:     "kilometers",
+		toBaseUnit:   func(value float64) float64 { return value * 10 * 100 * 1000 },
+		fromBaseUnit: func(value float64) float64 { return value / 10 / 100 / 1000 },
+	},
 
 	// Length - Imperial
-	"in": "inches",
-	"ft": "feet",
-	"yd": "yards",
-	"mi": "miles",
+	// "in": "inches",
+	// "ft": "feet",
+	// "yd": "yards",
+	// "mi": "miles",
 
-	// Mass/Weight
-	"mg":  "milligrams",
-	"g":   "grams",
-	"kg":  "kilograms",
-	"lbs": "pounds",
-	"ton": "tons",
+	// // Mass/Weight
+	// "mg":  "milligrams",
+	// "g":   "grams",
+	// "kg":  "kilograms",
+	// "lbs": "pounds",
+	// "ton": "tons",
 
-	// Volume
-	"ml": "milliliters",
-	"l":  "liters",
+	// // Volume
+	// "ml": "milliliters",
+	// "l":  "liters",
 
-	// Temperature
-	"c": "celsius",
-	"f": "fahrenheit",
-	"k": "kelvin",
+	// // Temperature
+	// "c": "celsius",
+	// "f": "fahrenheit",
+	// "k": "kelvin",
 
-	// Time
-	"ms":   "milliseconds",
-	"s":    "seconds",
-	"min":  "minutes",
-	"hr":   "hours",
-	"day":  "days",
-	"year": "years",
+	// // Time
+	// "ms":   "milliseconds",
+	// "s":    "seconds",
+	// "min":  "minutes",
+	// "hr":   "hours",
+	// "day":  "days",
+	// "year": "years",
 }
 
 type MeasurementBox struct {
@@ -66,7 +101,8 @@ func NewMeasurementBox(value *NumberBox, measurementType MeasurementType) *Measu
 }
 
 func (mb *MeasurementBox) Inspect() string {
-	return fmt.Sprintf("%g %s", mb.Value, mb.MeasurementType)
+	fullName := measurementTypes[mb.MeasurementType].fullName
+	return fmt.Sprintf("%g %s", mb.Value.Value, fullName)
 }
 
 func (nb *MeasurementBox) Type() BoxType {
@@ -94,10 +130,16 @@ func (mb *MeasurementBox) OperateIn(keyword string, _ ValueConverter) (Box, erro
 	}
 
 	isMeasurementKeyword, measurementType := IsMeasurementKeyword(keyword)
-	if isMeasurementKeyword {
-		// TODO convert measurement
-		return nil, nil
+	if !isMeasurementKeyword {
+		return nil, fmt.Errorf("Cannot convert %s to %s", mb.MeasurementType, keyword)
 	}
 
-	return nil, fmt.Errorf("Cannot convert %s to %s", mb.MeasurementType, keyword)
+	fromDetail := measurementTypes[mb.MeasurementType]
+	targetDetail := measurementTypes[measurementType]
+
+	normalized := fromDetail.toBaseUnit(mb.Value.Value)
+	inNewUnit := targetDetail.fromBaseUnit(normalized)
+
+	return NewMeasurementBox(NewNumberbox(inNewUnit, mb.Value.NumberType), mb.MeasurementType), nil
+
 }
