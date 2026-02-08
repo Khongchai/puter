@@ -3,6 +3,7 @@ package interpreter
 import (
 	"fmt"
 	"puter/evaluation/evaluator/box"
+	"puter/unit"
 )
 
 var startingValues = map[string]float64{
@@ -14,14 +15,14 @@ var commandToOperation = map[string]func(a, b float64) float64{
 }
 
 type LineAccumulator struct {
-	line              int
-	command           string
-	acc               box.Box
-	operation         func(a, b float64) float64
-	currencyConverter box.ValueConverter
+	line       int
+	command    string
+	acc        box.Box
+	operation  func(a, b float64) float64
+	converters *unit.Converters
 }
 
-func NewLineAccumulator(command string, line int, currencyConverter box.ValueConverter) *LineAccumulator {
+func NewLineAccumulator(command string, line int, converters *unit.Converters) *LineAccumulator {
 	if !IsAccumulationCommand(command) {
 		panic(fmt.Sprintf("Invalid line command. Got %s", command))
 	}
@@ -31,7 +32,7 @@ func NewLineAccumulator(command string, line int, currencyConverter box.ValueCon
 		command,
 		nil,
 		operation,
-		currencyConverter,
+		converters,
 	}
 	return got
 }
@@ -69,7 +70,7 @@ func (l *LineAccumulator) Accept(result box.Box) {
 			case *box.CurrencyBox:
 				// convert acc unit to r unit
 				if acc.Unit != r.Unit {
-					converted, err := l.currencyConverter(acc.Number.Value, acc.Unit, r.Unit)
+					converted, err := l.converters.ConvertCurrency(acc.Number.Value, acc.Unit, r.Unit)
 					if err != nil {
 						return
 					}

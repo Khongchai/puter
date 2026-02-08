@@ -2,6 +2,7 @@ package box
 
 import (
 	"fmt"
+	"puter/unit"
 	"strings"
 )
 
@@ -45,7 +46,7 @@ func (nb *NumberBox) Type() BoxType {
 
 var _ BinaryNumberOperatable = (*NumberBox)(nil)
 
-func (nb *NumberBox) OperateBinary(right Box, operator BinaryOperation[float64], valueConverter ValueConverter) (Box, error) {
+func (nb *NumberBox) OperateBinary(right Box, operator BinaryOperation[float64], converters *unit.Converters) (Box, error) {
 	switch r := right.(type) {
 	case *NumberBox:
 		return &NumberBox{Value: operator(nb.Value, r.Value)}, nil
@@ -60,12 +61,12 @@ func (nb *NumberBox) OperateBinary(right Box, operator BinaryOperation[float64],
 
 var _ InPrefixOperatable = (*NumberBox)(nil)
 
-func (nb *NumberBox) OperateIn(keyword string, valueConverter ValueConverter) (Box, error) {
+func (nb *NumberBox) OperateIn(keyword string, converters *unit.Converters) (Box, error) {
 	isNumberKeyword, numberType := IsNumberKeyword(keyword)
 	if isNumberKeyword {
 		return NewNumberbox(nb.Value, numberType), nil
 	}
-	isMeasurementKeyword, measurementType := IsMeasurementKeyword(keyword)
+	isMeasurementKeyword, measurementType := unit.IsMeasurementKeyword(keyword)
 	if isMeasurementKeyword {
 		return NewMeasurementBox(NewNumberbox(nb.Value, nb.NumberType), measurementType), nil
 	}

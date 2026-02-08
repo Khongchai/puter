@@ -5,14 +5,15 @@ import (
 	"puter/evaluation/evaluator"
 	"puter/evaluation/evaluator/box"
 	lsproto "puter/lsp"
+	"puter/unit"
 	"puter/utils"
 	"slices"
 	"strings"
 )
 
 type Interpreter struct {
-	ctx               context.Context
-	currencyConverter box.ValueConverter
+	ctx        context.Context
+	converters *unit.Converters
 }
 
 type Interpretation struct {
@@ -39,16 +40,16 @@ type Interpretation struct {
 //
 // }
 // ```
-func NewInterpreter(ctx context.Context, currencyConverter box.ValueConverter) *Interpreter {
+func NewInterpreter(ctx context.Context, converters *unit.Converters) *Interpreter {
 	return &Interpreter{
 		ctx,
-		currencyConverter,
+		converters,
 	}
 }
 
 // We do not yet need to care about the uri since we're doing full parsing
 func (interpreter *Interpreter) Interpret(text string) []*Interpretation {
-	evaluator := evaluator.NewEvaluator(interpreter.ctx, interpreter.currencyConverter)
+	evaluator := evaluator.NewEvaluator(interpreter.ctx, interpreter.converters)
 
 	interpretations := []*Interpretation{}
 
@@ -123,7 +124,7 @@ func (interpreter *Interpreter) handleLineAccumulationCommands(out []*Interpreta
 			if acc != nil {
 				out[acc.GetLine()].EvalResult = acc.Print()
 			}
-			acc = NewLineAccumulator(text, i, interpreter.currencyConverter)
+			acc = NewLineAccumulator(text, i, interpreter.converters)
 			continue
 		}
 

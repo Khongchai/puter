@@ -2,11 +2,12 @@ package box
 
 import (
 	"fmt"
+	"puter/unit"
 )
 
 type CurrencyBox struct {
 	Number *NumberBox
-	Unit   Currency
+	Unit   unit.Currency
 }
 
 func (cb *CurrencyBox) Inspect() string {
@@ -18,11 +19,9 @@ func (cb *CurrencyBox) Type() BoxType {
 	return CURRENCY_BOX
 }
 
-type Currency = string
-
 var _ BinaryNumberOperatable = (*CurrencyBox)(nil)
 
-func (cb *CurrencyBox) OperateBinary(right Box, operator BinaryOperation[float64], currencyConverter ValueConverter) (Box, error) {
+func (cb *CurrencyBox) OperateBinary(right Box, operator BinaryOperation[float64], converters *unit.Converters) (Box, error) {
 	switch r := right.(type) {
 	case *NumberBox:
 		return &CurrencyBox{Number: NewNumberbox(operator(cb.Number.Value, r.Value), r.NumberType), Unit: cb.Unit}, nil
@@ -32,7 +31,7 @@ func (cb *CurrencyBox) OperateBinary(right Box, operator BinaryOperation[float64
 		}
 
 		// convert left to right
-		leftConverted, err := currencyConverter(cb.Number.Value, cb.Unit, r.Unit)
+		leftConverted, err := converters.ConvertCurrency(cb.Number.Value, cb.Unit, r.Unit)
 		if err != nil {
 			return nil, err
 		}
@@ -49,7 +48,7 @@ func (cb *CurrencyBox) OperateBinary(right Box, operator BinaryOperation[float64
 
 var _ InPrefixOperatable = (*CurrencyBox)(nil)
 
-func (nb *CurrencyBox) OperateIn(keyword string, currencyConverter ValueConverter) (Box, error) {
+func (nb *CurrencyBox) OperateIn(keyword string, converters *unit.Converters) (Box, error) {
 	if nb.Unit == keyword {
 		return &CurrencyBox{Number: nb.Number, Unit: nb.Unit}, nil
 	}
@@ -59,7 +58,7 @@ func (nb *CurrencyBox) OperateIn(keyword string, currencyConverter ValueConverte
 		return &CurrencyBox{Number: NewNumberbox(nb.Number.Value, numberType), Unit: nb.Unit}, nil
 	}
 
-	converted, err := currencyConverter(nb.Number.Value, nb.Unit, keyword)
+	converted, err := converters.ConvertCurrency(nb.Number.Value, nb.Unit, keyword)
 	if err != nil {
 		return nil, err
 	}

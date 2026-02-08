@@ -5,10 +5,10 @@ import (
 	"os"
 	"os/signal"
 	"puter/engine"
-	"puter/engine/extensions"
 	"puter/interpreter"
 	"puter/logging"
 	lsproto "puter/lsp"
+	"puter/unit"
 	"syscall"
 )
 
@@ -22,8 +22,14 @@ func main() {
 	inputReader := lsproto.NewBaseReader(os.Stdin)
 	outputWriter := lsproto.NewBaseWriter(os.Stdout)
 
-	currencyConverter := extensions.GetCurrencyConverter()
-	interpreter := interpreter.NewInterpreter(ctx, currencyConverter)
+	currencyConverter := unit.GetCurrencyConverter()
+	measurementConverter := unit.GetMeasurementConverter()
+	converters := &unit.Converters{
+		ConvertCurrency:    currencyConverter,
+		ConvertMeasurement: measurementConverter,
+	}
+
+	interpreter := interpreter.NewInterpreter(ctx, converters)
 
 	engine := engine.NewEngine(
 		ctx,

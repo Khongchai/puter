@@ -2,6 +2,7 @@ package box
 
 import (
 	"fmt"
+	"puter/unit"
 )
 
 type PercentBox struct {
@@ -19,7 +20,7 @@ func (nb *PercentBox) Type() BoxType {
 
 var _ BinaryNumberOperatable = (*PercentBox)(nil)
 
-func (pb *PercentBox) OperateBinary(right Box, operator BinaryOperation[float64], valueConverter ValueConverter) (Box, error) {
+func (pb *PercentBox) OperateBinary(right Box, operator BinaryOperation[float64], _ *unit.Converters) (Box, error) {
 	switch r := right.(type) {
 	case *NumberBox:
 		return &NumberBox{Value: operator(r.Value, (pb.Value/100)*r.Value)}, nil

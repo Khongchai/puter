@@ -1,4 +1,4 @@
-package extensions
+package unit
 
 import (
 	"encoding/json"
@@ -6,11 +6,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"puter/evaluation/evaluator/box"
 	"strings"
 )
 
-func GetCurrencyConverter() box.ValueConverter {
+func GetCurrencyConverter() ValueConverter {
 	return func(fromValue float64, fromUnit string, toUnit string) (float64, error) {
 		fromUnit = strings.ToUpper(fromUnit)
 		toUnit = strings.ToUpper(toUnit)
@@ -36,7 +35,7 @@ func GetCurrencyConverter() box.ValueConverter {
 	}
 }
 
-func isCurrencyConversionSupported(fromCur box.Currency, toCur box.Currency) bool {
+func isCurrencyConversionSupported(fromCur Currency, toCur Currency) bool {
 	_, ok := FiatCurrencies[fromCur]
 	if !ok {
 		return false
@@ -97,8 +96,7 @@ func fetchCurrencyConversionRate(fromUnit string, toUnit string) (float64, error
 	return rate, nil
 }
 
-// TODO include crypto currencies here
-var FiatCurrencies = map[box.Currency]struct{}{
+var FiatCurrencies = map[Currency]struct{}{
 	"USD": {}, // US Dollar
 	"EUR": {}, // Euro
 	"GBP": {}, // British Pound

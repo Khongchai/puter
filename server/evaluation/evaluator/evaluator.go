@@ -8,14 +8,15 @@ import (
 	"puter/evaluation/ast"
 	b "puter/evaluation/evaluator/box"
 	p "puter/evaluation/parser"
+	"puter/unit"
 )
 
 type Evaluator struct {
 	parser p.Parser
 	// A map of identifier to puter object
-	heap              map[string]b.Box
-	currencyConverter b.ValueConverter
-	ctx               context.Context
+	heap       map[string]b.Box
+	converters *unit.Converters
+	ctx        context.Context
 	// Eval stage holds multiple diagnostics error.
 	// For simplicity, parser and tokenizer always return one errors but this stage returns
 	// multiple since it's the most complex.
@@ -29,12 +30,12 @@ type Evaluator struct {
 	diagnostics []*ast.Diagnostic
 }
 
-func NewEvaluator(ctx context.Context, currencyConverter b.ValueConverter) *Evaluator {
+func NewEvaluator(ctx context.Context, converters *unit.Converters) *Evaluator {
 	return &Evaluator{
-		ctx:               ctx,
-		parser:            *p.NewParser(),
-		heap:              make(map[string]b.Box),
-		currencyConverter: currencyConverter,
+		ctx:        ctx,
+		parser:     *p.NewParser(),
+		heap:       make(map[string]b.Box),
+		converters: converters,
 	}
 }
 
@@ -213,7 +214,7 @@ func (e *Evaluator) evalInExpression(leftExpr ast.Expression, rightExpr ast.Expr
 		))
 		return nil
 	} else {
-		res, err := operatable.OperateIn(right.ActualValue, e.currencyConverter)
+		res, err := operatable.OperateIn(right.ActualValue, e.converters)
 		if err != nil {
 			e.diagnostics = append(e.diagnostics, ast.NewDiagnostic(
 				err.Error(),
@@ -270,7 +271,7 @@ func (e *Evaluator) evalBinaryBooleanComparisonExpression(left ast.Expression, r
 				return &b.BooleanBox{Value: comp(l.Number.Value, r.Number.Value)}
 			}
 
-			converted, err := e.currencyConverter(l.Number.Value, l.Unit, r.Unit)
+			converted, err := e.converters.ConvertCurrency(l.Number.Value, l.Unit, r.Unit)
 			if err != nil {
 				e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(err.Error(), operator))
 				return nil
@@ -387,7 +388,7 @@ func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Ex
 		))
 		return nil
 	} else {
-		res, err := operatable.OperateBinary(boxRight, operation, e.currencyConverter)
+		res, err := operatable.OperateBinary(boxRight, operation, e.converters)
 		if err != nil {
 			e.diagnostics = append(e.diagnostics, ast.NewDiagnostic(
 				err.Error(),

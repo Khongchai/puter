@@ -5,12 +5,16 @@ import (
 	"fmt"
 	"math"
 	b "puter/evaluation/evaluator/box"
+	"puter/unit"
 	"testing"
 )
 
-func getDefaultCurrencyConverter(defaultValue float64) b.ValueConverter {
-	return func(fromValue float64, fromUnit string, toUnit string) (float64, error) {
-		return defaultValue, nil
+func getDefaultConverters(defaultValue float64) *unit.Converters {
+	return &unit.Converters{
+		ConvertCurrency: func(fromValue float64, fromUnit string, toUnit string) (float64, error) {
+			return defaultValue, nil
+		},
+		ConvertMeasurement: unit.GetMeasurementConverter(),
 	}
 }
 
@@ -79,7 +83,7 @@ func TestNumberBinaryOperatorEvaluations(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(200))
+		eval := NewEvaluator(t.Context(), getDefaultConverters(200))
 
 		obj := eval.EvalLine(c.Line)
 
@@ -151,7 +155,7 @@ func TestBinaryBooleanOperatorEvaluations(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(200))
+		eval := NewEvaluator(t.Context(), getDefaultConverters(200))
 
 		obj := eval.EvalLine(c.Line)
 
@@ -193,7 +197,7 @@ func TestNumberUnitEvaluation(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(200))
+		eval := NewEvaluator(t.Context(), getDefaultConverters(200))
 
 		obj := eval.EvalLine(c.Line)
 
@@ -255,7 +259,7 @@ func TestCurrencyEvaluation(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(200))
+		eval := NewEvaluator(t.Context(), getDefaultConverters(200))
 
 		obj := eval.EvalLine(c.Line)
 
@@ -292,7 +296,7 @@ func TestMeasurementEvaluation(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(200))
+		eval := NewEvaluator(t.Context(), getDefaultConverters(200))
 
 		obj := eval.EvalLine(c.Line)
 
@@ -306,7 +310,7 @@ func TestMeasurementEvaluation(t *testing.T) {
 }
 
 func TestCurrencyConversionMultiline(t *testing.T) {
-	eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(100))
+	eval := NewEvaluator(t.Context(), getDefaultConverters(100))
 
 	eval.EvalLine("a = 1 + 2 in usd") // 3 usd
 	eval.EvalLine("k = a in thb")     // 100 thb
@@ -339,7 +343,7 @@ func TestPrefixEvaluation(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(200))
+		eval := NewEvaluator(t.Context(), getDefaultConverters(200))
 
 		obj := eval.EvalLine(c.Line)
 
@@ -391,7 +395,7 @@ func TestComparsionEvaluation(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(200))
+		eval := NewEvaluator(t.Context(), getDefaultConverters(200))
 
 		obj := eval.EvalLine(c.Line)
 
@@ -428,12 +432,12 @@ func TestPercent(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		eval := NewEvaluator(t.Context(), func(fromValue float64, fromUnit string, toUnit string) (float64, error) {
+		eval := NewEvaluator(t.Context(), &unit.Converters{ConvertCurrency: func(fromValue float64, fromUnit string, toUnit string) (float64, error) {
 			if fromUnit == "usd" && toUnit == "thb" {
 				return (fromValue * 34.4), nil
 			}
 			return -1, errors.New("Currency conversion not supported in this test suite")
-		})
+		}})
 
 		obj := eval.EvalLine(c.Line)
 
@@ -485,7 +489,7 @@ func TestBuiltinFunctionEvaluations(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		eval := NewEvaluator(t.Context(), getDefaultCurrencyConverter(200))
+		eval := NewEvaluator(t.Context(), getDefaultConverters(200))
 
 		obj := eval.EvalLine(c.Line)
 
