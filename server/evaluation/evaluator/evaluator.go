@@ -34,8 +34,16 @@ func NewEvaluator(ctx context.Context, converters *unit.Converters) *Evaluator {
 	return &Evaluator{
 		ctx:        ctx,
 		parser:     *p.NewParser(),
-		heap:       make(map[string]b.Box),
+		heap:       makeDefaultHeap(),
 		converters: converters,
+	}
+}
+
+// returns a heap with some default values set, for example pi and e
+func makeDefaultHeap() map[string]b.Box {
+	return map[string]b.Box{
+		"pi": b.NewNumberbox(math.Pi, b.Decimal),
+		"e":  b.NewNumberbox(math.E, b.Decimal),
 	}
 }
 

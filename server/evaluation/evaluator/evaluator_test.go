@@ -519,3 +519,15 @@ func TestBuiltinFunctionEvaluations(t *testing.T) {
 		}
 	}
 }
+
+func TestDefaultHeap(t *testing.T) {
+	eval := NewEvaluator(t.Context(), getDefaultConverters(200))
+	eResult := eval.EvalLine("e")
+	if eResult == nil {
+		t.Fatalf("e is null")
+	}
+	piResult := eval.EvalLine("pi")
+	if piResult == nil {
+		t.Fatalf("pi is null")
+	}
+}

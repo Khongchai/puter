@@ -80,8 +80,8 @@ Create a go program first, hook in lsp later.
     - [x] Inject all value converters
     - [x] data size units
     - [x] Carry around value converters struct (multiple converter inside, currency converter, unit converter ,etc)
-    - [ ] Test line accumulator against multiple units conversions too.
-- [ ] pi and e constant (allow overriding)
+    - [x] Test line accumulator against multiple units conversions too.
+- [x] pi and e constant (allow overriding)
 - [ ] mod keyword (builtin invocation)
 - [ ] Builtin number functions need to support all units, but not cross units (lerp(usd, btc, number) does not make any sense)
 - [ ] Accept binary number format as input
