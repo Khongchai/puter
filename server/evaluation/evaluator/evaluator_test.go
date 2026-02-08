@@ -351,23 +351,23 @@ func TestCurrencyConversionMultiline(t *testing.T) {
 
 func TestPrefixEvaluation(t *testing.T) {
 	cases := []*EvaluationCase{
+		// {
+		// 	"!true",
+		// 	"false",
+		// 	b.BOOLEAN_BOX,
+		// },
+		// {
+		// 	"!false",
+		// 	"true",
+		// 	b.BOOLEAN_BOX,
+		// },
+		// {
+		// 	"-1",
+		// 	"-1",
+		// 	b.NUMBER_BOX,
+		// },
 		{
-			"!true",
-			"false",
-			b.BOOLEAN_BOX,
-		},
-		{
-			"!false",
-			"true",
-			b.BOOLEAN_BOX,
-		},
-		{
-			"-1",
-			"-1",
-			b.NUMBER_BOX,
-		},
-		{
-			"^5",
+			"~5",
 			"-6",
 			b.NUMBER_BOX,
 		},

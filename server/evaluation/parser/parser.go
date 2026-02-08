@@ -32,7 +32,7 @@ func NewParser() *Parser {
 	// Simple parselets
 	parser.prefixParseFns[ast.MINUS] = NewPrefixOperatorParselet(PrecPrefix)
 	parser.prefixParseFns[ast.BANG] = NewPrefixOperatorParselet(PrecPrefix)
-	parser.infixParseFns[ast.NOT] = NewbinaryOperatorParselet(PrecPrefix, false)
+	parser.prefixParseFns[ast.NOT] = NewPrefixOperatorParselet(PrecPrefix)
 	parser.infixParseFns[ast.EQ] = NewbinaryOperatorParselet(PrecEquals, false)
 	parser.infixParseFns[ast.NOT_EQ] = NewbinaryOperatorParselet(PrecEquals, false)
 	parser.infixParseFns[ast.PLUS] = NewbinaryOperatorParselet(PrecSum, false)

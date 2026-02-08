@@ -107,6 +107,9 @@ func (s *Scanner) Next() *ast.Token {
 	case ')':
 		token = ast.NewToken(ast.RPAREN, string(s.ch(0)), s.pos)
 		s.pos++
+	case '~':
+		token = ast.NewToken(ast.NOT, string(s.ch(0)), s.pos)
+		s.pos++
 	case '^':
 		token = ast.NewToken(ast.XOR, string(s.ch(0)), s.pos)
 		s.pos++

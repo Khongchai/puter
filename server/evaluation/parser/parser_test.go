@@ -2,18 +2,31 @@ package parser
 
 import (
 	"puter/evaluation/ast"
-	"strconv"
 	"testing"
 )
 
 func TestNumberParsing(t *testing.T) {
-	exp, err := NewParser().Parse("1")
-	if err != nil {
-		t.Fatalf("Unexpected error: %s", err.Message)
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{
+			"1",
+			"1",
+		},
+		{
+			"~1",
+			"(~1)",
+		},
 	}
-	conv, _ := strconv.ParseFloat(exp.String(), 64)
-	if conv != 1 {
-		t.Fatalf("Parsing result is not 1, got %f", conv)
+	for _, test := range tests {
+		exp, err := NewParser().Parse(test.input)
+		if err != nil {
+			t.Fatalf("Unexpected error: %s", err.Message)
+		}
+		if exp.String() != test.expected {
+			t.Fatalf("Parsing result is not %s, got %s", test.expected, exp.String())
+		}
 	}
 }
 
