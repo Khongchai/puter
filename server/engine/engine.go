@@ -52,14 +52,16 @@ func NewEngine(
 	interpreter *interpreter.Interpreter,
 ) *Engine {
 	return &Engine{
-		ctx:           ctx,
-		reader:        reader,
-		writer:        writer,
-		requestQueue:  make(chan *lsproto.RequestMessage, 100),
-		outgoingQueue: make(chan *lsproto.Message, 100),
-		logger:        logger,
-		initComplete:  false,
-		interpreter:   interpreter,
+		ctx:                   ctx,
+		reader:                reader,
+		writer:                writer,
+		requestQueue:          make(chan *lsproto.RequestMessage, 100),
+		outgoingQueue:         make(chan *lsproto.Message, 100),
+		logger:                logger,
+		initComplete:          false,
+		interpreter:           interpreter,
+		pendingServerRequests: make(map[lsproto.ID]chan *lsproto.ResponseMessage),
+		pendingClientRequests: make(map[lsproto.ID]pendingClientRequest),
 	}
 }
 
