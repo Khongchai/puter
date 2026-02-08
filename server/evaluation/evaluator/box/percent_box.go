@@ -24,7 +24,7 @@ var _ BinaryNumberOperatable = (*PercentBox)(nil)
 func (pb *PercentBox) OperateBinaryNumber(right Box, operator func(a, b float64) float64, _ *unit.Converters) (Box, error) {
 	switch r := right.(type) {
 	case *NumberBox:
-		return &NumberBox{Value: operator(r.Value, (pb.Value/100)*r.Value)}, nil
+		return &NumberBox{Value: operator(r.Value, (pb.Value/100)*r.Value), NumberType: r.NumberType}, nil
 	case *CurrencyBox:
 		return &CurrencyBox{Number: NewNumberbox(operator(r.Number.Value, (pb.Value/100)*r.Number.Value), r.Number.NumberType), Unit: r.Unit}, nil
 	case *PercentBox:
