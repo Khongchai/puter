@@ -14,7 +14,7 @@ func getDefaultConverters(defaultValue float64) *unit.Converters {
 		ConvertCurrency: func(fromValue float64, fromUnit string, toUnit string) (float64, error) {
 			return defaultValue, nil
 		},
-		ConvertMeasurement: unit.GetMeasurementConverter(),
+		ConvertFixedUnit: unit.GetFixedUnitConverter(),
 	}
 }
 
@@ -272,27 +272,27 @@ func TestCurrencyEvaluation(t *testing.T) {
 	}
 }
 
-func TestMeasurementEvaluation(t *testing.T) {
+func TestFixedUnitEvaluation(t *testing.T) {
 	cases := []*EvaluationCase{
 		{
 			"2 cm",
 			"2 centimeters",
-			b.MEASUREMENT_BOX,
+			b.FIXED_UNIT_BOX,
 		},
 		{
 			"2 km in cm",
 			"200000 centimeters",
-			b.MEASUREMENT_BOX,
+			b.FIXED_UNIT_BOX,
 		},
 		{
 			"(20 cm) + 1 m",
 			"1.2 meters",
-			b.MEASUREMENT_BOX,
+			b.FIXED_UNIT_BOX,
 		},
 		{
 			"1000 m in km",
 			"1 kilometers",
-			b.MEASUREMENT_BOX,
+			b.FIXED_UNIT_BOX,
 		},
 		{
 			"1usd == 5m",

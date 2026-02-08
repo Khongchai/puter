@@ -14,7 +14,7 @@ func getDefaultCurrencyConverter(defaultValue float64) *unit.Converters {
 			return defaultValue, nil
 
 		},
-		ConvertMeasurement: unit.GetMeasurementConverter(),
+		ConvertFixedUnit: unit.GetFixedUnitConverter(),
 	}
 }
 

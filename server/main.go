@@ -23,10 +23,10 @@ func main() {
 	outputWriter := lsproto.NewBaseWriter(os.Stdout)
 
 	currencyConverter := unit.GetCurrencyConverter()
-	measurementConverter := unit.GetMeasurementConverter()
+	fixedUnitConverter := unit.GetFixedUnitConverter()
 	converters := &unit.Converters{
-		ConvertCurrency:    currencyConverter,
-		ConvertMeasurement: measurementConverter,
+		ConvertCurrency:  currencyConverter,
+		ConvertFixedUnit: fixedUnitConverter,
 	}
 
 	interpreter := interpreter.NewInterpreter(ctx, converters)

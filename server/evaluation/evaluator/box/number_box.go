@@ -67,9 +67,9 @@ func (nb *NumberBox) OperateIn(keyword string, converters *unit.Converters) (Box
 	if isNumberKeyword {
 		return NewNumberbox(nb.Value, numberType), nil
 	}
-	isMeasurementKeyword, measurementType := unit.IsMeasurementKeyword(keyword)
-	if isMeasurementKeyword {
-		return NewMeasurementBox(NewNumberbox(nb.Value, nb.NumberType), measurementType), nil
+	isFixedUnitKeyword, fixedUnitType := unit.IsFixedUnitKeyword(keyword)
+	if isFixedUnitKeyword {
+		return NewFixedUnitBox(NewNumberbox(nb.Value, nb.NumberType), fixedUnitType), nil
 	}
 	return &CurrencyBox{
 		Number: NewNumberbox(nb.Value, nb.NumberType),

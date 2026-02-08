@@ -73,14 +73,15 @@ Create a go program first, hook in lsp later.
     - func TestLineCommand(t *testing.T) { << here right now.
 - [ ] Add more unit supports (metrics, gbs, crypto)
     - [x] Number representation (only affect printing): hex, binary << doing this right now. For all operations, take whatever unit the right hand number is.
-    - [ ] Add boolean operation comparsion to all types.
+    - [x] Add boolean operation comparsion to all types.
     - [x] add measurement units
         - [x] distance
-        - [ ] other stuff
-    - [ ] Inject all value converters << this!!
-    - [ ] data size units
-    - [ ] Carry around value converters struct (multiple converter inside, currency converter, unit converter ,etc)
+        - [x] other stuff
+    - [x] Inject all value converters
+    - [x] data size units
+    - [x] Carry around value converters struct (multiple converter inside, currency converter, unit converter ,etc)
     - [ ] Test line accumulator against multiple units conversions too.
+- [ ] Single loop for handling everything
 - [ ] pi and e constant (allow overriding)
 - [ ] mod keyword (builtin invocation)
 - [ ] Builtin number functions need to support all units, but not cross units (lerp(usd, btc, number) does not make any sense)

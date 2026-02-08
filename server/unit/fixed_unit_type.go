@@ -2,11 +2,10 @@ package unit
 
 import "strings"
 
-type MeasurementType string
+type FixedUnitType string
 
-type MeasurementDetail struct {
-	// what this Measures, for example length, length-imperial, etc
-	Measures string
+type FixedUnitDetail struct {
+	UnitFor string
 
 	FullName string
 
@@ -19,28 +18,28 @@ type MeasurementDetail struct {
 	FromBaseUnit func(value float64) float64
 }
 
-var MeasurementTypes = map[MeasurementType]*MeasurementDetail{
+var FixedUnitTypes = map[FixedUnitType]*FixedUnitDetail{
 	// Length - Metric (Base: mm)
 	"mm": {
-		Measures:     "length",
+		UnitFor:      "length",
 		FullName:     "millimeters",
 		ToBaseUnit:   func(value float64) float64 { return value },
 		FromBaseUnit: func(value float64) float64 { return value },
 	},
 	"cm": {
-		Measures:     "length",
+		UnitFor:      "length",
 		FullName:     "centimeters",
 		ToBaseUnit:   func(value float64) float64 { return value * 10 },
 		FromBaseUnit: func(value float64) float64 { return value / 10 },
 	},
 	"m": {
-		Measures:     "length",
+		UnitFor:      "length",
 		FullName:     "meters",
 		ToBaseUnit:   func(value float64) float64 { return value * 10 * 100 },
 		FromBaseUnit: func(value float64) float64 { return value / 10 / 100 },
 	},
 	"km": {
-		Measures:     "length",
+		UnitFor:      "length",
 		FullName:     "kilometers",
 		ToBaseUnit:   func(value float64) float64 { return value * 10 * 100 * 1000 },
 		FromBaseUnit: func(value float64) float64 { return value / 10 / 100 / 1000 },
@@ -48,25 +47,25 @@ var MeasurementTypes = map[MeasurementType]*MeasurementDetail{
 
 	// Length - Imperial (Base: mm)
 	"in": {
-		Measures:     "length",
+		UnitFor:      "length",
 		FullName:     "inches",
 		ToBaseUnit:   func(value float64) float64 { return value * 25.4 },
 		FromBaseUnit: func(value float64) float64 { return value / 25.4 },
 	},
 	"ft": {
-		Measures:     "length",
+		UnitFor:      "length",
 		FullName:     "feet",
 		ToBaseUnit:   func(value float64) float64 { return value * 25.4 * 12 },
 		FromBaseUnit: func(value float64) float64 { return value / 12 / 25.4 },
 	},
 	"yd": {
-		Measures:     "length",
+		UnitFor:      "length",
 		FullName:     "yards",
 		ToBaseUnit:   func(value float64) float64 { return value * 25.4 * 12 * 3 },
 		FromBaseUnit: func(value float64) float64 { return value / 3 / 12 / 25.4 },
 	},
 	"mi": {
-		Measures:     "length",
+		UnitFor:      "length",
 		FullName:     "miles",
 		ToBaseUnit:   func(value float64) float64 { return value * 25.4 * 12 * 5280 },
 		FromBaseUnit: func(value float64) float64 { return value / 5280 / 12 / 25.4 },
@@ -74,19 +73,19 @@ var MeasurementTypes = map[MeasurementType]*MeasurementDetail{
 
 	// Mass/Weight (Base: mg)
 	"mg": {
-		Measures:     "mass",
+		UnitFor:      "mass",
 		FullName:     "milligrams",
 		ToBaseUnit:   func(value float64) float64 { return value },
 		FromBaseUnit: func(value float64) float64 { return value },
 	},
 	"g": {
-		Measures:     "mass",
+		UnitFor:      "mass",
 		FullName:     "grams",
 		ToBaseUnit:   func(value float64) float64 { return value * 1000 },
 		FromBaseUnit: func(value float64) float64 { return value / 1000 },
 	},
 	"kg": {
-		Measures:     "mass",
+		UnitFor:      "mass",
 		FullName:     "kilograms",
 		ToBaseUnit:   func(value float64) float64 { return value * 1000 * 1000 },
 		FromBaseUnit: func(value float64) float64 { return value / 1000 / 1000 },
@@ -94,13 +93,13 @@ var MeasurementTypes = map[MeasurementType]*MeasurementDetail{
 	// https://en.wikipedia.org/wiki/Avoirdupois#:~:text=This%20term%20originally%20referred%20to,used%20to%20weigh%20such%20merchandise.
 	// 1 lb = 453,592.37 mg
 	"lbs": {
-		Measures:     "mass",
+		UnitFor:      "mass",
 		FullName:     "pounds",
 		ToBaseUnit:   func(value float64) float64 { return value * 453592.37 },
 		FromBaseUnit: func(value float64) float64 { return value / 453592.37 },
 	},
 	"ton": {
-		Measures:     "mass",
+		UnitFor:      "mass",
 		FullName:     "tons", // Metric Tonne
 		ToBaseUnit:   func(value float64) float64 { return value * 1000 * 1000 * 1000 },
 		FromBaseUnit: func(value float64) float64 { return value / 1000 / 1000 / 1000 },
@@ -108,13 +107,13 @@ var MeasurementTypes = map[MeasurementType]*MeasurementDetail{
 
 	// Volume (Base: ml)
 	"ml": {
-		Measures:     "volume",
+		UnitFor:      "volume",
 		FullName:     "milliliters",
 		ToBaseUnit:   func(value float64) float64 { return value },
 		FromBaseUnit: func(value float64) float64 { return value },
 	},
 	"l": {
-		Measures:     "volume",
+		UnitFor:      "volume",
 		FullName:     "liters",
 		ToBaseUnit:   func(value float64) float64 { return value * 1000 },
 		FromBaseUnit: func(value float64) float64 { return value / 1000 },
@@ -122,19 +121,19 @@ var MeasurementTypes = map[MeasurementType]*MeasurementDetail{
 
 	// Temperature (Base: Celsius)
 	"c": {
-		Measures:     "temperature",
+		UnitFor:      "temperature",
 		FullName:     "celsius",
 		ToBaseUnit:   func(value float64) float64 { return value },
 		FromBaseUnit: func(value float64) float64 { return value },
 	},
 	"f": {
-		Measures:     "temperature",
+		UnitFor:      "temperature",
 		FullName:     "fahrenheit",
 		ToBaseUnit:   func(value float64) float64 { return (value - 32) * 5 / 9 },
 		FromBaseUnit: func(value float64) float64 { return (value * 9 / 5) + 32 },
 	},
 	"k": {
-		Measures:     "temperature",
+		UnitFor:      "temperature",
 		FullName:     "kelvin",
 		ToBaseUnit:   func(value float64) float64 { return value - 273.15 },
 		FromBaseUnit: func(value float64) float64 { return value + 273.15 },
@@ -142,48 +141,86 @@ var MeasurementTypes = map[MeasurementType]*MeasurementDetail{
 
 	// Time (Base: ms)
 	"ms": {
-		Measures:     "time",
+		UnitFor:      "time",
 		FullName:     "milliseconds",
 		ToBaseUnit:   func(value float64) float64 { return value },
 		FromBaseUnit: func(value float64) float64 { return value },
 	},
 	"s": {
-		Measures:     "time",
+		UnitFor:      "time",
 		FullName:     "seconds",
 		ToBaseUnit:   func(value float64) float64 { return value * 1000 },
 		FromBaseUnit: func(value float64) float64 { return value / 1000 },
 	},
 	"min": {
-		Measures:     "time",
+		UnitFor:      "time",
 		FullName:     "minutes",
 		ToBaseUnit:   func(value float64) float64 { return value * 60 * 1000 },
 		FromBaseUnit: func(value float64) float64 { return value / 1000 / 60 },
 	},
 	"hr": {
-		Measures:     "time",
+		UnitFor:      "time",
 		FullName:     "hours",
 		ToBaseUnit:   func(value float64) float64 { return value * 60 * 60 * 1000 },
 		FromBaseUnit: func(value float64) float64 { return value / 1000 / 60 / 60 },
 	},
 	"day": {
-		Measures:     "time",
+		UnitFor:      "time",
 		FullName:     "days",
 		ToBaseUnit:   func(value float64) float64 { return value * 24 * 60 * 60 * 1000 },
 		FromBaseUnit: func(value float64) float64 { return value / 1000 / 60 / 60 / 24 },
 	},
 	"year": {
-		Measures:     "time",
+		UnitFor:      "time",
 		FullName:     "years",
 		ToBaseUnit:   func(value float64) float64 { return value * 365 * 24 * 60 * 60 * 1000 },
 		FromBaseUnit: func(value float64) float64 { return value / 1000 / 60 / 60 / 24 / 365 },
 	},
+
+	// storage
+	"b": {
+		UnitFor:      "storage",
+		FullName:     "bytes",
+		ToBaseUnit:   func(value float64) float64 { return value },
+		FromBaseUnit: func(value float64) float64 { return value },
+	},
+	"kb": {
+		UnitFor:      "storage",
+		FullName:     "kilobytes",
+		ToBaseUnit:   func(value float64) float64 { return value * 1000 },
+		FromBaseUnit: func(value float64) float64 { return value / 1000 },
+	},
+	"mb": {
+		UnitFor:      "storage",
+		FullName:     "megabytes",
+		ToBaseUnit:   func(value float64) float64 { return value * 1000 * 1000 },
+		FromBaseUnit: func(value float64) float64 { return value / 1000 / 1000 },
+	},
+	"gb": {
+		UnitFor:      "storage",
+		FullName:     "gigabytes",
+		ToBaseUnit:   func(value float64) float64 { return value * 1000 * 1000 * 1000 },
+		FromBaseUnit: func(value float64) float64 { return value / 1000 / 1000 / 1000 },
+	},
+	"tb": {
+		UnitFor:      "storage",
+		FullName:     "terabytes",
+		ToBaseUnit:   func(value float64) float64 { return value * 1000 * 1000 * 1000 * 1000 },
+		FromBaseUnit: func(value float64) float64 { return value / 1000 / 1000 / 1000 / 1000 },
+	},
+	"pb": {
+		UnitFor:      "storage",
+		FullName:     "petabytes",
+		ToBaseUnit:   func(value float64) float64 { return value * 1000 * 1000 * 1000 * 1000 * 1000 },
+		FromBaseUnit: func(value float64) float64 { return value / 1000 / 1000 / 1000 / 1000 / 1000 },
+	},
 }
 
-func IsMeasurementKeyword(keyword string) (bool, MeasurementType) {
+func IsFixedUnitKeyword(keyword string) (bool, FixedUnitType) {
 	lowercased := strings.ToLower(keyword)
-	_, is := MeasurementTypes[MeasurementType(lowercased)]
+	_, is := FixedUnitTypes[FixedUnitType(lowercased)]
 	if is {
-		return true, MeasurementType(lowercased)
+		return true, FixedUnitType(lowercased)
 	}
 	return false, ""
 }
