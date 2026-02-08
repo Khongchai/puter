@@ -254,6 +254,12 @@ var handlers = sync.OnceValue(func() handlerMap {
 
 func registerNotificationHandler[Req any](handlers handlerMap, info lsproto.NotificationInfo[Req], fn func(*Engine, context.Context, Req) error) {
 	handlers[info.Method] = func(e *Engine, ctx context.Context, req *lsproto.RequestMessage) error {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println("Notifiaction handler panicked", r)
+			}
+		}()
+
 		var params Req
 		// Ignore empty params; all generated params are either pointers or any.
 		if req.Params != nil {
@@ -382,7 +388,7 @@ func (e *Engine) handleInitialized(ctx context.Context, params *lsproto.Initiali
 }
 
 func (e *Engine) handleTextDocumentDidChange(ctx context.Context, params *lsproto.DidChangeTextDocumentParams) error {
-	// uri := params.TextDocument.Uri
+
 	for _, change := range params.ContentChanges {
 		interpretations := e.interpreter.Interpret(
 			change.WholeDocument.Text,
