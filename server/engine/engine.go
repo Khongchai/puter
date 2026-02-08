@@ -66,6 +66,9 @@ func NewEngine(
 }
 
 func (e *Engine) Run(ctx context.Context) error {
+	defer close(e.outgoingQueue)
+	defer close(e.requestQueue)
+
 	g, ctx := errgroup.WithContext(ctx)
 
 	// request response queues
