@@ -2,6 +2,7 @@ package box
 
 import (
 	"fmt"
+	"puter/evaluation/ast"
 	"puter/unit"
 	"strings"
 )
@@ -46,7 +47,7 @@ func (nb *NumberBox) Type() BoxType {
 
 var _ BinaryNumberOperatable = (*NumberBox)(nil)
 
-func (nb *NumberBox) OperateBinary(right Box, operator BinaryOperation[float64], converters *unit.Converters) (Box, error) {
+func (nb *NumberBox) OperateBinaryNumber(right Box, operator func(a, b float64) float64, converters *unit.Converters) (Box, error) {
 	switch r := right.(type) {
 	case *NumberBox:
 		return &NumberBox{Value: operator(nb.Value, r.Value)}, nil
@@ -83,4 +84,34 @@ func IsNumberKeyword(keyword string) (bool, NumberType) {
 		return true, NumberType(lowercased)
 	}
 	return false, NaN
+}
+
+var _ BinaryBooleanOperatable = (*NumberBox)(nil)
+
+func (left *NumberBox) OperateBinaryBoolean(right Box, operator *ast.Token, converters *unit.Converters) (Box, error) {
+	r, is := right.(*NumberBox)
+	if !is {
+		return &BooleanBox{Value: false}, nil
+	}
+
+	result := func() bool {
+		switch operator.Type {
+		case ast.EQ:
+			return left.Value == r.Value
+		case ast.NOT_EQ:
+			return left.Value != r.Value
+		case ast.LT:
+			return left.Value < r.Value
+		case ast.GT:
+			return left.Value > r.Value
+		case ast.LTE:
+			return left.Value <= r.Value
+		case ast.GTE:
+			return left.Value >= r.Value
+		default:
+			return false
+		}
+	}()
+
+	return &BooleanBox{Value: result}, nil
 }

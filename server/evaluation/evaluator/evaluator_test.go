@@ -294,6 +294,16 @@ func TestMeasurementEvaluation(t *testing.T) {
 			"1 kilometers",
 			b.MEASUREMENT_BOX,
 		},
+		{
+			"1usd == 5m",
+			"false",
+			b.BOOLEAN_BOX,
+		},
+		{
+			"1m == 0.001km",
+			"true",
+			b.BOOLEAN_BOX,
+		},
 	}
 	for _, c := range cases {
 		eval := NewEvaluator(t.Context(), getDefaultConverters(200))

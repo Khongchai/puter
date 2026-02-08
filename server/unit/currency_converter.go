@@ -11,6 +11,10 @@ import (
 
 func GetCurrencyConverter() ValueConverter {
 	return func(fromValue float64, fromUnit string, toUnit string) (float64, error) {
+		if fromUnit == toUnit {
+			return fromValue, nil
+		}
+
 		fromUnit = strings.ToUpper(fromUnit)
 		toUnit = strings.ToUpper(toUnit)
 		if _, unitIsCurrency := FiatCurrencies[fromUnit]; !unitIsCurrency {

@@ -6,6 +6,9 @@ import (
 
 func GetMeasurementConverter() ValueConverter {
 	return func(fromValue float64, fromUnit string, toUnit string) (float64, error) {
+		if fromUnit == toUnit {
+			return fromValue, nil
+		}
 		isFromKeyword, _ := IsMeasurementKeyword(fromUnit)
 		isToKeyword, _ := IsMeasurementKeyword(toUnit)
 		if !isFromKeyword || !isToKeyword {

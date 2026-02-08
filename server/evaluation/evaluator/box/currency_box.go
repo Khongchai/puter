@@ -2,6 +2,7 @@ package box
 
 import (
 	"fmt"
+	"puter/evaluation/ast"
 	"puter/unit"
 )
 
@@ -21,7 +22,7 @@ func (cb *CurrencyBox) Type() BoxType {
 
 var _ BinaryNumberOperatable = (*CurrencyBox)(nil)
 
-func (cb *CurrencyBox) OperateBinary(right Box, operator BinaryOperation[float64], converters *unit.Converters) (Box, error) {
+func (cb *CurrencyBox) OperateBinaryNumber(right Box, operator func(a, b float64) float64, converters *unit.Converters) (Box, error) {
 	switch r := right.(type) {
 	case *NumberBox:
 		return &CurrencyBox{Number: NewNumberbox(operator(cb.Number.Value, r.Value), r.NumberType), Unit: cb.Unit}, nil
@@ -43,7 +44,6 @@ func (cb *CurrencyBox) OperateBinary(right Box, operator BinaryOperation[float64
 	default:
 		return nil, fmt.Errorf("Cannot perform this operation on %s and %s", cb.Type(), right.Type())
 	}
-
 }
 
 var _ InPrefixOperatable = (*CurrencyBox)(nil)
@@ -63,4 +63,39 @@ func (nb *CurrencyBox) OperateIn(keyword string, converters *unit.Converters) (B
 		return nil, err
 	}
 	return &CurrencyBox{Number: NewNumberbox(converted, nb.Number.NumberType), Unit: keyword}, nil
+}
+
+var _ BinaryBooleanOperatable = (*CurrencyBox)(nil)
+
+func (left *CurrencyBox) OperateBinaryBoolean(right Box, operator *ast.Token, converters *unit.Converters) (Box, error) {
+	r, is := right.(*CurrencyBox)
+	if !is {
+		return &BooleanBox{Value: false}, nil
+	}
+
+	var leftAsRight, err = converters.ConvertCurrency(left.Number.Value, left.Unit, r.Unit)
+	if err != nil {
+		return nil, err
+	}
+
+	result := func() bool {
+		switch operator.Type {
+		case ast.EQ:
+			return leftAsRight == r.Number.Value
+		case ast.NOT_EQ:
+			return leftAsRight != r.Number.Value
+		case ast.LT:
+			return leftAsRight < r.Number.Value
+		case ast.GT:
+			return leftAsRight > r.Number.Value
+		case ast.LTE:
+			return leftAsRight <= r.Number.Value
+		case ast.GTE:
+			return leftAsRight >= r.Number.Value
+		default:
+			return false
+		}
+	}()
+
+	return &BooleanBox{Value: result}, nil
 }

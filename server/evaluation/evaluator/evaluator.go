@@ -241,58 +241,27 @@ func (e *Evaluator) evalBinaryBooleanLogicalExpression(left ast.Expression, righ
 	return &b.BooleanBox{Value: callable(evalLeft.Value, evalRight.Value)}
 }
 
-func (e *Evaluator) evalBinaryBooleanComparisonExpression(left ast.Expression, right ast.Expression, operator *ast.Token) b.Box {
+func (e *Evaluator) evalBinaryBooleanComparisonExpression(leftExpr ast.Expression, rightExpr ast.Expression, operator *ast.Token) b.Box {
+	leftBox := e.evalExp(leftExpr)
+	rightBox := e.evalExp(rightExpr)
 
-	evaluatedRight := e.evalExp(right)
-	evaluatedLeft := e.evalExp(left)
-	if operator.Type == ast.EQ {
-		return &b.BooleanBox{Value: evaluatedRight.Inspect() == evaluatedLeft.Inspect()}
-	}
-	if operator.Type == ast.NOT_EQ {
-		return &b.BooleanBox{Value: evaluatedRight.Inspect() != evaluatedLeft.Inspect()}
-	}
-
-	if evaluatedRight.Type() != evaluatedLeft.Type() {
-		e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(
-			fmt.Sprintf("Can't compare %s and %s", evaluatedLeft.Type(), evaluatedRight.Type()),
-			operator,
+	if operatable, ok := leftBox.(b.BinaryBooleanOperatable); !ok {
+		e.diagnostics = append(e.diagnostics, ast.NewDiagnostic(
+			"Left hand side of this expression is not evaluable by this operator",
+			leftExpr.Token().StartPos(),
+			rightExpr.Token().EndPos(),
 		))
 		return nil
-	}
-
-	comp := func(comp func(a, b float64) bool) *b.BooleanBox {
-		switch l := (evaluatedLeft).(type) {
-		case *b.NumberBox:
-			r, _ := (evaluatedRight).(*b.NumberBox)
-			return &b.BooleanBox{Value: comp(l.Value, r.Value)}
-		case *b.CurrencyBox:
-			r, _ := (evaluatedRight).(*b.CurrencyBox)
-			if l.Unit == r.Unit {
-				return &b.BooleanBox{Value: comp(l.Number.Value, r.Number.Value)}
-			}
-
-			converted, err := e.converters.ConvertCurrency(l.Number.Value, l.Unit, r.Unit)
-			if err != nil {
-				e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(err.Error(), operator))
-				return nil
-			}
-			return &b.BooleanBox{Value: comp(converted, r.Number.Value)}
+	} else {
+		res, err := operatable.OperateBinaryBoolean(rightBox, operator, e.converters)
+		if err != nil {
+			e.diagnostics = append(e.diagnostics, ast.NewDiagnostic(
+				err.Error(),
+				leftExpr.Token().StartPos(),
+				rightExpr.Token().EndPos(),
+			))
 		}
-		e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken("Relational operators only applicable to currency or number types", operator))
-		return nil
-	}
-	switch operator.Type {
-	case ast.GT:
-		return comp(func(a, b float64) bool { return a > b })
-	case ast.LT:
-		return comp(func(a, b float64) bool { return a < b })
-	case ast.GTE:
-		return comp(func(a, b float64) bool { return a >= b })
-	case ast.LTE:
-		return comp(func(a, b float64) bool { return a <= b })
-	default:
-		e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken("Unrecognized operator", operator))
-		return nil
+		return res
 	}
 }
 
@@ -388,7 +357,7 @@ func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Ex
 		))
 		return nil
 	} else {
-		res, err := operatable.OperateBinary(boxRight, operation, e.converters)
+		res, err := operatable.OperateBinaryNumber(boxRight, operation, e.converters)
 		if err != nil {
 			e.diagnostics = append(e.diagnostics, ast.NewDiagnostic(
 				err.Error(),
