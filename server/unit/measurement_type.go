@@ -88,13 +88,43 @@ var MeasurementTypes = map[MeasurementType]*MeasurementDetail{
 	// "f": "fahrenheit",
 	// "k": "kelvin",
 
-	// // Time
-	// "ms":   "milliseconds",
-	// "s":    "seconds",
-	// "min":  "minutes",
-	// "hr":   "hours",
-	// "day":  "days",
-	// "year": "years",
+	// Time
+	"ms": {
+		Measures:     "time",
+		FullName:     "milliseconds",
+		ToBaseUnit:   func(value float64) float64 { return value },
+		FromBaseUnit: func(value float64) float64 { return value },
+	},
+	"s": {
+		Measures:     "time",
+		FullName:     "seconds",
+		ToBaseUnit:   func(value float64) float64 { return value * 1000 },
+		FromBaseUnit: func(value float64) float64 { return value / 1000 },
+	},
+	"min": {
+		Measures:     "time",
+		FullName:     "minutes",
+		ToBaseUnit:   func(value float64) float64 { return value * 60 * 1000 },
+		FromBaseUnit: func(value float64) float64 { return value / 1000 / 60 },
+	},
+	"hr": {
+		Measures:     "time",
+		FullName:     "hours",
+		ToBaseUnit:   func(value float64) float64 { return value * 60 * 60 * 1000 },
+		FromBaseUnit: func(value float64) float64 { return value / 1000 / 60 / 60 },
+	},
+	"day": {
+		Measures:     "time",
+		FullName:     "days",
+		ToBaseUnit:   func(value float64) float64 { return value * 24 * 60 * 60 * 1000 },
+		FromBaseUnit: func(value float64) float64 { return value / 1000 / 60 / 60 / 24 },
+	},
+	"year": {
+		Measures:     "time",
+		FullName:     "years",
+		ToBaseUnit:   func(value float64) float64 { return value * 365 * 24 * 60 * 60 * 1000 },
+		FromBaseUnit: func(value float64) float64 { return value / 1000 / 60 / 60 / 24 / 365 },
+	},
 }
 
 func IsMeasurementKeyword(keyword string) (bool, MeasurementType) {

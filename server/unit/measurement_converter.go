@@ -14,6 +14,10 @@ func GetMeasurementConverter() ValueConverter {
 		fromDetail := MeasurementTypes[MeasurementType(fromUnit)]
 		targetDetail := MeasurementTypes[MeasurementType(toUnit)]
 
+		if fromDetail.Measures != targetDetail.Measures {
+			return -1, fmt.Errorf("Cannot convert %s to %s", fromUnit, toUnit)
+		}
+
 		normalized := fromDetail.ToBaseUnit(fromValue)
 		inNewUnit := targetDetail.FromBaseUnit(normalized)
 		return inNewUnit, nil
