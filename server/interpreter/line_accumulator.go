@@ -51,36 +51,15 @@ func (l *LineAccumulator) Accept(result box.Box) {
 		l.setStartingAcc(result)
 	}
 
-	switch acc := l.acc.(type) {
-	case *box.NumberBox:
-		{
-			switch r := result.(type) {
-			case *box.NumberBox:
-				acc.Value = l.operation(r.Value, acc.Value)
-			case *box.CurrencyBox:
-				num := l.operation(r.Number.Value, acc.Value)
-				l.acc = &box.CurrencyBox{Number: box.NewNumberbox(num, r.Number.NumberType), Unit: r.Unit}
-			}
-		}
-	case *box.CurrencyBox:
-		{
-			switch r := result.(type) {
-			case *box.NumberBox:
-				acc.Number.Value = l.operation(r.Value, acc.Number.Value)
-			case *box.CurrencyBox:
-				// convert acc unit to r unit
-				if acc.Unit != r.Unit {
-					converted, err := l.converters.ConvertCurrency(acc.Number.Value, acc.Unit, r.Unit)
-					if err != nil {
-						return
-					}
-					acc.Unit = r.Unit
-					acc.Number.Value = converted
-				}
-				acc.Number.Value = l.operation(r.Number.Value, acc.Number.Value)
-			}
-		}
+	operatable, ok := l.acc.(box.BinaryNumberOperatable)
+	if !ok {
+		return
 	}
+	newAcc, err := operatable.OperateBinaryNumber(result, l.operation, l.converters)
+	if err != nil {
+		return
+	}
+	l.acc = newAcc
 }
 
 func (l *LineAccumulator) setStartingAcc(result box.Box) {
