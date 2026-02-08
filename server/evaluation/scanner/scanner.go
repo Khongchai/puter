@@ -32,7 +32,7 @@ func (s *Scanner) Next() *ast.Token {
 			token = ast.NewToken(ast.LOGICAL_OR, "||", s.pos)
 			s.pos += 2
 		} else {
-			token = ast.NewToken(ast.PIPE, string(s.ch(0)), s.pos)
+			token = ast.NewToken(ast.OR, string(s.ch(0)), s.pos)
 			s.pos++
 		}
 	case '&':
@@ -40,7 +40,7 @@ func (s *Scanner) Next() *ast.Token {
 			token = ast.NewToken(ast.LOGICAL_AND, "&&", s.pos)
 			s.pos += 2
 		} else {
-			token = ast.NewToken(ast.ILLEGAL, string(s.ch(0)), s.pos)
+			token = ast.NewToken(ast.AND, string(s.ch(0)), s.pos)
 			s.pos++
 		}
 	case '=':
@@ -83,6 +83,9 @@ func (s *Scanner) Next() *ast.Token {
 		if s.ch(1) == '=' {
 			token = ast.NewToken(ast.LTE, "<=", s.pos)
 			s.pos += 2
+		} else if s.ch(1) == '<' {
+			token = ast.NewToken(ast.SHL, "<<", s.pos)
+			s.pos += 2
 		} else {
 			token = ast.NewToken(ast.LT, string(s.ch(0)), s.pos)
 			s.pos++
@@ -90,6 +93,9 @@ func (s *Scanner) Next() *ast.Token {
 	case '>':
 		if s.ch(1) == '=' {
 			token = ast.NewToken(ast.GTE, ">=", s.pos)
+			s.pos += 2
+		} else if s.ch(1) == '>' {
+			token = ast.NewToken(ast.SHR, ">>", s.pos)
 			s.pos += 2
 		} else {
 			token = ast.NewToken(ast.GT, string(s.ch(0)), s.pos)
@@ -102,7 +108,7 @@ func (s *Scanner) Next() *ast.Token {
 		token = ast.NewToken(ast.RPAREN, string(s.ch(0)), s.pos)
 		s.pos++
 	case '^':
-		token = ast.NewToken(ast.CARET, string(s.ch(0)), s.pos)
+		token = ast.NewToken(ast.XOR, string(s.ch(0)), s.pos)
 		s.pos++
 	case '%':
 		token = ast.NewToken(ast.PERCENT, string(s.ch(0)), s.pos)

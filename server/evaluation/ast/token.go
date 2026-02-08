@@ -3,8 +3,6 @@ package ast
 type TokenType string
 
 const (
-	PIPE = "|"
-
 	ILLEGAL = "ILLEGAL"
 	EOF     = "EOF"
 
@@ -19,8 +17,14 @@ const (
 	BANG            = "!"
 	ASTERISK        = "*"
 	SLASH           = "/"
-	CARET           = "^"
 	DOUBLE_ASTERISK = "**"
+
+	AND = "&"
+	OR  = "|"
+	XOR = "^"
+	SHL = "<<"
+	SHR = ">>"
+	NOT = "~"
 
 	LOGICAL_AND = "&&"
 	LOGICAL_OR  = "||"

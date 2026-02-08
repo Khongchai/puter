@@ -32,6 +32,7 @@ func NewParser() *Parser {
 	// Simple parselets
 	parser.prefixParseFns[ast.MINUS] = NewPrefixOperatorParselet(PrecPrefix)
 	parser.prefixParseFns[ast.BANG] = NewPrefixOperatorParselet(PrecPrefix)
+	parser.infixParseFns[ast.NOT] = NewbinaryOperatorParselet(PrecPrefix, false)
 	parser.infixParseFns[ast.EQ] = NewbinaryOperatorParselet(PrecEquals, false)
 	parser.infixParseFns[ast.NOT_EQ] = NewbinaryOperatorParselet(PrecEquals, false)
 	parser.infixParseFns[ast.PLUS] = NewbinaryOperatorParselet(PrecSum, false)
@@ -46,6 +47,12 @@ func NewParser() *Parser {
 	parser.infixParseFns[ast.GTE] = NewbinaryOperatorParselet(PrecLessGreater, false)
 	parser.infixParseFns[ast.LOGICAL_AND] = NewbinaryOperatorParselet(PrecLogical, false)
 	parser.infixParseFns[ast.LOGICAL_OR] = NewbinaryOperatorParselet(PrecLogical, false)
+
+	parser.infixParseFns[ast.AND] = NewbinaryOperatorParselet(PrecBitwiseOperators, false)
+	parser.infixParseFns[ast.OR] = NewbinaryOperatorParselet(PrecBitwiseOperators, false)
+	parser.infixParseFns[ast.XOR] = NewbinaryOperatorParselet(PrecBitwiseOperators, false)
+	parser.infixParseFns[ast.SHL] = NewbinaryOperatorParselet(PrecBitwiseOperators, false)
+	parser.infixParseFns[ast.SHR] = NewbinaryOperatorParselet(PrecBitwiseOperators, false)
 
 	// Any identifier after an expression is included here.
 	// x usd

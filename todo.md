@@ -83,3 +83,9 @@ Create a go program first, hook in lsp later.
     - [x] Test line accumulator against multiple units conversions too.
 - [x] pi and e constant (allow overriding)
 - [x] add mod function
+
+
+# When Bored
+
+- [ ] Prefix operation parsing can be come operatables
+- [ ] Each number type operatables can just ask the inner number box if it can handle certain operations instead of duplicating them.

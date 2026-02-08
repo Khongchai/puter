@@ -81,6 +81,21 @@ func TestNumberBinaryOperatorEvaluations(t *testing.T) {
 			"16",
 			b.NUMBER_BOX,
 		},
+		{
+			"2 & 2 ^ 0",
+			"2",
+			b.NUMBER_BOX,
+		},
+		{
+			"1 << 4",
+			"16",
+			b.NUMBER_BOX,
+		},
+		{
+			"1 << 4 << 4",
+			"256",
+			b.NUMBER_BOX,
+		},
 	}
 	for _, c := range cases {
 		eval := NewEvaluator(t.Context(), getDefaultConverters(200))
@@ -349,6 +364,11 @@ func TestPrefixEvaluation(t *testing.T) {
 		{
 			"-1",
 			"-1",
+			b.NUMBER_BOX,
+		},
+		{
+			"^5",
+			"-6",
 			b.NUMBER_BOX,
 		},
 	}

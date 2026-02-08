@@ -93,8 +93,6 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 			return e.evalBinaryNumberExpression(exp.Left, exp.Right, exp.Operator, func(a, b float64) float64 {
 				return a / b
 			})
-		case ast.IN:
-			return e.evalInExpression(exp.Left, exp.Right)
 		case ast.ASTERISK:
 			return e.evalBinaryNumberExpression(exp.Left, exp.Right, exp.Operator, func(a, b float64) float64 {
 				return a * b
@@ -103,6 +101,28 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 			return e.evalBinaryNumberExpression(exp.Left, exp.Right, exp.Operator, func(a, b float64) float64 {
 				return math.Pow(a, b)
 			})
+		case ast.AND:
+			return e.evalBinaryNumberExpression(exp.Left, exp.Right, exp.Operator, func(a, b float64) float64 {
+				return float64(int(a) & int(b))
+			})
+		case ast.OR:
+			return e.evalBinaryNumberExpression(exp.Left, exp.Right, exp.Operator, func(a, b float64) float64 {
+				return float64(int(a) | int(b))
+			})
+		case ast.XOR:
+			return e.evalBinaryNumberExpression(exp.Left, exp.Right, exp.Operator, func(a, b float64) float64 {
+				return float64(int(a) ^ int(b))
+			})
+		case ast.SHL:
+			return e.evalBinaryNumberExpression(exp.Left, exp.Right, exp.Operator, func(a, b float64) float64 {
+				return float64(int(a) << int(b))
+			})
+		case ast.SHR:
+			return e.evalBinaryNumberExpression(exp.Left, exp.Right, exp.Operator, func(a, b float64) float64 {
+				return float64(int(a) >> int(b))
+			})
+		case ast.IN:
+			return e.evalInExpression(exp.Left, exp.Right)
 		case ast.LOGICAL_AND:
 			return e.evalBinaryBooleanLogicalExpression(exp.Left, exp.Right, func(a, b bool) bool {
 				return a && b
@@ -144,6 +164,7 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 			exp.Token(),
 		))
 		return nil
+		// FIXME: this can be refactored into operatables
 	case *ast.PrefixExpression:
 		operator := exp.TokenValue.Type
 		switch right := e.evalExp(exp.Right).(type) {
@@ -153,6 +174,24 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 			}
 			if operator == ast.PLUS {
 				return b.NewNumberbox(right.Value, right.NumberType)
+			}
+			if operator == ast.NOT {
+				return b.NewNumberbox(float64(^int(right.Value)), right.NumberType)
+			}
+			e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(
+				"Unsupported prefix operation on a number",
+				exp.Token(),
+			))
+			return nil
+		case *b.FixedUnitBox:
+			if operator == ast.MINUS {
+				return b.NewNumberbox(-right.Number.Value, right.Number.NumberType)
+			}
+			if operator == ast.PLUS {
+				return b.NewNumberbox(right.Number.Value, right.Number.NumberType)
+			}
+			if operator == ast.NOT {
+				return b.NewNumberbox(float64(^int(right.Number.Value)), right.Number.NumberType)
 			}
 			e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(
 				"Unsupported prefix operation on a number",
@@ -165,6 +204,9 @@ func (e *Evaluator) evalExp(expression ast.Expression) b.Box {
 			}
 			if operator == ast.PLUS {
 				return &b.CurrencyBox{Number: b.NewNumberbox(right.Number.Value, right.Number.NumberType), Unit: right.Unit}
+			}
+			if operator == ast.NOT {
+				return &b.CurrencyBox{Number: b.NewNumberbox(float64(^int(right.Number.Value)), right.Number.NumberType), Unit: right.Unit}
 			}
 			e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken(
 				"Unsupported prefix operation on a currency",

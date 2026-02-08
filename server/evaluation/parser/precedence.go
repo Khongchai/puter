@@ -8,6 +8,7 @@ const (
 	PrecLogical
 	PrecEquals
 	PrecLessGreater
+	PrecBitwiseOperators
 	PrecSum
 	PrecProduct
 	PrecExponent

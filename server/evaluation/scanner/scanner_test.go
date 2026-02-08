@@ -66,7 +66,7 @@ func TestNumberScan(t *testing.T) {
 }
 
 func TestKeywords(t *testing.T) {
-	scanner := NewScanner("oops in true lol false 4")
+	scanner := NewScanner("oops in true lol false 4 >>")
 	expectations := []ast.TokenType{
 		ast.IDENT,
 		ast.IN,
@@ -74,6 +74,7 @@ func TestKeywords(t *testing.T) {
 		ast.IDENT,
 		ast.FALSE,
 		ast.NUMBER,
+		ast.SHR,
 		ast.EOF,
 	}
 
