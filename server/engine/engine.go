@@ -256,7 +256,7 @@ func registerNotificationHandler[Req any](handlers handlerMap, info lsproto.Noti
 	handlers[info.Method] = func(e *Engine, ctx context.Context, req *lsproto.RequestMessage) error {
 		defer func() {
 			if r := recover(); r != nil {
-				fmt.Println("Notifiaction handler panicked", r)
+				fmt.Println("Notification handler panicked", r)
 			}
 		}()
 
