@@ -83,6 +83,8 @@ Create a go program first, hook in lsp later.
     - [x] Test line accumulator against multiple units conversions too.
 - [x] pi and e constant (allow overriding)
 - [x] add mod function
+- [ ] Allow full keyword (minutes, seconds, etc)
+- [ ] No longer need to add diagnostics warning. It's annoying.
 
 
 # When Bored
