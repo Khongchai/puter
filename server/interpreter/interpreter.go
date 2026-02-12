@@ -66,10 +66,10 @@ func (interpreter *Interpreter) Interpret(text string) []*Interpretation {
 			continue
 		}
 
-		firstTwoCharsNotSpace := func() string {
+		firstThreeCharsNotSpace := func() string {
 			s := ""
 			for _, c := range lines[i] {
-				if len(s) == 2 {
+				if len(s) == 3 {
 					return s
 				}
 				if c != ' ' {
@@ -80,23 +80,28 @@ func (interpreter *Interpreter) Interpret(text string) []*Interpretation {
 		}()
 
 		// python or c-like normal comment
-		if firstTwoCharsNotSpace[0] == '#' || firstTwoCharsNotSpace == "//" {
+		validLineStart := func() bool {
+			if len(firstThreeCharsNotSpace) < 3 {
+				return false
+			}
+			return (firstThreeCharsNotSpace[0] == '#' && firstThreeCharsNotSpace[1] == '|') ||
+				(firstThreeCharsNotSpace[:2] == "//" && firstThreeCharsNotSpace[2] == '|')
+		}()
+		if validLineStart {
 			index := strings.Index(lines[i], "|")
-			if index != -1 && len(lines[i]) > index+1 {
-				evaluatable := lines[i][index+1:]
-				trimmed := strings.Trim(evaluatable, " ")
-				if IsAccumulationCommand(trimmed) {
-					hasLineCommands = true
-					interpretations = append(interpretations, &Interpretation{
-						LineIndex:   i,
-						Diagnostics: []*lsproto.Diagnostic{},
-						EvalResult:  trimmed,
-						Box:         nil,
-					})
-				} else {
-					interpretation := interpreter.evaluateAndInterpretResult(evaluator, evaluatable, i)
-					interpretations = append(interpretations, interpretation)
-				}
+			evaluatable := lines[i][index+1:]
+			trimmed := strings.Trim(evaluatable, " ")
+			if IsAccumulationCommand(trimmed) {
+				hasLineCommands = true
+				interpretations = append(interpretations, &Interpretation{
+					LineIndex:   i,
+					Diagnostics: []*lsproto.Diagnostic{},
+					EvalResult:  trimmed,
+					Box:         nil,
+				})
+			} else {
+				interpretation := interpreter.evaluateAndInterpretResult(evaluator, evaluatable, i)
+				interpretations = append(interpretations, interpretation)
 			}
 		}
 

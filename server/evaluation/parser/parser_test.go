@@ -303,7 +303,7 @@ func TestPrecedence(t *testing.T) {
 		},
 		{
 			"2^10 in binary",
-			"(2 ^ (10 in binary)",
+			"(2 ^ (10 in binary))",
 		},
 	}
 

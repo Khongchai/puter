@@ -155,6 +155,19 @@ func TestLineCommand(t *testing.T) {
 
 }
 
+func TestInvalidLineStart(t *testing.T) {
+	cases := []string{
+		"// klflsj | lksjdf",
+	}
+	for _, c := range cases {
+		interpreter := NewInterpreter(t.Context(), getDefaultCurrencyConverter(200))
+		interpretations := interpreter.Interpret(c)
+		if len(interpretations) != 0 {
+			t.Fatalf("Expect length to be 0, got %d", len(interpretations))
+		}
+	}
+}
+
 func TestIntegration(t *testing.T) {
 	type TestCase struct {
 		ExpectPrint []string
