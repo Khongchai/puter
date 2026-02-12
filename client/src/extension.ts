@@ -17,9 +17,6 @@ const decorationType = vscode.window.createTextEditorDecorationType({
   },
 });
 
-const diagnosticCollection =
-  vscode.languages.createDiagnosticCollection("puter");
-
 export async function activate(context: vscode.ExtensionContext) {
   const serverOptions = (() => {
     const lsPath = path.resolve(context.extensionPath, "binaries");
@@ -117,11 +114,6 @@ export async function activate(context: vscode.ExtensionContext) {
           });
 
         editor.setDecorations(decorationType, decorationOptions);
-
-        const diagnostics = payload.interpretations.flatMap((p) => {
-          return p.Diagnostics;
-        });
-        diagnosticCollection.set(vscode.Uri.parse(payload.uri), diagnostics);
       }
     },
   );
