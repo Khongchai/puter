@@ -38,6 +38,9 @@ func NewLineAccumulator(command string, line int, converters *unit.Converters) *
 }
 
 func (l *LineAccumulator) Print() string {
+	if l.acc == nil {
+		return ""
+	}
 	return l.acc.Inspect()
 }
 
