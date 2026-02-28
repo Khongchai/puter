@@ -143,7 +143,7 @@ func (s *Scanner) Next() *ast.Token {
 		} else if isDigit(s.ch(0)) {
 			i := 1
 			for {
-				if isDigit(s.ch(i)) || (s.ch(i) == '.' && isDigit(s.ch(i+1))) {
+				if isDigit(s.ch(i)) || (s.ch(i) == '.' && isDigit(s.ch(i+1))) || s.ch(i) == ',' && isDigit(s.ch(i+1)) {
 					i++
 					continue
 				}

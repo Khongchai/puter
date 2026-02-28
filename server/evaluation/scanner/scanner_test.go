@@ -53,6 +53,7 @@ func TestNumberScan(t *testing.T) {
 	cases := []string{
 		"1",
 		"100.111",
+		"1,000",
 	}
 
 	for _, c := range cases {
