@@ -135,6 +135,15 @@ func TestLineCommand(t *testing.T) {
 				"// | sum",
 			),
 		},
+		{
+			ExpectPrint: []string{"2 years", "5 years", "7 years"},
+			ExpectLine:  []int{0, 1, 2},
+			InputText: joinLines(
+				"// | x = 2 years",
+				"// | 5 years",
+				"// | sum",
+			),
+		},
 	}
 
 	for _, testCase := range cases {
@@ -145,7 +154,14 @@ func TestLineCommand(t *testing.T) {
 		}
 		for i := range interpretations {
 			if testCase.ExpectPrint[i] != interpretations[i].EvalResult {
-				t.Fatalf("Expected %s, instead got %s", testCase.ExpectPrint[i], interpretations[i].EvalResult)
+				result := func() string {
+					if interpretations[i].EvalResult == "" {
+						return "an empty string"
+					} else {
+						return interpretations[i].EvalResult
+					}
+				}()
+				t.Fatalf("Expected %s, instead got %s", testCase.ExpectPrint[i], result)
 			}
 			if testCase.ExpectLine[i] != interpretations[i].LineIndex {
 				t.Fatalf("Expected line of result %s to be %d, not %d", interpretations[i].EvalResult, testCase.ExpectLine[i], interpretations[i].LineIndex)

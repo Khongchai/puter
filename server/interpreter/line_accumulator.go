@@ -68,6 +68,8 @@ func (l *LineAccumulator) Accept(result box.Box) {
 func (l *LineAccumulator) setStartingAcc(result box.Box) {
 	num := startingValues[l.command]
 	switch v := result.(type) {
+	case *box.FixedUnitBox:
+		l.acc = box.NewFixedUnitBox(box.NewNumberbox(num, v.Number.NumberType), v.FixedUnitType)
 	case *box.NumberBox:
 		l.acc = box.NewNumberbox(num, v.NumberType)
 	case *box.CurrencyBox:
