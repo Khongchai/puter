@@ -116,8 +116,16 @@ func (left *NumberBox) OperateBinaryBoolean(right Box, operator *ast.Token, conv
 	return &BooleanBox{Value: result}, nil
 }
 
-var _ HoldsNumber = (*NumberBox)(nil)
+var _ NumericType = (*NumberBox)(nil)
 
 func (n *NumberBox) GetNumber() float64 {
 	return n.Value
+}
+
+func (c *NumberBox) SetNumber(v float64) {
+	c.Value = v
+}
+
+func (c *NumberBox) Clone() Box {
+	return NewNumberbox(c.Value, c.NumberType)
 }

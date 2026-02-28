@@ -100,8 +100,16 @@ func (left *CurrencyBox) OperateBinaryBoolean(right Box, operator *ast.Token, co
 	return &BooleanBox{Value: result}, nil
 }
 
-var _ HoldsNumber = (*CurrencyBox)(nil)
+var _ NumericType = (*CurrencyBox)(nil)
 
 func (c *CurrencyBox) GetNumber() float64 {
 	return c.Number.Value
+}
+
+func (c *CurrencyBox) SetNumber(v float64) {
+	c.Number.Value = v
+}
+
+func (cb *CurrencyBox) Clone() Box {
+	return &CurrencyBox{Number: NewNumberbox(cb.Number.Value, cb.Number.NumberType), Unit: cb.Unit}
 }

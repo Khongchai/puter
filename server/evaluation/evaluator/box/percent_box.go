@@ -27,6 +27,8 @@ func (pb *PercentBox) OperateBinaryNumber(right Box, operator func(a, b float64)
 		return &NumberBox{Value: operator(r.Value, (pb.Value/100)*r.Value), NumberType: r.NumberType}, nil
 	case *CurrencyBox:
 		return &CurrencyBox{Number: NewNumberbox(operator(r.Number.Value, (pb.Value/100)*r.Number.Value), r.Number.NumberType), Unit: r.Unit}, nil
+	case *FixedUnitBox:
+		return &FixedUnitBox{Number: NewNumberbox(operator(r.Number.Value, (pb.Value/100)*r.Number.Value), r.Number.NumberType), FixedUnitType: r.FixedUnitType}, nil
 	case *PercentBox:
 		return &PercentBox{Value: operator(pb.Value, r.Value)}, nil
 	default:
@@ -62,4 +64,18 @@ func (left *PercentBox) OperateBinaryBoolean(right Box, operator *ast.Token, con
 	}()
 
 	return &BooleanBox{Value: result}, nil
+}
+
+var _ NumericType = (*PercentBox)(nil)
+
+func (n *PercentBox) GetNumber() float64 {
+	return n.Value
+}
+
+func (c *PercentBox) SetNumber(v float64) {
+	c.Value = v
+}
+
+func (c *PercentBox) Clone() Box {
+	return &PercentBox{Value: c.Value}
 }

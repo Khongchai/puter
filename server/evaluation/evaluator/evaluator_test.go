@@ -489,8 +489,8 @@ func TestBuiltinFunctionEvaluations(t *testing.T) {
 		},
 		{
 			"log10(2usd)",
-			fmt.Sprintf("%g", math.Log10(2)),
-			b.NUMBER_BOX,
+			fmt.Sprintf("%s usd", fmt.Sprintf("%g", math.Log10(2))),
+			b.CURRENCY_BOX,
 		},
 		{
 			"log10(2 + 5)",
@@ -499,8 +499,8 @@ func TestBuiltinFunctionEvaluations(t *testing.T) {
 		},
 		{
 			"log2(2m)",
-			fmt.Sprintf("%g", math.Log2(2)),
-			b.NUMBER_BOX,
+			fmt.Sprintf("%g meters", math.Log2(2)),
+			b.FIXED_UNIT_BOX,
 		},
 		{
 			"sqrt(10)",

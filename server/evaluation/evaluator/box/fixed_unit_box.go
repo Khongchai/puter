@@ -15,27 +15,27 @@ func NewFixedUnitBox(value *NumberBox, fixedUnitType unit.FixedUnitType) *FixedU
 	return &FixedUnitBox{Number: value, FixedUnitType: fixedUnitType}
 }
 
-func (mb *FixedUnitBox) Inspect() string {
-	fullName := unit.FixedUnitTypes[mb.FixedUnitType].FullName
-	return fmt.Sprintf("%g %s", mb.Number.Value, fullName)
+func (fub *FixedUnitBox) Inspect() string {
+	fullName := unit.FixedUnitTypes[fub.FixedUnitType].FullName
+	return fmt.Sprintf("%g %s", fub.Number.Value, fullName)
 }
 
-func (nb *FixedUnitBox) Type() BoxType {
+func (fub *FixedUnitBox) Type() BoxType {
 	return FIXED_UNIT_BOX
 }
 
 var _ BinaryNumberOperatable = (*FixedUnitBox)(nil)
 
-func (left *FixedUnitBox) OperateBinaryNumber(right Box, operator func(a, b float64) float64, converters *unit.Converters) (Box, error) {
+func (fub *FixedUnitBox) OperateBinaryNumber(right Box, operator func(a, b float64) float64, converters *unit.Converters) (Box, error) {
 	switch r := right.(type) {
 	case *NumberBox:
-		return NewFixedUnitBox(NewNumberbox(operator(left.Number.Value, r.Value), r.NumberType), left.FixedUnitType), nil
+		return NewFixedUnitBox(NewNumberbox(operator(fub.Number.Value, r.Value), r.NumberType), fub.FixedUnitType), nil
 	case *FixedUnitBox:
 		{
-			if left.FixedUnitType == r.FixedUnitType {
-				return NewFixedUnitBox(NewNumberbox(operator(left.Number.Value, r.Number.Value), r.Number.NumberType), left.FixedUnitType), nil
+			if fub.FixedUnitType == r.FixedUnitType {
+				return NewFixedUnitBox(NewNumberbox(operator(fub.Number.Value, r.Number.Value), r.Number.NumberType), fub.FixedUnitType), nil
 			}
-			leftInRight, err := converters.ConvertFixedUnit(left.Number.Value, string(left.FixedUnitType), string(r.FixedUnitType))
+			leftInRight, err := converters.ConvertFixedUnit(fub.Number.Value, string(fub.FixedUnitType), string(r.FixedUnitType))
 			if err != nil {
 				return nil, err
 			}
@@ -48,28 +48,28 @@ func (left *FixedUnitBox) OperateBinaryNumber(right Box, operator func(a, b floa
 
 var _ InPrefixOperatable = (*FixedUnitBox)(nil)
 
-func (mb *FixedUnitBox) OperateIn(keyword string, converters *unit.Converters) (Box, error) {
-	if keyword == string(mb.FixedUnitType) {
-		return NewFixedUnitBox(mb.Number, mb.FixedUnitType), nil
+func (fub *FixedUnitBox) OperateIn(keyword string, converters *unit.Converters) (Box, error) {
+	if keyword == string(fub.FixedUnitType) {
+		return NewFixedUnitBox(fub.Number, fub.FixedUnitType), nil
 	}
 
-	inNewUnit, err := converters.ConvertFixedUnit(mb.Number.Value, string(mb.FixedUnitType), keyword)
+	inNewUnit, err := converters.ConvertFixedUnit(fub.Number.Value, string(fub.FixedUnitType), keyword)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewFixedUnitBox(NewNumberbox(inNewUnit, mb.Number.NumberType), unit.FixedUnitType(keyword)), nil
+	return NewFixedUnitBox(NewNumberbox(inNewUnit, fub.Number.NumberType), unit.FixedUnitType(keyword)), nil
 }
 
 var _ BinaryBooleanOperatable = (*FixedUnitBox)(nil)
 
-func (left *FixedUnitBox) OperateBinaryBoolean(right Box, operator *ast.Token, converters *unit.Converters) (Box, error) {
+func (fub *FixedUnitBox) OperateBinaryBoolean(right Box, operator *ast.Token, converters *unit.Converters) (Box, error) {
 	r, is := right.(*FixedUnitBox)
 	if !is {
 		return &BooleanBox{Value: false}, nil
 	}
 
-	var leftAsRight, err = converters.ConvertFixedUnit(left.Number.Value, string(left.FixedUnitType), string(r.FixedUnitType))
+	var leftAsRight, err = converters.ConvertFixedUnit(fub.Number.Value, string(fub.FixedUnitType), string(r.FixedUnitType))
 	if err != nil {
 		return nil, err
 	}
@@ -96,8 +96,16 @@ func (left *FixedUnitBox) OperateBinaryBoolean(right Box, operator *ast.Token, c
 	return &BooleanBox{Value: result}, nil
 }
 
-var _ HoldsNumber = (*FixedUnitBox)(nil)
+var _ NumericType = (*FixedUnitBox)(nil)
 
-func (m *FixedUnitBox) GetNumber() float64 {
-	return m.Number.Value
+func (fub *FixedUnitBox) GetNumber() float64 {
+	return fub.Number.Value
+}
+
+func (fub *FixedUnitBox) SetNumber(v float64) {
+	fub.Number.Value = v
+}
+
+func (fub *FixedUnitBox) Clone() Box {
+	return &FixedUnitBox{Number: NewNumberbox(fub.Number.Value, fub.Number.NumberType), FixedUnitType: fub.FixedUnitType}
 }

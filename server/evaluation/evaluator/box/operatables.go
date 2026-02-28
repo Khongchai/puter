@@ -19,6 +19,8 @@ type BinaryBooleanOperatable interface {
 	OperateBinaryBoolean(right Box, operator *ast.Token, converters *unit.Converters) (Box, error)
 }
 
-type HoldsNumber interface {
+type NumericType interface {
 	GetNumber() float64
+	SetNumber(v float64)
+	Clone() Box
 }
