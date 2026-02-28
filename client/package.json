@@ -2,7 +2,7 @@
   "name": "puter",
   "displayName": "puter",
   "description": "Extended calculator",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "publisher": "Khongchai",
   "repository": "https://github.com/Khongchai/puter",
   "engines": {
