@@ -42,7 +42,7 @@ func (left *FixedUnitBox) OperateBinaryNumber(right Box, operator func(a, b floa
 			return NewFixedUnitBox(NewNumberbox(operator(leftInRight, r.Number.Value), r.Number.NumberType), r.FixedUnitType), nil
 		}
 	default:
-		return nil, fmt.Errorf("Cannot perform this operation on %s and %s", left.Type(), right.Type())
+		return nil, fmt.Errorf("Cannot perform this operation on these unit types")
 	}
 }
 
