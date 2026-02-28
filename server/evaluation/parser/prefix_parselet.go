@@ -4,6 +4,7 @@ import (
 	"fmt"
 	ast "puter/evaluation/ast"
 	"strconv"
+	"strings"
 )
 
 type PrefixParselet interface {
@@ -59,7 +60,8 @@ func NewNumberParselet() *NumberParselet {
 }
 
 func (p *NumberParselet) Parse(parser *Parser, token *ast.Token) (ast.Expression, *ast.Diagnostic) {
-	parsed, ok := strconv.ParseFloat(token.Literal, 64)
+	joined := strings.Join(strings.Split(token.Literal, ","), "")
+	parsed, ok := strconv.ParseFloat(joined, 64)
 	if ok != nil {
 		return nil, ast.NewDiagnosticAtToken(fmt.Sprintf("Invalid number: %s", token.Literal), token)
 	}

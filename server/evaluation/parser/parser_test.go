@@ -18,6 +18,10 @@ func TestNumberParsing(t *testing.T) {
 			"~1",
 			"(~1)",
 		},
+		{
+			"1,000",
+			"1000",
+		},
 	}
 	for _, test := range tests {
 		exp, err := NewParser().Parse(test.input)
