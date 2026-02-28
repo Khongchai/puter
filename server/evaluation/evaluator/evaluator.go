@@ -325,6 +325,7 @@ func (e *Evaluator) evalCallExpression(functionName ast.Expression, arguments []
 				"Expect a number type",
 				arg.Token(),
 			))
+			return nil
 		}
 		parsedArgs = append(parsedArgs, eval)
 	}
