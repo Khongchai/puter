@@ -317,6 +317,21 @@ func (e *Evaluator) evalBinaryBooleanComparisonExpression(leftExpr ast.Expressio
 
 // For now we only support builtin functions and all builtin functions are simple math functions.
 func (e *Evaluator) evalCallExpression(functionName ast.Expression, arguments []ast.Expression) b.Box {
+	builtin, exists := Builtins[functionName.String()]
+	if !exists {
+		e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken("Unknown function name", functionName.Token()))
+		return nil
+	}
+
+	if builtin.expectedArgs != len(arguments) {
+		text := fmt.Sprintf("Expected %d arguments, got %d len(arguments)", builtin.expectedArgs, len(arguments))
+		e.diagnostics = append(
+			e.diagnostics,
+			ast.NewDiagnosticAtToken(text, functionName.Token()),
+		)
+		return nil
+	}
+
 	var parsedArgs []b.NumericType
 	for _, arg := range arguments {
 		eval, ok := e.evalExp(arg).(b.NumericType)
@@ -330,66 +345,10 @@ func (e *Evaluator) evalCallExpression(functionName ast.Expression, arguments []
 		parsedArgs = append(parsedArgs, eval)
 	}
 
-	matchArgsAndApply := func(expectedCount int, fn func([]float64) float64) b.Box {
-		// if count not same, throw
-		if len(arguments) != expectedCount {
-			text := fmt.Sprintf("Expected %d arguments, got %d len(arguments)", expectedCount, len(arguments))
-			e.diagnostics = append(
-				e.diagnostics,
-				ast.NewDiagnosticAtToken(text, functionName.Token()),
-			)
-			return nil
-		}
-
-		// otherwise map each numbers onto the function and use the type of the first one.
-		// there are many type combination edge cases. Let's ignore them all...
-		var numbers []float64
-		for _, n := range parsedArgs {
-			numbers = append(numbers, n.GetNumber())
-		}
-		v := fn(numbers)
-		clonedFirst := parsedArgs[0].Clone().(b.NumericType)
-		clonedFirst.SetNumber(v)
-		return clonedFirst.(b.Box)
-	}
-
-	switch functionName.String() {
-	case "mod":
-		return matchArgsAndApply(2, func(v []float64) float64 { return math.Mod(v[0], v[1]) })
-	case "log10":
-		return matchArgsAndApply(1, func(v []float64) float64 { return math.Log10(v[0]) })
-	case "logE":
-		return matchArgsAndApply(1, func(v []float64) float64 { return math.Log(v[0]) })
-	case "log2":
-		return matchArgsAndApply(1, func(v []float64) float64 { return math.Log2(v[0]) })
-	case "round":
-		return matchArgsAndApply(1, func(v []float64) float64 { return math.Round(v[0]) })
-	case "floor":
-		return matchArgsAndApply(1, func(v []float64) float64 { return math.Floor(v[0]) })
-	case "ceil":
-		return matchArgsAndApply(1, func(v []float64) float64 { return math.Ceil(v[0]) })
-	case "abs":
-		return matchArgsAndApply(1, func(v []float64) float64 { return math.Abs(v[0]) })
-	case "sin":
-		return matchArgsAndApply(1, func(v []float64) float64 { return math.Sin(v[0]) })
-	case "cos":
-		return matchArgsAndApply(1, func(v []float64) float64 { return math.Cos(v[0]) })
-	case "tan":
-		return matchArgsAndApply(1, func(v []float64) float64 { return math.Tan(v[0]) })
-	case "sqrt":
-		return matchArgsAndApply(1, func(v []float64) float64 { return math.Sqrt(v[0]) })
-	case "lerp":
-		return matchArgsAndApply(3, func(v []float64) float64 {
-			return (1-parsedArgs[2].GetNumber())*parsedArgs[0].GetNumber() + parsedArgs[2].GetNumber()*parsedArgs[1].GetNumber()
-		})
-	case "invLerp":
-		return matchArgsAndApply(3, func(v []float64) float64 {
-			return (parsedArgs[2].GetNumber() - parsedArgs[0].GetNumber()) / (parsedArgs[1].GetNumber() - parsedArgs[0].GetNumber())
-		})
-	default:
-		e.diagnostics = append(e.diagnostics, ast.NewDiagnosticAtToken("Unknown function name", functionName.Token()))
-		return nil
-	}
+	v := builtin.fn(parsedArgs)
+	clonedFirst := parsedArgs[0].Clone().(b.NumericType)
+	clonedFirst.SetNumber(v)
+	return clonedFirst.(b.Box)
 }
 
 func (e *Evaluator) evalBinaryNumberExpression(left ast.Expression, right ast.Expression, operator *ast.Token, operation func(a, b float64) float64) b.Box {
